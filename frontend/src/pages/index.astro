@@ -6,69 +6,84 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <div class="page-center">
 
     <div class="flex justify-center mb-3">
-      <img src="/pieces/w_king.svg" alt="Logo" class="w-12 opacity-90 drop-shadow" />
+      <img
+        id="homeKing"
+        src="/pieces/w_king.svg"
+        alt="Logo"
+        class="w-12 opacity-90 drop-shadow cursor-pointer transition-all duration-300"
+      />
     </div>
 
     <h1 class="text-4xl font-bold text-center mb-2" style="font-family: 'Cinzel', serif;">
       Bienvenido a WELIKECHESS
     </h1>
 
-    <p class="text-gray-600 text-center text-lg mb-8 max-w-sm leading-relaxed">
+    <p
+      class="text-gray-600 text-center text-lg mb-8 max-w-sm leading-relaxed"
+      style="font-family: 'Marcellus', serif;"
+    >
       Domina el tablero, perfecciona tu estrategia y conviértete en tu mejor versión.
     </p>
 
-    <div class="flex flex-col gap-3 w-[300px]">
+    <div id="homeButtons" class="flex flex-col gap-3 w-[300px]">
 
       <a
         href="/play"
-        class="bg-blue-600 hover:bg-blue-700 text-white text-center py-3 rounded-lg font-semibold transition shadow"
+        class="home-btn bg-blue-600 hover:bg-blue-700 text-white text-center py-3 rounded-lg font-semibold shadow transition-all duration-300"
+        style="font-family: 'Marcellus', serif;"
       >
         Jugar Online
       </a>
 
       <a
         href="/puzzles"
-        class="bg-green-600 hover:bg-green-700 text-white text-center py-3 rounded-lg font-semibold transition shadow"
+        class="home-btn bg-green-600 hover:bg-green-700 text-white text-center py-3 rounded-lg font-semibold shadow transition-all duration-300"
+        style="font-family: 'Marcellus', serif;"
       >
-        Resolver puzzles
+        Resolver Puzzles
       </a>
 
       <a
         href="/profile"
-        class="bg-gray-800 hover:bg-black text-white text-center py-3 rounded-lg font-semibold transition shadow"
+        class="home-btn bg-gray-800 hover:bg-black text-white text-center py-3 rounded-lg font-semibold shadow transition-all duration-300"
+        style="font-family: 'Marcellus', serif;"
       >
-        Mi perfil
+        Mi Perfil
       </a>
     </div>
 
-    <div class="mt-10 w-[360px] bg-white p-6 rounded-xl shadow-lg text-center">
-      <h2 class="text-2xl font-bold mb-3" style="font-family: 'Cinzel', serif;">
+    <div
+      id="homeCard"
+      class="mt-10 w-[360px] bg-white p-6 rounded-xl shadow-lg text-center transition-all duration-300"
+    >
+
+      <h2 class="text-3xl font-bold mb-4" style="font-family: 'Marcellus', serif;">
         ¿Qué encontrarás aquí?
       </h2>
 
-      <p class="text-gray-700 mb-5 text-sm">
+      <p class="text-gray-700 mb-6 text-base" style="font-family: 'Marcellus', serif;">
         Una plataforma creada para jugadores que buscan mejorar cada día.
       </p>
 
-      <div class="grid grid-cols-2 gap-4 text-gray-700 text-sm">
+      <div class="grid grid-cols-2 gap-6 text-gray-700 text-base" style="font-family: 'Marcellus', serif;">
 
         <div class="flex flex-col items-center">
-          <img src="/pieces/w_queen.svg" class="w-8 mb-1 opacity-80" />
+          <img src="/pieces/w_queen.svg" class="w-10 mb-2 opacity-80" />
           <p class="text-center">Partidas Online</p>
         </div>
 
         <div class="flex flex-col items-center">
-          <img src="/pieces/b_horse.svg" class="w-8 mb-1 opacity-80" />
+          <img src="/pieces/b_horse.svg" class="w-10 mb-2 opacity-80" />
           <p class="text-center">IA Nivelada</p>
         </div>
 
         <div class="flex flex-col items-center">
-          <img src="/pieces/w_bishop.svg" class="w-8 mb-1 opacity-80" />
+          <img src="/pieces/w_bishop.svg" class="w-10 mb-2 opacity-80" />
           <p class="text-center">Puzzles Tácticos</p>
         </div>
 
         <div class="flex flex-col items-center">
-          <img src="/pieces/b_king.svg" class="w-8 mb-1 opacity-80" />
+          <img src="/pieces/b_king.svg" class="w-10 mb-2 opacity-80" />
           <p class="text-center">Progreso Personal</p>
         </div>
 
@@ -76,4 +91,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     </div>
 
   </div>
+
+  <script type="module" src="/src/scripts/index.js"></script>
+
 </BaseLayout>

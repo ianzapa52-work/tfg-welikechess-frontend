@@ -56,3 +56,19 @@ main {
   align-items: center;
   height: 100%;
 }
+
+@keyframes gold-strong {
+  0% {
+    filter: drop-shadow(0 0 6px rgba(220, 180, 90, 0.55));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(255, 215, 120, 0.75));
+  }
+  100% {
+    filter: drop-shadow(0 0 6px rgba(220, 180, 90, 0.55));
+  }
+}
+
+.shadow-gold-strong {
+  animation: gold-strong 3s ease-in-out infinite;
+}
