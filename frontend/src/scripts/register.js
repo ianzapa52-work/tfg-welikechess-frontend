@@ -1,4 +1,20 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const kingIcon = document.querySelector("#kingIcon");
+  const registerCard = document.querySelector("#registerCard");
+
+  // Efecto dorado al pasar el ratón por el rey
+  if (kingIcon && registerCard) {
+    kingIcon.addEventListener("mouseenter", () => {
+      kingIcon.classList.add("drop-shadow-[0_0_12px_gold]");
+      registerCard.classList.add("ring-2", "ring-yellow-400", "shadow-yellow-400");
+    });
+
+    kingIcon.addEventListener("mouseleave", () => {
+      kingIcon.classList.remove("drop-shadow-[0_0_12px_gold]");
+      registerCard.classList.remove("ring-2", "ring-yellow-400", "shadow-yellow-400");
+    });
+  }
+
   const form = document.querySelector("#registerForm");
   const name = document.querySelector("#name");
   const email = document.querySelector("#email");
