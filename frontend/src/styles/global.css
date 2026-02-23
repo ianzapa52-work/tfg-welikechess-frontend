@@ -72,3 +72,32 @@ main {
 .shadow-gold-strong {
   animation: gold-strong 3s ease-in-out infinite;
 }
+
+.settings-icon {
+  display: inline-block;
+  transition: transform 0.6s ease;
+}
+
+.settings-icon:hover {
+  transform: rotate(360deg);
+}
+
+.menu-link {
+  position: relative;
+  display: inline-block;
+}
+
+.menu-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0%;
+  height: 2px;
+  background-color: #ddad0d;
+  transition: width 0.25s ease;
+}
+
+.menu-link:hover::after {
+  width: 100%;
+}
