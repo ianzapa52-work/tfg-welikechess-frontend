@@ -68,6 +68,8 @@ window.addEventListener("load", () => {
     const card = document.createElement("div");
     card.className = "history-card";
 
+    card.className = "history-card cursor-pointer";
+
     card.innerHTML = `
       <div class="history-left">
         <p class="${resultColors[game.result]}">${resultLabels[game.result]}</p>
