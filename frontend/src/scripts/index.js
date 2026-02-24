@@ -55,7 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // --- EFECTO ELEGANTE PARA "WELIKECHESS" ---
   if (brand) {
     // Brillo suave al pasar el ratón
     brand.addEventListener("mouseenter", () => {
@@ -71,6 +70,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // Subrayado dorado animado al hacer clic
     brand.addEventListener("click", () => {
       brand.classList.toggle("active");
+    });
+
+    // Efecto de salto al rey
+    king.addEventListener("click", () => {
+      king.classList.add("king-bounce");
+
+      setTimeout(() => {
+        king.classList.remove("king-bounce");
+      }, 600);
     });
   }
 });

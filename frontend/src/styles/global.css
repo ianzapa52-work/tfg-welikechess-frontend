@@ -180,3 +180,14 @@ main {
   font-size: 0.85rem;
   color: #6b4a3a;
 }
+
+@keyframes king-bounce {
+  0%   { transform: translateY(0) rotate(0deg); }
+  30%  { transform: translateY(-12px) rotate(-6deg); }
+  60%  { transform: translateY(4px) rotate(4deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+.king-bounce {
+  animation: king-bounce 0.6s ease-out;
+}
