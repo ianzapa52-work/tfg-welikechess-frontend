@@ -1,12 +1,9 @@
 // @ts-check
-import { Chess } from "chess.js";
-
-/** @typedef {import("chess.js").Square} Square */
-/** @typedef {import("chess.js").Move} ChessMove */
+/** @typedef {{ from: string, to: string, promotion?: string }} ServerMove */
+/** @typedef {{ type: string, payload: any }} ServerMessage */
 
 window.addEventListener("load", () => {
   // NARROWING DE ELEMENTOS
-
   const boardMaybe = document.getElementById("board");
   if (!(boardMaybe instanceof HTMLElement)) throw new Error("Missing #board");
   const boardEl = boardMaybe;
@@ -27,192 +24,109 @@ window.addEventListener("load", () => {
   if (!(capturedBlackMaybe instanceof HTMLElement)) throw new Error("Missing #captured-black");
   const capturedBlack = capturedBlackMaybe;
 
-  // CHESS.JS
+  // WEBSOCKET (aún no existe backend)
+  const socket = new WebSocket("ws://localhost:3000");
 
-  const game = new Chess();
+  socket.addEventListener("open", () => {
+    console.log("Conectado al servidor (aunque aún no exista)");
+  });
 
-  /** @type {Square | null} */
-  let selectedSquare = null;
+  socket.addEventListener("message", (event) => {
+    /** @type {ServerMessage} */
+    const msg = JSON.parse(event.data);
 
-  // HISTORIAL
+    switch (msg.type) {
+      case "state":
+        renderFullState(msg.payload);
+        break;
 
-  for (let i = 0; i < 60; i++) {
-    const row = document.createElement("tr");
-    row.innerHTML = `<td>${i + 1}</td><td></td><td></td>`;
-    moveBody.appendChild(row);
-  }
+      case "move":
+        applyMove(msg.payload);
+        break;
+
+      case "status":
+        statusEl.textContent = msg.payload;
+        break;
+    }
+  });
 
   // UTILIDADES
 
-  /**
-   * @param {{color:"w"|"b", type:"p"|"r"|"n"|"b"|"q"|"k"}} piece
-   * @returns {string}
-   */
-  function getPieceImage(piece) {
-    const color = piece.color === "w" ? "white" : "black";
-    const map = { p: "pawn", r: "rook", n: "horse", b: "bishop", q: "queen", k: "king" };
-    return `/pieces/${color[0]}_${map[piece.type]}.svg`;
+  function clearBoard() {
+    boardEl.querySelectorAll(".square").forEach((sq) => (sq.innerHTML = ""));
   }
 
   /**
-   * @param {Element | null} el
+   * @param {{ board: Array<Array<{color:string,type:string}|null>>, history: string[], capturedWhite: string[], capturedBlack: string[], status: string }} state
    */
-  function highlightSquare(el) {
-    const prev = boardEl.querySelector(".selected");
-    if (prev) prev.classList.remove("selected");
-    if (el instanceof HTMLElement) el.classList.add("selected");
-  }
+  function renderFullState(state) {
+    clearBoard();
 
-  function clearLegalMoves() {
-    boardEl.querySelectorAll(".legal-move").forEach((sq) => {
-      sq.classList.remove("legal-move");
-    });
-  }
-
-  /**
-   * @param {Square[]} targets
-   */
-  function highlightLegalMoves(targets) {
-    clearLegalMoves();
-    for (const sq of targets) {
-      const { row, col } = squareToCoord(sq);
-      const el = boardEl.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-      if (el instanceof HTMLElement) el.classList.add("legal-move");
-    }
-  }
-
-  /**
-   * @param {number} row
-   * @param {number} col
-   * @returns {Square}
-   */
-  function coordToSquare(row, col) {
-    return /** @type {Square} */ (
-      String.fromCharCode(97 + col) + (8 - row)
-    );
-  }
-
-  /**
-   * @param {Square} square
-   */
-  function squareToCoord(square) {
-    return {
-      row: 8 - Number(square[1]),
-      col: square.charCodeAt(0) - 97
-    };
-  }
-
-  // ESTADO DEL JUEGO
-
-  function updateGameStatus() {
-    if (game.isCheckmate()) {
-      const winner = game.turn() === "w" ? "negras" : "blancas";
-      statusEl.textContent = `Jaque mate: ganan las ${winner}`;
-      return;
-    }
-
-    if (game.isStalemate() || game.isDraw()) {
-      statusEl.textContent = "Tablas";
-      return;
-    }
-
-    if (game.inCheck()) {
-      const side = game.turn() === "w" ? "blancas" : "negras";
-      statusEl.textContent = `Jaque a las ${side}`;
-      return;
-    }
-
-    statusEl.textContent =
-      "Turno de las " + (game.turn() === "w" ? "blancas" : "negras");
-  }
-
-  function updateHistory() {
-    const history = game.history();
-    const rows = moveBody.querySelectorAll("tr");
-
-    for (let i = 0; i < rows.length; i++) {
-      const cells = rows[i].querySelectorAll("td");
-      if (cells.length < 3) continue;
-      cells[1].textContent = history[i * 2] ?? "";
-      cells[2].textContent = history[i * 2 + 1] ?? "";
-    }
-  }
-
-  /**
-   * @param {ChessMove} move
-   */
-  function registerCapture(move) {
-    if (!move.captured) return;
-
-    const capturedColor = move.color === "w" ? "black" : "white";
-    const container = capturedColor === "white" ? capturedWhite : capturedBlack;
-
-    const map = { p: "pawn", r: "rook", n: "horse", b: "bishop", q: "queen", k: "king" };
-    const img = document.createElement("img");
-    img.src = `/pieces/${capturedColor[0]}_${map[move.captured]}.svg`;
-    img.alt = "";
-    img.classList.add("w-8", "h-8");
-    container.appendChild(img);
-  }
-
-  // MOVIMIENTO SUAVE (solo actualiza 2 casillas)
-
-  /**
-   * @param {Square} from
-   * @param {Square} to
-   * @param {ChessMove} move
-   */
-  function updateSingleMove(from, to, move) {
-    const { row: fromRow, col: fromCol } = squareToCoord(from);
-    const { row: toRow, col: toCol } = squareToCoord(to);
-
-    const fromSq = boardEl.querySelector(`[data-row="${fromRow}"][data-col="${fromCol}"]`);
-    const toSq = boardEl.querySelector(`[data-row="${toRow}"][data-col="${toCol}"]`);
-
-    if (!(fromSq instanceof HTMLElement) || !(toSq instanceof HTMLElement)) return;
-
-    // limpiar origen
-    fromSq.innerHTML = "";
-
-    // poner pieza en destino
-    const piece = game.get(to);
-    if (piece) {
-      const img = document.createElement("img");
-      img.src = getPieceImage(piece);
-      img.alt = "";
-      img.className = "piece";
-      img.draggable = true;
-      enableDrag(img, toRow, toCol);
-      toSq.innerHTML = "";
-      toSq.appendChild(img);
-    }
-  }
-
-  // RENDER INICIAL DEL TABLERO
-
-  function renderBoard() {
-    const state = game.board();
-
+    // Pintar piezas
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
         const sq = boardEl.querySelector(`[data-row="${row}"][data-col="${col}"]`);
         if (!(sq instanceof HTMLElement)) continue;
 
-        sq.innerHTML = "";
-        const piece = state[row][col];
+        const piece = state.board[row][col];
+        if (!piece) continue;
 
-        if (piece) {
-          const img = document.createElement("img");
-          img.src = getPieceImage(piece);
-          img.alt = "";
-          img.className = "piece";
-          img.draggable = true;
+        const img = document.createElement("img");
+        img.src = `/pieces/${piece.color}_${piece.type}.svg`;
+        img.className = "piece";
+        img.draggable = true;
 
-          enableDrag(img, row, col);
-          sq.appendChild(img);
-        }
+        enableDrag(img, row, col);
+        sq.appendChild(img);
       }
     }
+
+    // Capturas
+    capturedWhite.innerHTML = "";
+    capturedBlack.innerHTML = "";
+
+    for (const p of state.capturedWhite) {
+      const img = document.createElement("img");
+      img.src = `/pieces/w_${p}.svg`;
+      img.classList.add("w-8", "h-8");
+      capturedWhite.appendChild(img);
+    }
+
+    for (const p of state.capturedBlack) {
+      const img = document.createElement("img");
+      img.src = `/pieces/b_${p}.svg`;
+      img.classList.add("w-8", "h-8");
+      capturedBlack.appendChild(img);
+    }
+
+    // Historial
+    const rows = moveBody.querySelectorAll("tr");
+    for (let i = 0; i < rows.length; i++) {
+      const cells = rows[i].querySelectorAll("td");
+      cells[1].textContent = state.history[i * 2] ?? "";
+      cells[2].textContent = state.history[i * 2 + 1] ?? "";
+    }
+
+    statusEl.textContent = state.status;
+  }
+
+  /**
+   * @param {ServerMove} move
+   */
+  function applyMove(move) {
+    const fromSq = squareToCoord(move.from);
+    const toSq = squareToCoord(move.to);
+
+    const fromEl = boardEl.querySelector(`[data-row="${fromSq.row}"][data-col="${fromSq.col}"]`);
+    const toEl = boardEl.querySelector(`[data-row="${toSq.row}"][data-col="${toSq.col}"]`);
+
+    if (!(fromEl instanceof HTMLElement) || !(toEl instanceof HTMLElement)) return;
+
+    const piece = fromEl.querySelector("img");
+    fromEl.innerHTML = "";
+    toEl.innerHTML = "";
+
+    if (piece) toEl.appendChild(piece);
   }
 
   // DRAG & DROP
@@ -225,91 +139,29 @@ window.addEventListener("load", () => {
   function enableDrag(img, row, col) {
     img.addEventListener("dragstart", (e) => {
       if (!e.dataTransfer) return;
-
-      /** @type {Square} */
-      const from = coordToSquare(row, col);
-      const piece = game.get(from);
-      if (!piece || piece.color !== game.turn()) {
-        e.preventDefault();
-        return;
-      }
-
-      e.dataTransfer.setData("text/plain", from);
-      selectedSquare = from;
-
-      const sqEl = boardEl.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-      highlightSquare(sqEl);
-
-      const moves = game.moves({ square: from, verbose: true });
-      highlightLegalMoves(moves.map((m) => m.to));
+      e.dataTransfer.setData("from", coordToSquare(row, col));
     });
   }
-
-  // CLICK PARA MOVER
 
   /**
    * @param {number} row
    * @param {number} col
    */
-  function handleSquareClick(row, col) {
-    const target = coordToSquare(row, col);
-    const pieceHere = game.get(target);
+  function coordToSquare(row, col) {
+    return String.fromCharCode(97 + col) + (8 - row);
+  }
 
-    // 1. Si NO hay pieza seleccionada
-    if (!selectedSquare) {
-      if (pieceHere && pieceHere.color === game.turn()) {
-        selectedSquare = target;
-
-        const sqEl = boardEl.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-        highlightSquare(sqEl);
-
-        const moves = game.moves({ square: target, verbose: true });
-        highlightLegalMoves(moves.map((m) => m.to));
-      }
-      return;
-    }
-
-    // 2. Si haces clic en otra pieza del mismo color → CAMBIAR SELECCIÓN
-    if (pieceHere && pieceHere.color === game.turn() && target !== selectedSquare) {
-      selectedSquare = target;
-
-      const sqEl = boardEl.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-      highlightSquare(sqEl);
-
-      const moves = game.moves({ square: target, verbose: true });
-      highlightLegalMoves(moves.map((m) => m.to));
-      return;
-    }
-
-    // 3. Si haces clic en la misma pieza → deseleccionar
-    if (target === selectedSquare) {
-      selectedSquare = null;
-      highlightSquare(null);
-      clearLegalMoves();
-      return;
-    }
-
-    // 4. Intentar mover
-    const move = game.move({
-      from: selectedSquare,
-      to: target,
-      promotion: "q"
-    });
-
-    if (!move) return;
-
-    registerCapture(move);
-    updateSingleMove(selectedSquare, target, move);
-    updateHistory();
-    updateGameStatus();
-
-    selectedSquare = null;
-    highlightSquare(null);
-    clearLegalMoves();
+  /**
+   * @param {string} square
+   */
+  function squareToCoord(square) {
+    return {
+      row: 8 - Number(square[1]),
+      col: square.charCodeAt(0) - 97
+    };
   }
 
   // CREAR CASILLAS
-
   for (let row = 0; row < 8; row++) {
     for (let col = 0; col < 8; col++) {
       const square = document.createElement("div");
@@ -320,58 +172,22 @@ window.addEventListener("load", () => {
       const isDark = (row + col) % 2 === 1;
       square.classList.add(isDark ? "dark" : "light");
 
-      square.addEventListener("click", () => handleSquareClick(row, col));
-
-      square.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        square.classList.add("hover-target");
-      });
-
-      square.addEventListener("dragleave", () => {
-        square.classList.remove("hover-target");
-      });
+      square.addEventListener("dragover", (e) => e.preventDefault());
 
       square.addEventListener("drop", (e) => {
         e.preventDefault();
-        square.classList.remove("hover-target");
-
         if (!e.dataTransfer) return;
 
-        /** @type {Square} */
-        const from = /** @type {Square} */ (
-          e.dataTransfer.getData("text/plain")
-        );
+        const from = e.dataTransfer.getData("from");
         const to = coordToSquare(row, col);
 
-        const piece = game.get(from);
-        if (!piece || piece.color !== game.turn()) return;
-
-        if (from === to) {
-          selectedSquare = null;
-          highlightSquare(null);
-          clearLegalMoves();
-          return;
-        }
-
-        const move = game.move({ from, to, promotion: "q" });
-        if (!move) return;
-
-        registerCapture(move);
-        updateSingleMove(from, to, move);
-        updateHistory();
-        updateGameStatus();
-
-        selectedSquare = null;
-        highlightSquare(null);
-        clearLegalMoves();
+        socket.send(JSON.stringify({
+          type: "move",
+          payload: { from, to }
+        }));
       });
 
       boardEl.appendChild(square);
     }
   }
-
-  // INICIO
-
-  renderBoard();
-  updateGameStatus();
 });
