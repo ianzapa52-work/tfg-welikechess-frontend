@@ -801,7 +801,6 @@ input:checked + .slider:before {
   letter-spacing: 0.5px;
 }
 
-
 /* BOTÓN MÁS ABAJO */
 .save-btn {
   align-self: center;
@@ -811,4 +810,39 @@ input:checked + .slider:before {
 .setting-btn:hover,
 .save-btn:hover {
   background: linear-gradient(135deg, #f5d67b, #ffe9a3);
+}
+
+.home-btn {
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* Brillo que pasa por encima */
+.home-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -130%;
+  width: 130%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 100%
+  );
+  transition: left 1.0s ease-out;
+}
+
+/* Movimiento del brillo */
+.home-btn:hover::before {
+  left: 130%;
+}
+
+/* Dorado sólido */
+.home-btn:hover {
+  background-color: #d4af37 !important; /* Oro sólido */
+  color: #000 !important;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.8);
 }
