@@ -27,6 +27,13 @@ window.addEventListener("load", () => {
   if (!(capturedBlackMaybe instanceof HTMLElement)) throw new Error("Missing #captured-black");
   const capturedBlack = capturedBlackMaybe;
 
+  // SONIDOS
+  const moveSound = new Audio("/sounds/move_sound.mp3");
+  moveSound.volume = 0.4;
+
+  const captureSound = new Audio("/sounds/capture_sound.mp3");
+  captureSound.volume = 0.45;
+
   // CHESS.JS
 
   const game = new Chess();
@@ -303,6 +310,14 @@ window.addEventListener("load", () => {
     updateHistory();
     updateGameStatus();
 
+    if (move.captured) {
+      captureSound.currentTime = 0;
+      captureSound.play();
+    } else {
+      moveSound.currentTime = 0;
+      moveSound.play();
+    }
+
     selectedSquare = null;
     highlightSquare(null);
     clearLegalMoves();
@@ -360,6 +375,14 @@ window.addEventListener("load", () => {
         updateSingleMove(from, to, move);
         updateHistory();
         updateGameStatus();
+
+        if (move.captured) {
+          captureSound.currentTime = 0;
+          captureSound.play();
+        } else {
+          moveSound.currentTime = 0;
+          moveSound.play();
+        }
 
         selectedSquare = null;
         highlightSquare(null);
