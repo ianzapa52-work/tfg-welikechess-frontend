@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Mostrar perfil
   userBox.classList.remove("hidden");
+  userBox.classList.add("grid");
 
   // Datos básicos
   document.querySelector("#profile-username").textContent = user.name ?? "Usuario";
