@@ -1,4 +1,5 @@
 // @ts-check
+
 import { Chess } from "chess.js";
 
 /** @typedef {import("chess.js").Square} Square */

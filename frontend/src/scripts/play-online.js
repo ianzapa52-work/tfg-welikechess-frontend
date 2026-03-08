@@ -1,4 +1,5 @@
 // @ts-check
+
 /** @typedef {{ from: string, to: string, promotion?: string }} ServerMove */
 /** @typedef {{ type: string, payload: any }} ServerMessage */
 

@@ -1,7 +1,16 @@
+// @ts-check
+
 document.addEventListener("DOMContentLoaded", () => {
+  /** @type {HTMLElement | null} */
   const king = document.querySelector("#homeKing");
+
+  /** @type {HTMLElement | null} */
   const card = document.querySelector("#homeCard");
+
+  /** @type {NodeListOf<HTMLElement>} */
   const buttons = document.querySelectorAll(".home-btn");
+
+  /** @type {HTMLElement | null} */
   const brand = document.querySelector("#brandTitle");
 
   if (!king || !card) return;
@@ -59,6 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Brillo suave al pasar el ratón
     brand.addEventListener("mouseenter", () => {
       brand.classList.add("text-yellow-500");
+
+      // brand es HTMLElement, así que sí tiene .style
       brand.style.textShadow = "0 0 8px rgba(212, 175, 55, 0.7)";
     });
 

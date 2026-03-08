@@ -1,3 +1,5 @@
+// @ts-check
+
 document.addEventListener("DOMContentLoaded", () => {
   const menuBtn = document.querySelector("#menuBtn");
   const sideMenu = document.querySelector("#sideMenu");
