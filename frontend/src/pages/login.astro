@@ -83,3 +83,29 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <script type="module" src="/src/scripts/login.js"></script>
 
 </BaseLayout>
+
+<style>
+  .login-card {
+    max-width: 420px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+
+  input {
+    transition: all 0.3s ease;
+  }
+
+  input:focus {
+    border-color: var(--color-gold) !important;
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+  }
+
+  /* El botón ya hereda las clases globales .home-btn, pero podemos darle un toque extra */
+  button[type="submit"] {
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'Cinzel', serif;
+  }
+</style>

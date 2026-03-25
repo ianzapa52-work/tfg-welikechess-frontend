@@ -1,0 +1,40 @@
+:root {
+  /* --- COLORES DE MARCA (DORADOS) --- */
+  --color-gold-dark: #8c6f2f;
+  --color-gold: #d4af37;
+  --color-gold-light: #f5d67b;
+  --color-gold-ultra: #ffe9a3;
+  
+  /* --- COLORES DE ESTADO --- */
+  --color-success: #9be15d;
+  --color-success-alt: #00e3ae;
+  --color-danger: #cd5c5c;
+  --color-danger-dark: #a83232;
+  --color-silver: #cfd2d6;
+  --color-bronze: #cd7f32;
+
+  /* --- MODO CLARO (POR DEFECTO) --- */
+  --bg-body: url("/backgrounds/marble-light.jpg");
+  --bg-panel: rgba(40, 40, 40, 0.55); /* Tus paneles con blur */
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --text-main: #1a1a1a;
+  --text-muted: #4a1f0f;
+  --border-panel: rgba(200, 200, 200, 0.25);
+  --nav-bg: #ffffff;
+  
+  /* --- HISTORIAL / MADERA --- */
+  --bg-history-start: #f4c9a3;
+  --bg-history-end: #e3a578;
+  --border-history: #8b3f2a;
+}
+
+/* --- MODO OSCURO --- */
+body.dark-mode {
+  --bg-body: url("/backgrounds/wood-dark.jpg");
+  --bg-panel: #141414;
+  --bg-card: rgba(25, 25, 25, 0.95);
+  --text-main: #f5f5f5;
+  --text-muted: #dcdcdc;
+  --border-panel: #d4af37;
+  --nav-bg: #141414;
+}

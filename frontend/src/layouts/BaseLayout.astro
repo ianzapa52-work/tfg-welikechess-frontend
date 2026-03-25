@@ -7,73 +7,72 @@ const { title = "WELIKECHESS" } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <link rel="icon" href="/w_king.svg" />
-
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
-
     <title>{title}</title>
   </head>
 
-  <!-- Sin colores fijos para permitir modo oscuro -->
   <body class="transition-colors duration-300">
 
-    <!-- NAVBAR -->
-    <nav class="fixed top-0 left-0 w-full h-16 bg-white shadow-md flex items-center px-4 z-50">
+    <nav class="fixed top-0 left-0 w-full h-20 bg-white/80 shadow-lg flex items-center px-8 z-50 backdrop-blur-md border-b border-gold/20">
 
-      <button id="menuBtn" class="text-3xl focus:outline-none cursor-pointer">
-        ☰
+      <button id="menuBtn" class="text-3xl focus:outline-none cursor-pointer hover:rotate-12 transition-transform">
+        <span class="hamburger-icon">☰</span>
       </button>
 
       <div class="flex-1 text-center">
-        <a href="/" class="inline-block">
+        <a href="/" class="inline-block group">
           <h1
             id="navBrand"
-            class="text-3xl md:text-4xl font-bold tracking-widest 
-                  bg-linear-to-r from-[#5a3e1b] via-[#7a5528] to-[#4a2f14]
-                  bg-clip-text text-transparent cursor-pointer transition-all duration-300"
-            style="font-family: 'Cinzel', serif;"
+            class="text-4xl md:text-5xl font-black tracking-[0.2em] 
+                   bg-gradient-to-b from-[#d4af37] via-[#f2d47e] to-[#996515]
+                   bg-clip-text text-transparent cursor-pointer 
+                   transition-all duration-500 transform group-hover:scale-105"
+            style="font-family: 'Cinzel', serif; filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.3));"
           >
             WELIKECHESS
           </h1>
+          <div class="h-[2px] w-0 group-hover:w-full bg-gradient-to-r from-transparent via-[#d4af37] to-transparent transition-all duration-500 opacity-50"></div>
         </a>
       </div>
 
     </nav>
 
     <div id="sideMenu"
-      class="fixed top-0 left-0 h-full w-64 bg-white shadow-xl transform -translate-x-full transition-transform duration-300 z-50">
+      class="fixed top-0 left-0 h-full w-72 bg-white shadow-2xl transform -translate-x-full transition-transform duration-500 z-50 border-r border-gold/30">
 
-      <div class="p-6">
-        <h2 class="text-4xl font-bold mb-6" style="font-family: 'Cinzel', serif;">
-          Menú
+      <div class="p-8 flex flex-col h-full">
+        <h2 class="text-4xl font-black mb-8 italic" style="font-family: 'Cinzel', serif; color: #d4af37;">
+          MENÚ
         </h2>
 
-        <ul class="flex flex-col gap-4 text-2xl" style="font-family: 'Cinzel', serif;">
-          <li><a href="/" class="menu-link">Home</a></li>
-          <li><a href="/play-online" class="menu-link">Jugar Online</a></li>
-          <li><a href="/play-ia" class="menu-link">Jugar VS IA</a></li>
-          <li><a href="/play-local" class="menu-link">Partida Local</a></li>
-          <li><a href="/puzzles" class="menu-link">Puzzles</a></li>
-          <li><a href="/ranking" class="menu-link">Ranking</a></li>
-          <li><a href="/friends" class="menu-link">Amigos</a></li>
-          <li><a href="/history" class="menu-link">Historial</a></li>
-          <li><a href="/profile" class="menu-link">Perfil</a></li>
+        <ul class="flex flex-col gap-5 text-xl overflow-y-auto flex-grow" style="font-family: 'Cinzel', serif;">
+          <li><a href="/" class="menu-link">HOME</a></li>
+          <li><a href="/play-online" class="menu-link">JUGAR ONLINE</a></li>
+          <li><a href="/play-ia" class="menu-link">JUGAR VS IA</a></li>
+          <li><a href="/play-local" class="menu-link">PARTIDA LOCAL</a></li>
+          <li><a href="/puzzles" class="menu-link">PUZZLES</a></li>
+          <li><a href="/ranking" class="menu-link">RANKING</a></li>
+          <li><a href="/friends" class="menu-link">AMIGOS</a></li>
+          <li><a href="/history" class="menu-link">HISTORIAL</a></li>
+          <li><a href="/profile" class="menu-link">PERFIL</a></li>
         </ul>
 
-        <a href="/settings"
-          class="settings-icon absolute bottom-8 left-4">
-          <img src="/assets/gear.png" class="w-20 h-20" alt="Settings" />
-        </a>
+        <div class="pt-8 mt-auto border-t border-gold/10">
+            <a href="/settings" class="settings-container group flex items-center gap-4">
+              <img src="/assets/gear.png" class="w-14 h-14 settings-icon" alt="Settings" />
+              <span class="font-bold tracking-widest text-[#d4af37] opacity-0 group-hover:opacity-100 transition-opacity" style="font-family: 'Cinzel', serif;">AJUSTES</span>
+            </a>
+        </div>
       </div>
     </div>
 
     <div id="menuOverlay"
-      class="fixed inset-0 bg-black/10 backdrop-blur-xs hidden z-40">
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden z-40">
     </div>
 
-    <main class="pt-20 max-w-7xl mx-auto">
+    <main class="pt-28 max-w-7xl mx-auto px-4">
       <slot />
     </main>
 
@@ -82,3 +81,69 @@ const { title = "WELIKECHESS" } = Astro.props;
 
   </body>
 </html>
+
+<style>
+  /* Estilo Premium para el Brand */
+  #navBrand {
+    text-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  /* NAVBAR ADAPTATIVA */
+  nav {
+    background-color: var(--bg-card);
+    transition: all 0.4s ease;
+  }
+
+  /* SIDE MENU EXCLUSIVO */
+  #sideMenu {
+    background: linear-gradient(180deg, var(--bg-panel) 0%, #0a0a0a 100%);
+  }
+
+  .menu-link {
+    position: relative;
+    padding-left: 0;
+    color: var(--text-main);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 1px;
+  }
+
+  .menu-link:hover {
+    color: #ffd700;
+    padding-left: 15px;
+  }
+
+  .menu-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: #d4af37;
+    transition: width 0.3s ease;
+  }
+
+  .menu-link:hover::after {
+    width: 100%;
+  }
+
+  /* Icono de Ajustes con rotación infinita suave al hover */
+  .settings-icon {
+    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
+    transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .settings-container:hover .settings-icon {
+    transform: rotate(180deg) scale(1.1);
+  }
+
+  /* DARK MODE OVERRIDES */
+  :global(body.dark) nav {
+    background-color: rgba(10, 10, 10, 0.85);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  }
+
+  :global(body.dark) #navBrand {
+    filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.5));
+  }
+</style>

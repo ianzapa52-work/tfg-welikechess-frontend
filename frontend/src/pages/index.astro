@@ -107,3 +107,91 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <script type="module" src="/src/scripts/index.js"></script>
 
 </BaseLayout>
+
+<style>
+  /* --- FUENTES ESPECÍFICAS --- */
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Marcellus&display=swap');
+
+  /* --- ANIMACIONES --- */
+  @keyframes king-bounce {
+    0%   { transform: translateY(0) rotate(0deg); }
+    30%  { transform: translateY(-12px) rotate(-6deg); }
+    60%  { transform: translateY(4px) rotate(4deg); }
+    100% { transform: translateY(0) rotate(0deg); }
+  }
+
+  /* --- ESTILOS DEL REY --- */
+  #homeKing {
+    transition: filter 0.3s ease, transform 0.3s ease;
+  }
+
+  #homeKing:hover {
+    filter: drop-shadow(0 0 10px var(--color-gold-light));
+    transform: scale(1.1);
+  }
+
+  /* Clase que dispara el JS */
+  .king-bounce {
+    animation: king-bounce 0.6s ease-out;
+  }
+
+  /* --- BRAND TITLE --- */
+  .royal-brand-home {
+    position: relative;
+    color: var(--color-gold);
+    transition: color 0.4s ease, text-shadow 0.4s ease;
+  }
+
+  .royal-brand-home::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -4px;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-gold-light), transparent);
+    transform: translateX(-50%);
+    transition: width 0.3s ease;
+  }
+
+  .royal-brand-home:hover::after {
+    width: 100%;
+  }
+
+  .royal-brand-home:hover {
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    color: var(--color-gold-light);
+  }
+
+  /* --- TARJETA PRINCIPAL (3D & REVEAL) --- */
+  #homeCard {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
+    /* Estas propiedades ayudan al efecto 3D del JS */
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    will-change: transform;
+  }
+
+  /* Estilo específico para los iconos dentro de la tarjeta */
+  #homeCard img {
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    transition: transform 0.3s ease;
+  }
+
+  #homeCard div:hover img {
+    transform: translateY(-5px) scale(1.1);
+  }
+
+  /* --- RESPONSIVE --- */
+  @media (max-width: 640px) {
+    #homeButtons {
+      width: 90%;
+    }
+    #homeCard {
+      width: 95%;
+      padding: 1.5rem;
+    }
+  }
+</style>

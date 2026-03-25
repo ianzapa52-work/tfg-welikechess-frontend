@@ -1,102 +1,95 @@
 // @ts-check
 
+/**
+ * @typedef {Object} Player
+ * @property {string} id
+ * @property {string} name
+ * @property {number} elo
+ * @property {number} wins
+ * @property {number} losses
+ * @property {number} games
+ * @property {string} country
+ * @property {string} avatar
+ * @property {string} level
+ */
+
 window.addEventListener("load", () => {
-  /** @type {HTMLElement | null} */
-  const containerEl = document.getElementById("ranking-container");
+  const container = document.getElementById("ranking-container");
+  const loading = document.getElementById("loadingRanking");
 
-  /** @type {HTMLElement | null} */
-  const loadingEl = document.getElementById("loadingRanking");
+  if (!container || !loading) return;
 
-  // Si faltan elementos → salir
-  if (!containerEl || !loadingEl) {
-    console.warn("Ranking: faltan elementos del DOM");
-    return;
-  }
-
-  // A partir de aquí, TypeScript SABE que no son null
-  /** @type {HTMLElement} */
-  const container = containerEl;
-
-  /** @type {HTMLElement} */
-  const loading = loadingEl;
-
-  /** @type {{name:string,avatar:string}|null} */
   const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-
-  /**
-   * @typedef {{
-   *  id: string,
-   *  name: string,
-   *  elo: number,
-   *  wins: number,
-   *  losses: number,
-   *  games: number,
-   *  country: string,
-   *  avatar: string,
-   *  level: "master" | "expert" | "rookie"
-   * }} Player
-   */
 
   /** @type {Player[]} */
   const dummyRanking = [
-    {
-      id: "1",
-      name: storedUser?.name || "Jugador",
-      elo: 1820,
-      wins: 120,
-      losses: 40,
-      games: 160,
-      country: "es",
-      avatar: storedUser?.avatar || "/avatars/w_king_avatar.png",
-      level: "master"
-    },
-    { id: "2", name: "Carlos", elo: 1750, wins: 98, losses: 55, games: 153, country: "mx", avatar: "/avatars/b_king_avatar.png", level: "expert" },
-    { id: "3", name: "Lucía", elo: 1690, wins: 80, losses: 60, games: 140, country: "ar", avatar: "/avatars/w_horse_avatar.png", level: "expert" },
-    { id: "4", name: "Marcos", elo: 1650, wins: 70, losses: 50, games: 120, country: "es", avatar: "/avatars/b_horse_avatar.png", level: "rookie" },
-    { id: "5", name: "Ana", elo: 1600, wins: 65, losses: 45, games: 110, country: "cl", avatar: "/avatars/b_bishop_avatar.png", level: "rookie" }
+    { id: "1", name: "ASPA", elo: 2150, wins: 145, losses: 20, games: 165, country: "es", avatar: storedUser?.avatar || "/avatars/w_king_avatar.png", level: "master" },
+    { id: "2", name: "CARLOS", elo: 1950, wins: 98, losses: 55, games: 153, country: "mx", avatar: "/avatars/b_king_avatar.png", level: "master" },
+    { id: "3", name: "LUCÍA", elo: 1890, wins: 80, losses: 60, games: 140, country: "ar", avatar: "/avatars/w_horse_avatar.png", level: "expert" },
+    { id: "4", name: "MARCOS", elo: 1650, wins: 70, losses: 50, games: 120, country: "es", avatar: "/avatars/b_horse_avatar.png", level: "expert" },
+    { id: "5", name: "ANA", elo: 1400, wins: 65, losses: 45, games: 110, country: "cl", avatar: "/avatars/b_bishop_avatar.png", level: "rookie" }
   ];
 
-  dummyRanking.sort((a, b) => b.elo - a.elo);
-
   /**
-   * @param {Player} player
-   * @param {number} index
+   * @param {Player} player 
+   * @param {number} index 
    */
   function renderPlayer(player, index) {
-    const winrate = Math.round((player.wins / player.games) * 100);
+    const a = document.createElement("a");
+    a.href = `/profile/${player.id}`;
+    a.className = "ranking-link";
+    
+    const isTop3 = index < 3;
+    const rankClass = isTop3 ? `rank-${index + 1}` : "";
+    
+    // Ajusta esta ruta según tu carpeta real: /assets/${player.country}.svg
+    const flagPath = `/assets/${player.country}.svg`;
+    const medalImages = ["gold_medal.png", "silver_medal.png", "bronze_medal.png"];
+    const medalHtml = isTop3 ? `<img src="/assets/${medalImages[index]}" class="rank-medal-img" alt="Medalla" />` : "";
 
-    const row = document.createElement("div");
-    row.className = "ranking-row";
-    row.style.animationDelay = `${index * 0.08}s`;
-
-    row.innerHTML = `
-      <div class="rank-left">
-        <img class="rank-flag" src="/flags/${player.country}.svg" />
-        <img class="rank-avatar" src="${player.avatar}" />
-        <div class="rank-info">
-          <span class="rank-position">${index + 1}</span>
-          <span class="rank-name">${player.name}</span>
-          <span class="rank-badge badge-${player.level}">${player.level.toUpperCase()}</span>
+    a.innerHTML = `
+      <div class="ranking-row ${rankClass}" style="animation-delay: ${index * 0.1}s">
+        <div class="rank-position-wrapper">
+          ${medalHtml}
+          <span class="rank-number">#${index + 1}</span>
         </div>
-      </div>
+        
+        <div class="rank-visuals">
+          <div class="avatar-container">
+            <img class="rank-avatar" src="${player.avatar}" alt="Avatar" />
+            <div class="flag-wrapper">
+              <img class="rank-flag" src="/flags/${player.country}.svg" alt="Flag" />
+            </div>
+          </div>
+        </div>
 
-      <div class="rank-right">
-        <span class="rank-medal"></span>
-        <p class="rank-elo">${player.elo} ELO</p>
-        <p class="rank-stats">${player.wins}W - ${player.losses}L (${player.games} partidas)</p>
-        <div class="rank-progress">
-          <div class="rank-progress-fill" style="width: ${winrate}%"></div>
+        <div class="rank-info">
+          <div class="flex items-center">
+            <span class="rank-name">${player.name}</span>
+            <span class="rank-tier">${player.level.toUpperCase()}</span>
+          </div>
+          <div class="rank-stats">
+            <span><strong>${player.wins}</strong>W</span>
+            <span>•</span>
+            <span><strong>${player.losses}</strong>L</span>
+            <span>•</span>
+            <span>${player.games} partidas</span>
+          </div>
+        </div>
+
+        <div class="rank-elo-box">
+          <span class="rank-elo-val">${player.elo}</span>
+          <span class="rank-elo-label">ELO</span>
         </div>
       </div>
     `;
-
-    return row;
+    return a;
   }
 
-  function loadRanking() {
+  setTimeout(() => {
     loading.style.display = "none";
-    dummyRanking.forEach((player, i) => container.appendChild(renderPlayer(player, i)));
-  }
-
-  loadRanking();
+    dummyRanking
+      .sort((a, b) => b.elo - a.elo)
+      .forEach((player, i) => container.appendChild(renderPlayer(player, i)));
+  }, 400);
 });
