@@ -1,14 +1,27 @@
 // @ts-check
 
 window.addEventListener("load", () => {
-  const container = document.getElementById("ranking-container");
-  const loading = document.getElementById("loadingRanking");
+  /** @type {HTMLElement | null} */
+  const containerEl = document.getElementById("ranking-container");
 
-  if (!(container instanceof HTMLElement)) throw new Error("Missing #ranking-container");
-  if (!(loading instanceof HTMLElement)) throw new Error("Missing #loadingRanking");
+  /** @type {HTMLElement | null} */
+  const loadingEl = document.getElementById("loadingRanking");
 
-  const safeContainer = container;
-  const safeLoading = loading;
+  // Si faltan elementos → salir
+  if (!containerEl || !loadingEl) {
+    console.warn("Ranking: faltan elementos del DOM");
+    return;
+  }
+
+  // A partir de aquí, TypeScript SABE que no son null
+  /** @type {HTMLElement} */
+  const container = containerEl;
+
+  /** @type {HTMLElement} */
+  const loading = loadingEl;
+
+  /** @type {{name:string,avatar:string}|null} */
+  const storedUser = JSON.parse(localStorage.getItem("user") || "null");
 
   /**
    * @typedef {{
@@ -26,7 +39,17 @@ window.addEventListener("load", () => {
 
   /** @type {Player[]} */
   const dummyRanking = [
-    { id: "1", name: "Ian", elo: 1820, wins: 120, losses: 40, games: 160, country: "es", avatar: "/avatars/w_king_avatar.png", level: "master" },
+    {
+      id: "1",
+      name: storedUser?.name || "Jugador",
+      elo: 1820,
+      wins: 120,
+      losses: 40,
+      games: 160,
+      country: "es",
+      avatar: storedUser?.avatar || "/avatars/w_king_avatar.png",
+      level: "master"
+    },
     { id: "2", name: "Carlos", elo: 1750, wins: 98, losses: 55, games: 153, country: "mx", avatar: "/avatars/b_king_avatar.png", level: "expert" },
     { id: "3", name: "Lucía", elo: 1690, wins: 80, losses: 60, games: 140, country: "ar", avatar: "/avatars/w_horse_avatar.png", level: "expert" },
     { id: "4", name: "Marcos", elo: 1650, wins: 70, losses: 50, games: 120, country: "es", avatar: "/avatars/b_horse_avatar.png", level: "rookie" },
@@ -36,7 +59,6 @@ window.addEventListener("load", () => {
   dummyRanking.sort((a, b) => b.elo - a.elo);
 
   /**
-   * Renderiza una fila del ranking
    * @param {Player} player
    * @param {number} index
    */
@@ -50,9 +72,7 @@ window.addEventListener("load", () => {
     row.innerHTML = `
       <div class="rank-left">
         <img class="rank-flag" src="/flags/${player.country}.svg" />
-
         <img class="rank-avatar" src="${player.avatar}" />
-
         <div class="rank-info">
           <span class="rank-position">${index + 1}</span>
           <span class="rank-name">${player.name}</span>
@@ -62,26 +82,20 @@ window.addEventListener("load", () => {
 
       <div class="rank-right">
         <span class="rank-medal"></span>
-
         <p class="rank-elo">${player.elo} ELO</p>
         <p class="rank-stats">${player.wins}W - ${player.losses}L (${player.games} partidas)</p>
-
         <div class="rank-progress">
           <div class="rank-progress-fill" style="width: ${winrate}%"></div>
         </div>
       </div>
     `;
 
-    row.addEventListener("click", () => {
-      alert("Abrir perfil de " + player.name);
-    });
-
     return row;
   }
 
   function loadRanking() {
-    safeLoading.style.display = "none";
-    dummyRanking.forEach((player, i) => safeContainer.appendChild(renderPlayer(player, i)));
+    loading.style.display = "none";
+    dummyRanking.forEach((player, i) => container.appendChild(renderPlayer(player, i)));
   }
 
   loadRanking();

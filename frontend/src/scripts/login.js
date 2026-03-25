@@ -1,84 +1,25 @@
 // @ts-check
 
 document.addEventListener("DOMContentLoaded", () => {
-  /** @type {HTMLElement | null} */
-  const kingIcon = document.querySelector("#kingIcon");
-
-  /** @type {HTMLElement | null} */
-  const loginCard = document.querySelector("#loginCard");
-
-  // --- EFECTO DORADO SOLO EN EL REY ---
-  if (kingIcon) {
-    kingIcon.addEventListener("mouseenter", () => {
-      kingIcon.classList.add("drop-shadow-[0_0_12px_gold]");
-    });
-
-    kingIcon.addEventListener("mouseleave", () => {
-      kingIcon.classList.remove("drop-shadow-[0_0_12px_gold]");
-    });
-
-    // --- SALTO DEL REY ---
-    kingIcon.addEventListener("click", () => {
-      kingIcon.classList.add("king-bounce");
-
-      setTimeout(() => {
-        kingIcon.classList.remove("king-bounce");
-      }, 600);
-    });
-  }
-
-  // --- EFECTO DORADO SOLO EN LA TARJETA ---
-  if (loginCard) {
-    loginCard.addEventListener("mouseenter", () => {
-      loginCard.classList.add("ring-2", "ring-yellow-400", "shadow-yellow-400");
-    });
-
-    loginCard.addEventListener("mouseleave", () => {
-      loginCard.classList.remove("ring-2", "ring-yellow-400", "shadow-yellow-400");
-    });
-  }
-
-  // --- VALIDACIÓN DEL FORMULARIO ---
-  /** @type {HTMLFormElement | null} */
   const form = document.querySelector("#loginForm");
+  const email = document.querySelector("#loginEmail");
+  const password = document.querySelector("#loginPassword");
 
-  /** @type {HTMLInputElement | null} */
-  const email = document.querySelector("#email");
-
-  /** @type {HTMLInputElement | null} */
-  const password = document.querySelector("#password");
-
-  /** @type {HTMLElement | null} */
-  const emailError = document.querySelector("#emailError");
-
-  /** @type {HTMLElement | null} */
-  const passwordError = document.querySelector("#passwordError");
-
-  if (!form || !email || !password || !emailError || !passwordError) {
-    console.warn("Faltan elementos del formulario en el DOM");
-    return;
-  }
+  // Si falta algo, no hacemos nada
+  if (!(form instanceof HTMLFormElement)) return;
+  if (!(email instanceof HTMLInputElement)) return;
+  if (!(password instanceof HTMLInputElement)) return;
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
-    let valid = true;
+    const user = {
+      name: email.value.split("@")[0],
+      email: email.value,
+      avatar: "/avatars/w_king_avatar.png"
+    };
 
-    if (!email.value.includes("@")) {
-      emailError.classList.remove("hidden");
-      valid = false;
-    } else {
-      emailError.classList.add("hidden");
-    }
-
-    if (password.value.trim() === "") {
-      passwordError.classList.remove("hidden");
-      valid = false;
-    } else {
-      passwordError.classList.add("hidden");
-    }
-
-    if (!valid) return;
+    localStorage.setItem("user", JSON.stringify(user));
 
     window.location.href = "/profile";
   });
