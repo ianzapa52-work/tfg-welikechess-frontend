@@ -15,21 +15,20 @@
 
   /* --- MODO CLARO (POR DEFECTO) --- */
   --bg-body: url("/backgrounds/marble-light.jpg");
-  --bg-panel: rgba(40, 40, 40, 0.55); /* Tus paneles con blur */
+  --bg-panel: rgba(40, 40, 40, 0.55); 
   --bg-card: rgba(255, 255, 255, 0.85);
   --text-main: #1a1a1a;
   --text-muted: #4a1f0f;
   --border-panel: rgba(200, 200, 200, 0.25);
   --nav-bg: #ffffff;
   
-  /* --- HISTORIAL / MADERA --- */
   --bg-history-start: #f4c9a3;
   --bg-history-end: #e3a578;
   --border-history: #8b3f2a;
 }
 
-/* --- MODO OSCURO --- */
-body.dark-mode {
+/* CAMBIO AQUÍ: Usamos :root para evitar el flashazo */
+:root.dark-mode {
   --bg-body: url("/backgrounds/wood-dark.jpg");
   --bg-panel: #141414;
   --bg-card: rgba(25, 25, 25, 0.95);

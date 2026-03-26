@@ -9,18 +9,23 @@ html, body {
   scroll-behavior: smooth;
 }
 
+/* Evita que el fondo del navegador sea blanco antes de cargar la imagen en modo oscuro */
+html.dark-mode { background-color: #141414; }
+html:not(.dark-mode) { background-color: #ffffff; }
+
 body {
   background: var(--bg-body) center/cover fixed no-repeat;
   color: var(--text-main);
+  /* Mantenemos tu transición suave */
   transition: background 0.5s ease, color 0.3s ease;
 }
 
-/* --- LAYOUT GLOBAL --- */
+/* --- TUS ESTILOS SIGUEN IGUAL ABAJO --- */
 main {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 64px); /* Ajusta según altura de tu nav */
+  min-height: calc(100vh - 64px);
 }
 
 .page-center {
@@ -31,7 +36,6 @@ main {
   width: 100%;
 }
 
-/* --- NAVEGACIÓN --- */
 nav {
   background: var(--nav-bg);
   border-bottom: 1px solid var(--color-gold);
@@ -60,7 +64,6 @@ nav {
   width: 100%;
 }
 
-/* --- COMPONENTES GLOBALES (BOTONES DORADOS) --- */
 .home-btn, .save-btn, .setting-btn {
   position: relative;
   overflow: hidden;
@@ -76,7 +79,6 @@ nav {
   justify-content: center;
 }
 
-/* Efecto de Brillo (Shine) que cruza el botón */
 .home-btn::before, .save-btn::before {
   content: "";
   position: absolute;
@@ -98,7 +100,6 @@ nav {
   filter: brightness(1.1);
 }
 
-/* --- UTILIDADES DE ANIMACIÓN --- */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(15px); }
   to { opacity: 1; transform: translateY(0); }
@@ -108,7 +109,6 @@ nav {
   animation: fadeUp 0.6s ease forwards;
 }
 
-/* Iconos con rotación */
 .settings-icon:hover {
   transform: rotate(360deg);
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);

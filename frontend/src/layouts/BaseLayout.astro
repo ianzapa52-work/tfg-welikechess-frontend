@@ -10,6 +10,18 @@ const { title = "WELIKECHESS" } = Astro.props;
     <link rel="icon" href="/w_king.svg" />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
+    <script is:inline>
+      (function() {
+        const savedTheme = localStorage.getItem("theme");
+        const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+        if (savedTheme === "dark" || (!savedTheme && systemPrefersDark)) {
+          document.documentElement.classList.add("dark-mode");
+        } else {
+          document.documentElement.classList.remove("dark-mode");
+        }
+      })();
+    </script>
     <title>{title}</title>
   </head>
 
@@ -61,7 +73,7 @@ const { title = "WELIKECHESS" } = Astro.props;
 
         <div class="pt-8 mt-auto border-t border-gold/10">
             <a href="/settings" class="settings-container group flex items-center gap-4">
-              <img src="/assets/gear.png" class="w-14 h-14 settings-icon" alt="Settings" />
+              <img src="/assets/gear.png" class="w-20 h-20 settings-icon" alt="Settings" />
               <span class="font-bold tracking-widest text-[#d4af37] opacity-0 group-hover:opacity-100 transition-opacity" style="font-family: 'Cinzel', serif;">AJUSTES</span>
             </a>
         </div>

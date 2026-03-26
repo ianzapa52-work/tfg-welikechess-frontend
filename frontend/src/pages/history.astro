@@ -17,8 +17,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
     <div id="history-container" class="history-panel">
       <div id="loadingHistory" class="flex flex-col items-center justify-center py-20 gap-4">
-        <div class="w-10 h-10 border-4 border-gold/20 border-t-gold rounded-full animate-spin"></div>
-        <p class="text-gold/60 text-lg italic tracking-widest uppercase animate-pulse">
+        <div class="w-10 h-10 border-4 border-[var(--color-gold)]/20 border-t-[var(--color-gold)] rounded-full animate-spin"></div>
+        <p class="text-[var(--color-gold)] opacity-60 text-lg italic tracking-widest uppercase animate-pulse">
           Recuperando registros...
         </p>
       </div>
@@ -33,42 +33,43 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 <style>
   .history-panel {
     width: 100%;
-    max-width: 700px; /* Un poco más ancho para mejor legibilidad */
+    max-width: 700px;
     min-height: 650px;
     margin: 0 auto;
     padding: 2.5rem;
     border-radius: 35px;
-    background: rgba(15, 15, 15, 0.95);
-    border: 2px solid rgba(212, 175, 55, 0.3);
-    box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+    background: var(--bg-panel);
+    border: 2px solid var(--border-panel);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.3);
     overflow-y: auto;
     backdrop-filter: blur(20px);
+    transition: background 0.4s ease, border-color 0.4s ease;
   }
 
-  /* Estilos para las tarjetas de historial inyectadas */
   :global(.history-card) {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-card);
     border-radius: 20px;
     padding: 1.5rem;
     margin-bottom: 1.2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid rgba(212, 175, 55, 0.1);
+    border: 1px solid var(--border-panel);
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     font-family: 'Cinzel', serif;
+    color: var(--text-main);
   }
 
   :global(.history-card:hover) {
     transform: scale(1.03) translateX(10px);
-    background: rgba(212, 175, 55, 0.1);
-    border-color: #d4af37;
+    background: var(--bg-panel);
+    border-color: var(--color-gold);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
   }
 
-  /* Scrollbar personalizada */
   .history-panel::-webkit-scrollbar { width: 8px; }
   .history-panel::-webkit-scrollbar-thumb {
-    background: #996515;
+    background: var(--color-gold-dark);
     border-radius: 10px;
   }
 </style>
