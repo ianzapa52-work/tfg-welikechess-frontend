@@ -8,18 +8,16 @@ const { title = "WELIKECHESS" } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/w_king.svg" />
+    
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
-    
+
     <script is:inline>
+      // Este se queda tal cual para evitar el destello blanco al cargar
       (function() {
         const savedTheme = localStorage.getItem("theme") || "dark";
         if (savedTheme === "dark") {
           document.documentElement.classList.add("dark-mode");
-          // También añadimos la clase 'dark' al body por si tus estilos dependen de ella
-          document.addEventListener('DOMContentLoaded', () => {
-            document.body.classList.add("dark");
-          });
         }
       })();
     </script>
@@ -30,7 +28,6 @@ const { title = "WELIKECHESS" } = Astro.props;
   <body class="transition-colors duration-300">
 
     <nav class="fixed top-0 left-0 w-full h-20 bg-white/80 shadow-lg flex items-center px-8 z-50 backdrop-blur-md border-b border-gold/20">
-
       <button id="menuBtn" class="text-3xl focus:outline-none cursor-pointer hover:rotate-12 transition-transform">
         <span class="hamburger-icon">☰</span>
       </button>
@@ -50,7 +47,6 @@ const { title = "WELIKECHESS" } = Astro.props;
           <div class="h-[2px] w-0 group-hover:w-full bg-gradient-to-r from-transparent via-[#d4af37] to-transparent transition-all duration-500 opacity-50"></div>
         </a>
       </div>
-
     </nav>
 
     <div id="sideMenu"
@@ -86,31 +82,47 @@ const { title = "WELIKECHESS" } = Astro.props;
       class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden z-40">
     </div>
 
-    <main class="pt-28 max-w-7xl mx-auto px-4">
+    <main class="pt-28 max-w-7xl mx-auto px-4 min-h-screen">
       <slot />
     </main>
 
     <script>
-      import "../scripts/theme.js";
-      import "../scripts/layout.js";
+      // Importamos la lógica de los scripts de forma que Astro los gestione
+      import "../scripts/theme.ts";
+      import "../scripts/layout.ts";
     </script>
 
   </body>
 </html>
 
-<style>
-  /* Estilo Premium para el Brand */
+<style is:global>
+  /* Estos estilos se aplican a toda la app */
+  :root {
+    --bg-card: #ffffff;
+    --bg-panel: #f8f8f8;
+    --text-main: #1a1a1a;
+  }
+
+  .dark-mode {
+    --bg-card: #0a0a0a;
+    --bg-panel: #141414;
+    --text-main: #e0e0e0;
+  }
+
+  body {
+    background-color: var(--bg-panel);
+    color: var(--text-main);
+  }
+
   #navBrand {
     text-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
   }
 
-  /* NAVBAR ADAPTATIVA */
   nav {
     background-color: var(--bg-card);
     transition: all 0.4s ease;
   }
 
-  /* SIDE MENU EXCLUSIVO */
   #sideMenu {
     background: linear-gradient(180deg, var(--bg-panel) 0%, #0a0a0a 100%);
   }
@@ -121,6 +133,7 @@ const { title = "WELIKECHESS" } = Astro.props;
     color: var(--text-main);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     letter-spacing: 1px;
+    display: block;
   }
 
   .menu-link:hover {
@@ -143,7 +156,6 @@ const { title = "WELIKECHESS" } = Astro.props;
     width: 100%;
   }
 
-  /* Icono de Ajustes con rotación infinita suave al hover */
   .settings-icon {
     filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
     transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -153,13 +165,14 @@ const { title = "WELIKECHESS" } = Astro.props;
     transform: rotate(180deg) scale(1.1);
   }
 
-  /* DARK MODE OVERRIDES - Aseguramos que funcionen con body.dark y html.dark-mode */
-  :global(body.dark) nav, :global(.dark-mode) nav {
+  /* Dark mode overrides específicos */
+  .dark-mode nav {
     background-color: rgba(10, 10, 10, 0.85);
     border-bottom: 1px solid rgba(212, 175, 55, 0.2);
   }
 
-  :global(body.dark) #navBrand, :global(.dark-mode) #navBrand {
-    filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.5));
+  /* Ajuste para el tablero si es necesario en modo oscuro */
+  .dark-mode .chessboard-63f59 {
+     filter: brightness(0.8) contrast(1.2);
   }
 </style>
