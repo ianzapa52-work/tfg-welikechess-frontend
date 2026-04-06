@@ -7,7 +7,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <div class="friends-wrapper">
 
     <h1
-      class="text-3xl sm:text-4xl md:text-6xl font-black mb-8 md:mb-12 text-center
+      class="text-6xl font-black mb-12 text-center
             bg-gradient-to-b from-[#d4af37] via-[#f2d47e] to-[#996515]
             bg-clip-text text-transparent drop-shadow-[0_2px_15px_rgba(212,175,55,0.4)]"
       style="font-family: 'Cinzel', serif;"
@@ -15,18 +15,22 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       AMIGOS
     </h1>
 
+    <!-- GRID DE 3 COLUMNAS -->
     <div class="friends-grid">
 
+      <!-- Conectados -->
       <section class="friends-section col-online">
         <h2>En línea</h2>
         <div id="friendsOnlineList"></div>
       </section>
 
+      <!-- Solicitudes -->
       <section class="friends-section col-requests">
         <h2>Solicitudes</h2>
         <div id="friendsRequestsList"></div>
       </section>
 
+      <!-- Todos -->
       <section class="friends-section col-all">
         <h2>Todos los amigos</h2>
         <div id="friendsAllList"></div>
@@ -43,65 +47,42 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 </BaseLayout>
 
 <style>
+  /* --- FUENTES --- */
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Marcellus&display=swap');
 
   .friends-wrapper {
     width: 100%;
-    padding: 1rem; /* Reducido para móviles */
+    padding: 2rem;
     min-height: 100vh;
   }
 
-  @media (min-width: 768px) {
-    .friends-wrapper {
-      padding: 2rem;
-    }
-  }
-
-  /* --- GRID RESPONSIVO --- */
+  /* --- GRID DE 3 COLUMNAS --- */
   .friends-grid {
     display: flex;
-    flex-direction: column; /* Columna por defecto para móvil */
     justify-content: center;
-    align-items: center;
-    gap: 1.5rem;
-    width: 100%; /* Ocupa todo el ancho en móvil */
-    margin: 1rem auto;
+    align-items: flex-start;
+    gap: 3rem;
+    width: max-content;
+    margin: 2rem auto;
   }
 
-  /* Desktop: Volvemos a las 3 columnas */
-  @media (min-width: 1250px) {
-    .friends-grid {
-      flex-direction: row;
-      align-items: flex-start;
-      gap: 2rem;
-      width: max-content;
-    }
-    .col-online { width: 360px; }
-    .col-requests { width: 420px; }
-    .col-all { width: 420px; }
-  }
+  /* Anchos específicos de tus paneles */
+  .col-online { width: 360px; }
+  .col-requests { width: 420px; }
+  .col-all { width: 420px; }
 
-  /* --- PANEL INDIVIDUAL --- */
+  /* --- PANEL INDIVIDUAL (SECCIÓN) --- */
   .friends-section {
     background: var(--bg-panel);
     border-radius: 18px;
     border: 2px solid var(--border-panel);
     backdrop-filter: blur(14px);
-    padding: 1.2rem;
+    padding: 1.8rem;
     box-shadow: 0 8px 25px rgba(0,0,0,0.3);
     font-family: 'Cinzel', serif;
-    width: 100%; /* Full width en móvil */
-    max-width: 500px; /* Pero no gigante */
-    height: 450px; /* Un poco más corto en móvil */
+    height: 650px;
     overflow-y: auto;
     transition: transform 0.3s ease, border-color 0.3s ease;
-  }
-
-  @media (min-width: 1250px) {
-    .friends-section {
-      padding: 1.8rem;
-      height: 650px;
-    }
   }
 
   .friends-section:hover {
@@ -109,52 +90,79 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     border-color: var(--color-gold);
   }
 
-  /* Scrollbar personalizada */
-  .friends-section::-webkit-scrollbar { width: 6px; }
+  /* --- SCROLLBAR DORADA --- */
+  .friends-section::-webkit-scrollbar { width: 10px; }
+  .friends-section::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
   .friends-section::-webkit-scrollbar-thumb {
-    background: #d4af37;
+    background: linear-gradient(var(--color-gold-dark), var(--color-gold));
     border-radius: 10px;
   }
 
   .friends-section h2 {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: var(--text-main);
-    margin-bottom: 1.2rem;
+    margin-bottom: 1.5rem;
     border-left: 4px solid var(--color-gold);
-    padding-left: 10px;
+    padding-left: 12px;
   }
 
-  /* --- TARJETA DE AMIGO (Global) --- */
+  /* --- TARJETA DE AMIGO (Generada por JS) --- */
+  /* Nota: Aunque se generen por JS, el CSS Scoped de Astro las detecta */
   :global(.friend-card) {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(212, 175, 55, 0.1);
-    border-radius: 12px;
-    padding: 0.8rem;
-    margin-bottom: 0.8rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1rem;
+    margin-bottom: 1rem;
     display: flex;
-    flex-wrap: wrap; /* Permite que los botones bajen si no hay espacio */
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
+    transition: all 0.2s ease;
+    animation: fadeUp 0.4s ease forwards;
   }
 
-  /* --- BOTONES --- */
+  :global(.friend-card:hover) {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.02);
+  }
+
+  /* --- BOTONES DE ACCIÓN --- */
   :global(.friend-btn) {
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 0.75rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
     font-weight: 700;
-    white-space: nowrap;
+    cursor: pointer;
+    transition: filter 0.2s;
   }
 
-  @media (max-width: 400px) {
-    :global(.friend-card) {
+  :global(.friend-btn.challenge) {
+    background: linear-gradient(135deg, var(--color-gold), var(--color-gold-light));
+    color: #000;
+  }
+
+  :global(.friend-btn.accept) {
+    background: linear-gradient(135deg, var(--color-success), var(--color-success-alt));
+    color: #000;
+  }
+
+  :global(.friend-btn.decline) {
+    background: linear-gradient(135deg, var(--color-danger), var(--color-danger-dark));
+    color: #fff;
+  }
+
+  :global(.friend-btn:hover) {
+    filter: brightness(1.2);
+  }
+
+  /* --- RESPONSIVE --- */
+  @media (max-width: 1250px) {
+    .friends-grid {
       flex-direction: column;
-      text-align: center;
-    }
-    :global(.friend-btn) {
+      align-items: center;
       width: 100%;
     }
+    .friends-section { width: 100% !important; max-width: 500px; height: 500px; }
   }
 </style>

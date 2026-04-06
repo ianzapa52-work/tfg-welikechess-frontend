@@ -7,17 +7,17 @@ import "../styles/chessboard.css";
   <div class="main-screen">
     <div class="game-wrapper">
       
-      <aside class="side-panel top-panel">
-        <div class="flex gap-3">
-          <div class="player-box ai-card flex-1">
-            <div class="player-header"><span>🎯 OBJETIVO</span></div>
-            <div id="puzzleObjective" class="status-text !text-yellow-500 font-bold">Cargando...</div>
-          </div>
-          
-          <div class="status-box flex-1 flex items-center justify-center">
-            <div id="puzzle-feedback" class="status-text font-black tracking-widest">TU TURNO</div>
-          </div>
+      <aside class="side-panel">
+        <div class="player-box ai-card">
+          <div class="player-header"><span>🎯 OBJETIVO</span></div>
+          <div id="puzzleObjective" class="status-text">Cargando...</div>
         </div>
+        
+        <div class="status-box">
+          <div id="puzzle-feedback" class="status-text font-bold">TU TURNO</div>
+        </div>
+
+        <button id="nextPuzzle" class="gold-btn">SIGUIENTE PUZZLE</button>
       </aside>
 
       <section class="board-container">
@@ -34,18 +34,15 @@ import "../styles/chessboard.css";
         </div>
       </section>
 
-      <aside class="side-panel bottom-panel">
-        <div class="flex flex-col sm:flex-row gap-4">
-          <div class="history-card flex-1">
-            <div class="history-header">PROGRESO</div>
-            <div class="stats-content flex items-center justify-between px-2">
-              <p class="text-[10px] uppercase tracking-widest text-zinc-500">Resueltos</p>
-              <span id="solved-count" class="gold-text">0</span>
+      <aside class="side-panel">
+        <div class="history-card">
+          <div class="history-header">PROGRESO</div>
+          <div class="stats-content">
+            <p class="mb-2">Resueltos: <span id="solved-count" class="gold-text">0</span></p>
+            <div id="already-done-badge" class="hidden-badge">
+              ✨ YA COMPLETADO
             </div>
-            <div id="already-done-badge" class="hidden-badge mt-2">✨ COMPLETADO</div>
           </div>
-
-          <button id="nextPuzzle" class="gold-btn flex-1 !py-4">SIGUIENTE PUZZLE</button>
         </div>
       </aside>
 
@@ -58,39 +55,57 @@ import "../styles/chessboard.css";
 </BaseLayout>
 
 <style is:global>
-  .main-screen { min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 15px 10px; }
-
-  .game-wrapper { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 600px; }
-
-  @media (min-width: 1200px) {
-    .game-wrapper { display: grid; grid-template-columns: 240px 600px 240px; gap: 40px; align-items: center; max-width: 1200px; }
+  .main-screen { min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding-top: 50px; }
+  .game-wrapper { display: grid; grid-template-columns: 240px 680px 240px; gap: 40px; align-items: start; }
+  .side-panel { display: flex; flex-direction: column; gap: 20px; }
+  
+  .player-box, .history-card, .status-box {
+    background: rgba(15, 15, 15, 0.95);
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    padding: 15px; border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
 
-  .board-frame { 
-    background: #1a1a1a; 
-    padding: 10px; 
-    border-radius: 6px; 
-    border: 3px solid #333; 
-    margin: 0 auto;
+  .status-text { color: #eee; text-align: center; font-family: 'Cinzel', serif; font-size: 0.85rem; }
+  .gold-text { color: #d4af37; font-weight: bold; font-size: 1.2rem; }
+  
+  .hidden-badge { 
+    display: none; 
+    background: rgba(212, 175, 55, 0.1); 
+    color: #d4af37; 
+    padding: 8px; 
+    border-radius: 4px; 
+    font-size: 0.7rem; 
+    text-align: center;
+    border: 1px dashed #d4af37;
   }
 
-  .compact-board { 
-    width: 82vw; 
-    height: 82vw; 
-    max-width: 500px; 
-    max-height: 500px; 
-    display: grid; 
-    grid-template-columns: repeat(8, 1fr); 
-    grid-template-rows: repeat(8, 1fr); /* CORRECCIÓN FILA PEQUEÑA */
-    aspect-ratio: 1/1;
-  }
+  .board-frame { background: #2c2c2c; padding: 20px; border-radius: 4px; border: 4px solid #3d3d3d; }
+  .compact-board { width: 600px; height: 600px; display: grid; grid-template-columns: repeat(8, 1fr); }
+  
+  .square { width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; position: relative; }
+  .square.light { background: #ebecd0; }
+  .square.dark { background: #779556; }
+  
+  /* Indicadores visuales */
+  .square.selected { background: rgba(212, 175, 55, 0.5) !important; }
+  .square.error-flash { background: rgba(248, 113, 113, 0.6) !important; transition: background 0.2s; }
 
+  .coords-h, .coords-v { color: #d4af37; font-weight: bold; font-size: 0.9rem; font-family: 'Cinzel'; }
+  .coords-h { display: flex; justify-content: space-around; padding-left: 25px; margin-bottom: 8px; }
+  .coords-v { display: flex; flex-direction: column; justify-content: space-around; width: 25px; }
   .board-flex { display: flex; }
 
-  .coords-h { display: grid; grid-template-columns: repeat(8, 1fr); margin-left: 20px; text-align: center; color: #d4af37; font-size: 0.7rem; margin-bottom: 4px; }
-  .coords-v { display: grid; grid-template-rows: repeat(8, 1fr); width: 20px; text-align: center; align-items: center; color: #d4af37; font-size: 0.7rem; }
-
-  .player-box, .history-card, .status-box { background: rgba(10, 10, 10, 0.9); border: 1px solid rgba(212, 175, 55, 0.3); padding: 12px; border-radius: 8px; }
-  .gold-text { color: #d4af37; font-weight: 900; font-size: 1.2rem; }
-  .gold-btn { background: #d4af37; border: none; color: black; font-family: 'Cinzel', serif; font-weight: bold; border-radius: 6px; cursor: pointer; }
+  .gold-btn {
+    background: transparent; border: 1px solid #d4af37; color: #d4af37;
+    padding: 12px; cursor: pointer; font-family: 'Cinzel'; transition: 0.3s; font-weight: bold;
+  }
+  .gold-btn:hover { background: #d4af37; color: black; }
+  
+  .piece { 
+    width: 70px; height: 70px; cursor: grab; z-index: 10;
+    transition: transform 0.1s ease;
+  }
+  .piece:active { cursor: grabbing; transform: scale(1.1); }
+  .piece.dragging { opacity: 0.4; }
 </style>
