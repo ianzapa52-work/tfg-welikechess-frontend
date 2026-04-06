@@ -4,10 +4,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 <BaseLayout title="WELIKECHESS - Ranking Global">
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-16">
+  <div class="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-16">
 
     <h1
-      class="text-4xl sm:text-6xl md:text-7xl font-black mb-8 md:mb-16 text-center
+      class="text-4xl md:text-7xl font-black mb-8 md:mb-16 text-center
              bg-gradient-to-b from-[#d4af37] via-[#f2d47e] to-[#996515]
              bg-clip-text text-transparent drop-shadow-[0_2px_15px_rgba(212,175,55,0.4)]"
       style="font-family: 'Cinzel', serif;"
@@ -16,7 +16,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     </h1>
 
     <div id="ranking-container" class="ranking-panel">
-      <div id="loadingRanking" class="flex flex-col items-center justify-center py-12 md:py-20 gap-4">
+      <div id="loadingRanking" class="flex flex-col items-center justify-center py-10 md:py-20 gap-4">
         <div class="w-10 h-10 md:w-12 md:h-12 border-4 border-yellow-600/20 border-t-yellow-500 rounded-full animate-spin"></div>
         <p class="text-gray-400 text-sm md:text-lg italic tracking-widest uppercase animate-pulse text-center">
           Cargando Maestros...
@@ -32,220 +32,227 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 </BaseLayout>
 
-<style is:global>
-  /* PANEL PRINCIPAL */
+<style>
+  /* --- PANEL PRINCIPAL --- */
   .ranking-panel {
-    background: rgba(10, 10, 10, 0.8);
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    border-radius: 20px;
-    padding: 1rem;
+    background: rgba(10, 10, 10, 0.9);
+    border: 2px solid rgba(212, 175, 55, 0.4);
+    border-radius: 24px; /* Más pequeño en general */
+    padding: 1rem;      /* Móvil por defecto */
     backdrop-filter: blur(20px);
-    max-width: 1100px;
+    max-width: 1150px;
     margin: 0 auto;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.9);
   }
 
   @media (min-width: 768px) {
-    .ranking-panel { border-radius: 40px; padding: 2.5rem; }
+    .ranking-panel {
+      border-radius: 40px;
+      padding: 3rem;
+    }
   }
 
-  .ranking-link {
+  /* --- FILAS DEL RANKING --- */
+  :global(.ranking-link) {
     text-decoration: none;
     display: block;
-    margin-bottom: 1rem;
-    animation: slideIn 0.5s ease-out forwards;
-  }
-
-  /* FILA DE RANKING */
-  .ranking-row {
-    display: grid;
-    grid-template-columns: 45px 55px 1fr auto;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(212, 175, 55, 0.15);
-    border-radius: 15px;
-    transition: all 0.3s ease;
+    margin-bottom: 0.75rem;
   }
 
   @media (min-width: 768px) {
-    .ranking-row {
-      grid-template-columns: 100px 100px 1fr 160px;
+    :global(.ranking-link) { margin-bottom: 1.5rem; }
+  }
+
+  :global(.ranking-row) {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;      /* Gap reducido para móvil */
+    padding: 0.75rem;   /* Padding reducido para móvil */
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 18px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  @media (min-width: 768px) {
+    :global(.ranking-row) {
       gap: 2.5rem;
-      padding: 1.5rem 2.5rem;
-      border-radius: 30px;
+      padding: 2rem 3rem;
+      border-radius: 35px;
     }
-    .ranking-link:hover .ranking-row {
-      transform: scale(1.01) translateX(10px);
-      background: rgba(212, 175, 55, 0.08);
+    :global(.ranking-link:hover .ranking-row) {
+      transform: scale(1.02) translateX(15px);
+      background: rgba(212, 175, 55, 0.12);
       border-color: #ffd700;
     }
   }
 
-  /* POSICIÓN Y MEDALLA */
-  .rank-position-wrapper {
+  /* --- POSICIÓN Y MEDALLAS --- */
+  :global(.rank-position-wrapper) {
+    min-width: 45px; /* Compacto en móvil */
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
   }
 
-  .rank-medal-img {
-    width: 35px;
+  @media (min-width: 768px) {
+    :global(.rank-position-wrapper) { min-width: 120px; }
+  }
+
+  :global(.rank-medal-img) {
+    width: 40px; 
     height: auto;
-    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
   }
 
-  .rank-number {
+  @media (min-width: 768px) {
+    :global(.rank-medal-img) { width: 85px; }
+  }
+
+  :global(.rank-number) {
     font-family: 'Cinzel', serif;
     font-weight: 900;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: #666;
+    margin-top: 2px;
   }
 
   @media (min-width: 768px) {
-    .rank-medal-img { width: 70px; }
-    .rank-number { font-size: 1.2rem; }
+    :global(.rank-number) { font-size: 1.4rem; margin-top: 5px; }
   }
 
-  /* AVATAR Y BANDERA */
-  .rank-visuals { 
+  /* --- AVATARES Y BANDERAS --- */
+  :global(.rank-visuals) {
     position: relative;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  :global(.rank-avatar) {
     width: 50px;
     height: 50px;
-  }
-
-  @media (min-width: 768px) {
-    .rank-visuals { width: 90px; height: 90px; }
-  }
-
-  .rank-avatar {
-    width: 100%;
-    height: 100%;
-    border-radius: 10px;
-    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.1);
     object-fit: cover;
   }
 
-  .flag-wrapper {
+  @media (min-width: 768px) {
+    :global(.rank-avatar) {
+      width: 100px;
+      height: 100px;
+      border-radius: 24px;
+      border-width: 3px;
+    }
+  }
+
+  :global(.flag-wrapper) {
     position: absolute;
-    bottom: -3px;
-    right: -3px;
-    width: 18px;
-    height: 12px;
-    border-radius: 2px;
-    border: 1px solid #000;
+    bottom: -2px;
+    right: -2px;
+    width: 20px;
+    height: 14px;
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    border-radius: 3px;
+    border: 1.5px solid #111;
+    background: #000;
   }
 
   @media (min-width: 768px) {
-    .rank-avatar { border-radius: 20px; border-width: 2px; }
-    .flag-wrapper { width: 30px; height: 20px; border-radius: 4px; bottom: -5px; right: -5px; }
+    :global(.flag-wrapper) {
+      width: 38px;
+      height: 26px;
+      border-radius: 6px;
+      border-width: 2.5px;
+    }
   }
 
-  /* INFO DEL JUGADOR */
-  .rank-info {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding-left: 5px;
+  /* --- AJUSTES TOP 1-2-3 MÓVIL --- */
+  @media (max-width: 767px) {
+    :global(.rank-1 .rank-avatar) { width: 65px; height: 65px; border-color: #ffd700; }
+    :global(.rank-1 .rank-medal-img) { width: 50px; }
+    :global(.rank-1 .rank-number) { color: #ffd700; font-size: 1.1rem; }
   }
 
-  .rank-name-container {
-    display: flex;
-    flex-direction: row; /* Fuerza fila */
-    align-items: center; 
-    flex-wrap: nowrap;   /* Evita que el badge baje */
-    gap: 15px;           /* Separación mínima entre texto y badge */
+  /* --- INFORMACIÓN --- */
+  :global(.rank-info) { 
+    flex-grow: 1; 
+    min-width: 0; /* Evita que el texto rompa el flex */
   }
 
-  .rank-name {
-    font-family: 'Cinzel', serif;
-    font-size: 1rem;
-    font-weight: 800;
-    color: #fff;
+  :global(.rank-name) { 
+    font-family: 'Cinzel', serif; 
+    font-size: 1.1rem; 
+    font-weight: 800; 
+    color: white;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* Si el nombre es gigante, se corta con puntos */
+    text-overflow: ellipsis;
   }
 
-  /* LA CAJITA DEL RANGO (BADGE) */
-  .rank-tier {
-    font-size: 0.55rem;
-    color: #d4af37;
-    text-transform: uppercase;
+  :global(.rank-tier) {
+    font-size: 0.6rem; 
+    padding: 2px 6px; 
+    border-radius: 4px;
+    background: rgba(212, 175, 55, 0.1); 
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: #d4af37; 
+    font-weight: 900; 
     letter-spacing: 1px;
-    font-weight: bold;
-    background: rgba(0, 0, 0, 0.5); 
-    border: 1px solid rgba(212, 175, 55, 0.5);
-    padding: 3px 10px;
-    border-radius: 6px;
-    white-space: nowrap;
-    flex-shrink: 0; /* Impide que el badge se encoja */
-  }
-
-  .rank-stats {
-    font-size: 0.65rem;
-    color: #777;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    display: inline-block;
+    margin-top: 2px;
   }
 
   @media (min-width: 768px) {
-    .rank-info { padding-left: 15px; }
-    .rank-name-container { gap: 25px; }
-    .rank-name { font-size: 1.8rem; }
-    .rank-tier { 
-      font-size: 0.75rem; 
-      padding: 5px 15px; 
+    :global(.rank-name) { font-size: 2.2rem; }
+    :global(.rank-tier) {
+      font-size: 0.8rem; padding: 4px 14px; border-radius: 8px;
+      margin-left: 15px; margin-top: 0; letter-spacing: 2px;
     }
-    .rank-stats { font-size: 0.85rem; }
+    :global(.rank-stats) { font-size: 1rem; margin-top: 8px; }
   }
 
-  /* ELO BOX */
-  .rank-elo-box {
+  :global(.rank-stats) { color: #888; font-size: 0.75rem; display: flex; gap: 8px; margin-top: 4px; }
+
+  /* --- CAJA DE ELO --- */
+  :global(.rank-elo-box) {
+    background: linear-gradient(135deg, #1a1a1a 0%, #050505 100%);
+    padding: 8px 12px; 
+    border-radius: 12px;
+    border: 1px solid rgba(212, 175, 55, 0.4); 
     text-align: center;
-    padding-left: 10px;
-    border-left: 1px solid rgba(212, 175, 55, 0.2);
-  }
-
-  .rank-elo-val {
-    font-family: 'Cinzel', serif;
-    color: #ffd700;
-    font-weight: 900;
-    font-size: 1.1rem;
-    display: block;
-  }
-
-  .rank-elo-label {
-    font-size: 0.5rem;
-    color: #555;
-    text-transform: uppercase;
+    min-width: 70px;
   }
 
   @media (min-width: 768px) {
-    .rank-elo-box { 
-      padding: 10px 20px;
-      border: 1px solid rgba(212, 175, 55, 0.2);
-      border-radius: 15px;
-      background: rgba(0,0,0,0.3);
-      min-width: 140px;
+    :global(.rank-elo-box) {
+      padding: 18px 35px; border-radius: 25px; min-width: 160px;
     }
-    .rank-elo-val { font-size: 2.2rem; }
-    .rank-elo-label { font-size: 0.7rem; }
   }
 
-  /* TOP 1 BRILLO */
-  .rank-1 {
-    background: linear-gradient(90deg, rgba(212, 175, 55, 0.05) 0%, rgba(255, 215, 0, 0.1) 50%, rgba(212, 175, 55, 0.05) 100%);
-    border-color: rgba(212, 175, 55, 0.5);
+  :global(.rank-elo-val) { 
+    display: block; 
+    color: #ffd700; 
+    font-weight: 900; 
+    font-size: 1.2rem; 
+    line-height: 1; 
+    font-family: 'Cinzel', serif; 
   }
 
+  :global(.rank-elo-label) { font-size: 0.5rem; color: #555; letter-spacing: 1px; margin-top: 2px; }
+
+  @media (min-width: 768px) {
+    :global(.rank-elo-val) { font-size: 2.6rem; }
+    :global(.rank-elo-label) { font-size: 0.75rem; letter-spacing: 3px; margin-top: 6px; }
+  }
+
+  /* Animación */
   @keyframes slideIn {
-    from { opacity: 0; transform: translateY(15px); }
+    from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  :global(.ranking-link) { animation: slideIn 0.5s ease-out forwards; }
 </style>
