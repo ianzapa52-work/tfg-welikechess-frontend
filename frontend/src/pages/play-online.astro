@@ -7,19 +7,13 @@ import "../styles/chessboard.css";
   <div class="main-screen">
     <div class="game-wrapper">
       
-      <aside class="side-panel">
-        <div class="player-box ai-card">
-          <div class="player-header"><span>👤 RIVAL</span></div>
+      <aside class="side-panel top-panel">
+        <div class="player-box opponent-card">
+          <div class="flex justify-between items-center mb-2">
+            <div class="player-header !mb-0"><span>👤 RIVAL</span></div>
+            <div id="game-status" class="status-badge">CONECTANDO...</div>
+          </div>
           <div id="captured-white" class="mini-captured"></div>
-        </div>
-        
-        <div class="status-box">
-          <div id="game-status">CONECTANDO...</div>
-        </div>
-
-        <div class="player-box user-card">
-          <div class="player-header"><span>♔ TÚ</span></div>
-          <div id="captured-black" class="mini-captured"></div>
         </div>
       </aside>
 
@@ -39,16 +33,22 @@ import "../styles/chessboard.css";
         </div>
       </section>
 
-      <aside class="side-panel">
-        <div class="history-card">
-          <div class="history-header">PARTIDA ONLINE</div>
+      <aside class="side-panel bottom-panel">
+        <div class="player-box user-card">
+          <div class="player-header"><span>♔ TÚ</span></div>
+          <div id="captured-black" class="mini-captured"></div>
+        </div>
+
+        <div class="history-card hidden md:block">
+          <div class="history-header">MOVIMIENTOS</div>
           <div class="history-scroll">
             <table>
               <tbody id="move-body"></tbody>
             </table>
           </div>
         </div>
-        <button id="resetBtn" class="gold-btn">ABANDONAR</button>
+        
+        <button id="resetBtn" class="gold-btn danger-btn">ABANDONAR</button>
       </aside>
 
     </div>
@@ -60,69 +60,84 @@ import "../styles/chessboard.css";
 </BaseLayout>
 
 <style is:global>
-  /* Base idéntica al Desafío IA */
   .main-screen {
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: flex-start; 
-    padding-top: 50px; 
+    padding: 10px;
     background: transparent;
   }
 
+  /* Layout dinámico */
   .game-wrapper {
-    display: grid;
-    grid-template-columns: 240px 680px 240px; 
-    gap: 40px;
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  @media (min-width: 1200px) {
+    .game-wrapper {
+      display: grid;
+      grid-template-columns: 240px 680px 240px; 
+      max-width: 1200px;
+      gap: 40px;
+      align-items: start;
+    }
+    .main-screen { padding-top: 50px; }
   }
 
   .side-panel {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 12px;
   }
 
   /* Estética Premium */
   .player-box, .history-card, .status-box {
     background: rgba(15, 15, 15, 0.95);
-    border: 1px solid rgba(212, 175, 55, 0.4);
-    padding: 15px;
-    border-radius: 4px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    padding: 12px;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
   }
 
-  .player-header, .history-header {
+  .player-header {
     font-family: 'Cinzel', serif;
     color: #d4af37;
-    text-align: center;
-    font-size: 0.85rem;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-    padding-bottom: 10px;
-    margin-bottom: 15px;
+    font-size: 0.8rem;
     letter-spacing: 1px;
   }
 
-  /* El Tablero: 600px para igualar los otros */
+  /* EL TABLERO RESPONSIVO */
   .board-frame {
-    background: #2c2c2c;
-    padding: 20px;
+    background: #1a1a1a;
+    padding: 8px;
     border-radius: 4px;
-    border: 4px solid #3d3d3d;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    border: 3px solid #333;
+    margin: 0 auto;
   }
 
   .compact-board {
-    width: 600px;
-    height: 600px;
+    width: 88vw; 
+    height: 88vw;
+    max-width: 600px;
+    max-height: 600px;
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
   }
 
+  @media (min-width: 768px) {
+    .board-frame { padding: 20px; border-width: 4px; }
+    .compact-board { width: 600px; height: 600px; }
+  }
+
   .square { 
-    width: 75px; 
-    height: 75px; 
+    width: 100%; 
+    height: 100%; 
     display: flex; 
     justify-content: center; 
     align-items: center; 
@@ -130,37 +145,49 @@ import "../styles/chessboard.css";
   
   .square.light { background: #ebecd0; }
   .square.dark { background: #779556; }
-  .square.selected { background: rgba(255, 255, 0, 0.5) !important; }
+  .square.selected { background: rgba(212, 175, 55, 0.5) !important; }
 
-  /* Coordenadas */
-  .coords-h { display: flex; justify-content: space-around; padding-left: 25px; margin-bottom: 8px; color: #d4af37; font-weight: bold; font-size: 0.9rem; }
-  .coords-v { display: flex; flex-direction: column; justify-content: space-around; width: 25px; color: #d4af37; font-weight: bold; font-size: 0.9rem; }
+  /* Coordenadas adaptadas */
+  .coords-h { display: flex; justify-content: space-around; padding-left: 18px; margin-bottom: 4px; color: #d4af37; font-size: 0.7rem; }
+  .coords-v { display: flex; flex-direction: column; justify-content: space-around; width: 18px; color: #d4af37; font-size: 0.7rem; }
   .board-flex { display: flex; }
 
-  #game-status { color: #d4af37; font-family: 'Cinzel'; text-align: center; font-size: 0.9rem; font-weight: bold; }
+  /* Estado y Botones */
+  .status-badge {
+    color: #d4af37;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 4px 8px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 4px;
+  }
   
-  .history-scroll { height: 300px; overflow-y: auto; font-size: 0.8rem; color: #eee; }
-  .history-scroll table { width: 100%; }
-  .history-scroll td { padding: 8px; border-bottom: 1px solid rgba(212,175,55,0.1); }
+  .history-scroll { height: 150px; overflow-y: auto; font-size: 0.8rem; color: #eee; }
 
   .gold-btn {
     background: transparent;
     border: 1px solid #d4af37;
     color: #d4af37;
-    padding: 12px;
+    padding: 10px;
     cursor: pointer;
     font-family: 'Cinzel';
-    transition: 0.3s;
+    font-size: 0.8rem;
     font-weight: bold;
+    transition: 0.3s;
   }
-  .gold-btn:hover { background: #d4af37; color: black; }
+
+  .danger-btn:hover {
+    background: #7f1d1d;
+    border-color: #ef4444;
+    color: white;
+  }
 
   .piece { 
-    width: 70px; 
-    height: 70px; 
-    cursor: grab; 
-    filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3)); 
+    width: 90%; 
+    height: 90%; 
+    filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.4)); 
   }
   
-  .mini-captured { display: flex; flex-wrap: wrap; gap: 4px; min-height: 20px; }
+  .mini-captured { display: flex; flex-wrap: wrap; gap: 2px; min-height: 15px; margin-top: 5px; }
 </style>

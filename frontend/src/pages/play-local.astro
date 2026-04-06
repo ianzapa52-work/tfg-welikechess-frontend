@@ -55,109 +55,132 @@ import "../styles/chessboard.css";
 
 <style is:global>
   .main-screen {
-    height: calc(100vh - 100px);
+    min-height: calc(100vh - 80px);
     display: flex;
     justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    background: transparent; /* Para que se vea tu fondo de madera */
+    align-items: flex-start; 
+    padding: 15px 10px;
+    overflow-x: hidden;
   }
 
+  /* LAYOUT: Columna en móvil, Grid en Desktop */
   .game-wrapper {
-    display: grid;
-    grid-template-columns: 220px 720px 240px;
-    gap: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
     align-items: center;
   }
 
-  .side-panel { display: flex; flex-direction: column; gap: 25px; }
+  @media (min-width: 1200px) {
+    .game-wrapper {
+      display: grid;
+      grid-template-columns: 220px 720px 240px;
+      gap: 40px;
+      align-items: center;
+      max-width: 1250px;
+    }
+    .main-screen { align-items: center; padding-top: 0; }
+  }
 
-  /* Estética de las cajas laterales */
+  .side-panel { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 500px; }
+
+  /* Estética Premium */
   .player-box, .history-card {
     background: rgba(0, 0, 0, 0.75);
     border: 1px solid rgba(212, 175, 55, 0.4);
     border-radius: 4px;
-    padding: 15px;
+    padding: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  /* Ajuste para que los jugadores salgan en fila en móvil si hay espacio */
+  .players {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .status-center { grid-column: span 2; }
+
+  @media (min-width: 1200px) {
+    .players { display: flex; grid-template-columns: none; }
   }
 
   .player-header, .history-header {
     font-family: 'Cinzel', serif;
     color: #d4af37;
-    font-size: 0.9rem;
-    letter-spacing: 1.5px;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
     border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-    padding-bottom: 8px;
-    margin-bottom: 10px;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
     text-align: center;
   }
 
-  /* EL TABLERO: El alma del juego */
+  /* EL TABLERO RESPONSIVO */
   .board-frame {
     background: rgba(0, 0, 0, 0.4);
-    padding: 20px;
+    padding: 10px;
     border-radius: 8px;
     border: 1px solid rgba(212, 175, 55, 0.2);
-    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    box-shadow: 0 0 40px rgba(0,0,0,0.8);
   }
 
   .compact-board {
-    width: 640px; /* Tamaño grande y divisible por 8 */
-    height: 640px;
+    width: 88vw; 
+    height: 88vw;
+    max-width: 640px;
+    max-height: 640px;
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
-    background: rgba(255,255,255,0.05);
+  }
+
+  @media (min-width: 768px) {
+    .board-frame { padding: 20px; }
+    .compact-board { width: 550px; height: 550px; }
+  }
+
+  @media (min-width: 1200px) {
+    .compact-board { width: 640px; height: 640px; }
   }
 
   .square {
-    width: 80px;
-    height: 80px;
+    width: 100%;
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
   }
 
-  /* Casillas semitransparentes para dejar ver la madera */
-  .square.light { background-color: rgba(255, 255, 255, 0.05); }
-  .square.dark { background-color: rgba(0, 0, 0, 0.3); }
-  .square.selected { background-color: rgba(212, 175, 55, 0.3) !important; }
-  .square.legal-move::after {
-    content: "";
-    width: 15px;
-    height: 15px;
-    background: rgba(212, 175, 55, 0.4);
-    border-radius: 50%;
-  }
-
   .piece {
-    width: 72px;
-    height: 72px;
+    width: 90%;
+    height: 90%;
     cursor: grab;
-    transition: transform 0.1s;
     filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
   }
-  .piece:active { cursor: grabbing; transform: scale(1.1); }
 
-  /* Coordenadas */
-  .coords-h { display: flex; justify-content: space-around; margin-left: 30px; color: #d4af37; font-family: 'Cinzel'; font-size: 0.8rem; opacity: 0.6; }
-  .coords-v { display: flex; flex-direction: column; justify-content: space-around; width: 30px; color: #d4af37; font-family: 'Cinzel'; font-size: 0.8rem; opacity: 0.6; }
+  /* Coordenadas adaptadas */
+  .coords-h { display: flex; justify-content: space-around; margin-left: 20px; color: #d4af37; font-size: 0.7rem; opacity: 0.6; }
+  .coords-v { display: flex; flex-direction: column; justify-content: space-around; width: 20px; color: #d4af37; font-size: 0.7rem; opacity: 0.6; }
   .board-flex { display: flex; }
 
-  /* Otros elementos */
+  /* Historial compacto en móvil */
+  .history-scroll { height: 100px; overflow-y: auto; color: #ccc; font-size: 0.8rem; }
+  
+  @media (min-width: 1200px) {
+    .history-scroll { height: 400px; }
+  }
+
   #game-status {
     background: rgba(0,0,0,0.8);
     border: 1px solid #d4af37;
     color: #d4af37;
-    padding: 15px;
+    padding: 10px;
     text-align: center;
     font-family: 'Cinzel', serif;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
-
-  .history-scroll { height: 400px; overflow-y: auto; color: #ccc; font-size: 0.85rem; }
-  .history-scroll table { width: 100%; border-collapse: collapse; }
-  .history-scroll td { padding: 8px; border-bottom: 1px solid rgba(212, 175, 55, 0.1); text-align: center; }
 
   .gold-btn {
     width: 100%;
@@ -167,17 +190,6 @@ import "../styles/chessboard.css";
     padding: 12px;
     font-family: 'Cinzel', serif;
     cursor: pointer;
-    transition: 0.3s;
-    letter-spacing: 1px;
-  }
-  .gold-btn:hover { background: #d4af37; color: black; }
-
-  .mini-captured { display: flex; flex-wrap: wrap; gap: 4px; padding: 5px; }
-
-  @media (max-height: 850px) {
-    .compact-board { width: 520px; height: 520px; }
-    .square { width: 65px; height: 65px; }
-    .piece { width: 55px; height: 55px; }
-    .game-wrapper { grid-template-columns: 180px 600px 180px; gap: 20px; }
+    font-size: 0.8rem;
   }
 </style>

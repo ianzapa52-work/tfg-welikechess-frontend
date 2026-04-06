@@ -4,39 +4,39 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 <BaseLayout title="WELIKECHESS - Home">
 
-  <div class="page-center">
+  <div class="page-center flex flex-col items-center px-4">
 
-    <div class="flex justify-center mb-3">
+    <div class="flex justify-center mb-3 mt-4">
       <img
         id="homeKing"
         src="/pieces/w_king.svg"
         alt="Logo"
-        class="w-12 opacity-90 drop-shadow cursor-pointer transition-all duration-300"
+        class="w-10 md:w-12 opacity-90 drop-shadow cursor-pointer transition-all duration-300"
       />
     </div>
 
     <h1
-      class="text-4xl font-bold text-center mb-2 dark:text-white"
+      class="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-2 dark:text-white leading-tight"
       style="font-family: 'Cinzel', serif;"
     >
       Bienvenido a
-      <span id="brandTitle" class="royal-brand-home cursor-pointer">
+      <span id="brandTitle" class="royal-brand-home cursor-pointer block sm:inline">
         WELIKECHESS
       </span>
     </h1>
 
     <p
-      class="text-gray-600 dark:text-gray-300 text-center text-lg mb-8 max-w-sm leading-relaxed"
+      class="text-gray-600 dark:text-gray-300 text-center text-base md:text-lg mb-8 max-w-sm leading-relaxed"
       style="font-family: 'Marcellus', serif;"
     >
       Domina el tablero, perfecciona tu estrategia y conviértete en tu mejor versión.
     </p>
 
-    <div id="homeButtons" class="flex flex-col gap-3 w-75">
+    <div id="homeButtons" class="flex flex-col gap-3 w-full max-w-[300px] md:max-w-[400px]">
 
       <a
         href="/play-online"
-        class="home-btn bg-blue-600 hover:bg-blue-700 text-white text-center py-3 rounded-lg font-semibold shadow transition-all duration-300"
+        class="home-btn bg-blue-600 hover:bg-blue-700 text-white text-center py-3 md:py-4 rounded-lg font-semibold shadow transition-all duration-300"
         style="font-family: 'Marcellus', serif;"
       >
         Jugar Online
@@ -44,7 +44,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
       <a
         href="/puzzles"
-        class="home-btn bg-green-600 hover:bg-green-700 text-white text-center py-3 rounded-lg font-semibold shadow transition-all duration-300"
+        class="home-btn bg-green-600 hover:bg-green-700 text-white text-center py-3 md:py-4 rounded-lg font-semibold shadow transition-all duration-300"
         style="font-family: 'Marcellus', serif;"
       >
         Resolver Puzzles
@@ -52,50 +52,49 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
       <a
         href="/profile"
-        class="home-btn bg-gray-800 hover:bg-black text-white text-center py-3 rounded-lg font-semibold shadow transition-all duration-300"
+        class="home-btn bg-gray-800 hover:bg-black text-white text-center py-3 md:py-4 rounded-lg font-semibold shadow transition-all duration-300"
         style="font-family: 'Marcellus', serif;"
       >
         Mi Perfil
       </a>
     </div>
 
-    <!-- TARJETA HOME -->
     <div
       id="homeCard"
-      class="mt-10 w-90 p-6 rounded-xl shadow-lg text-center transition-all duration-300
+      class="mt-10 w-full max-w-[450px] p-5 md:p-8 rounded-xl shadow-lg text-center transition-all duration-300
              bg-white text-black
              dark:bg-[rgba(25,25,25,0.85)]
              dark:border dark:border-[#d4af37]
              dark:text-white"
     >
 
-      <h2 class="text-3xl font-bold mb-4 dark:text-[#f5d67b]" style="font-family: 'Marcellus', serif;">
+      <h2 class="text-2xl md:text-3xl font-bold mb-4 dark:text-[#f5d67b]" style="font-family: 'Marcellus', serif;">
         ¿Qué encontrarás aquí?
       </h2>
 
-      <p class="text-gray-700 dark:text-gray-300 mb-6 text-base" style="font-family: 'Marcellus', serif;">
+      <p class="text-gray-700 dark:text-gray-300 mb-6 text-sm md:text-base" style="font-family: 'Marcellus', serif;">
         Una plataforma creada para jugadores que buscan mejorar cada día.
       </p>
 
-      <div class="grid grid-cols-2 gap-6 text-gray-700 dark:text-gray-200 text-base" style="font-family: 'Marcellus', serif;">
+      <div class="grid grid-cols-2 gap-4 md:gap-6 text-gray-700 dark:text-gray-200 text-xs md:text-base" style="font-family: 'Marcellus', serif;">
 
-        <div class="flex flex-col items-center">
-          <img src="/pieces/w_queen.svg" class="w-10 mb-2 opacity-80" />
+        <div class="flex flex-col items-center p-2 rounded-lg bg-black/5 dark:bg-white/5">
+          <img src="/pieces/w_queen.svg" class="w-8 md:w-10 mb-2 opacity-80" />
           <p class="text-center">Partidas Online</p>
         </div>
 
-        <div class="flex flex-col items-center">
-          <img src="/pieces/b_horse.svg" class="w-10 mb-2 opacity-80" />
+        <div class="flex flex-col items-center p-2 rounded-lg bg-black/5 dark:bg-white/5">
+          <img src="/pieces/b_horse.svg" class="w-8 md:w-10 mb-2 opacity-80" />
           <p class="text-center">IA Nivelada</p>
         </div>
 
-        <div class="flex flex-col items-center">
-          <img src="/pieces/w_bishop.svg" class="w-10 mb-2 opacity-80" />
+        <div class="flex flex-col items-center p-2 rounded-lg bg-black/5 dark:bg-white/5">
+          <img src="/pieces/w_bishop.svg" class="w-8 md:w-10 mb-2 opacity-80" />
           <p class="text-center">Puzzles Tácticos</p>
         </div>
 
-        <div class="flex flex-col items-center">
-          <img src="/pieces/b_king.svg" class="w-10 mb-2 opacity-80" />
+        <div class="flex flex-col items-center p-2 rounded-lg bg-black/5 dark:bg-white/5">
+          <img src="/pieces/b_king.svg" class="w-8 md:w-10 mb-2 opacity-80" />
           <p class="text-center">Progreso Personal</p>
         </div>
 
@@ -111,10 +110,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 </BaseLayout>
 
 <style>
-  /* --- FUENTES ESPECÍFICAS --- */
-  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Marcellus&display=swap');
-
-  /* --- ANIMACIONES --- */
+  /* Mantenemos tus animaciones y estilos core */
   @keyframes king-bounce {
     0%   { transform: translateY(0) rotate(0deg); }
     30%  { transform: translateY(-12px) rotate(-6deg); }
@@ -122,78 +118,55 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     100% { transform: translateY(0) rotate(0deg); }
   }
 
-  /* --- ESTILOS DEL REY --- */
-  #homeKing {
-    transition: filter 0.3s ease, transform 0.3s ease;
-  }
-
   #homeKing:hover {
-    filter: drop-shadow(0 0 10px var(--color-gold-light));
+    filter: drop-shadow(0 0 10px #d4af37);
     transform: scale(1.1);
   }
 
-  /* Clase que dispara el JS */
   .king-bounce {
     animation: king-bounce 0.6s ease-out;
   }
 
-  /* --- BRAND TITLE --- */
   .royal-brand-home {
     position: relative;
-    color: var(--color-gold);
+    color: #d4af37;
     transition: color 0.4s ease, text-shadow 0.4s ease;
   }
 
-  .royal-brand-home::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: -4px;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--color-gold-light), transparent);
-    transform: translateX(-50%);
-    transition: width 0.3s ease;
+  /* Solo mostramos la línea decorativa en pantallas donde quepa bien */
+  @media (min-width: 640px) {
+    .royal-brand-home::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -4px;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #f2d47e, transparent);
+      transform: translateX(-50%);
+      transition: width 0.3s ease;
+    }
+    .royal-brand-home:hover::after {
+      width: 100%;
+    }
   }
 
-  .royal-brand-home:hover::after {
-    width: 100%;
-  }
-
-  .royal-brand-home:hover {
-    text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
-    color: var(--color-gold-light);
-  }
-
-  /* --- TARJETA PRINCIPAL (3D & REVEAL) --- */
   #homeCard {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
     backdrop-filter: blur(10px);
-    /* Estas propiedades ayudan al efecto 3D del JS */
     transform-style: preserve-3d;
     backface-visibility: hidden;
     will-change: transform;
-  }
-
-  /* Estilo específico para los iconos dentro de la tarjeta */
-  #homeCard img {
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
-    transition: transform 0.3s ease;
   }
 
   #homeCard div:hover img {
     transform: translateY(-5px) scale(1.1);
   }
 
-  /* --- RESPONSIVE --- */
-  @media (max-width: 640px) {
-    #homeButtons {
-      width: 90%;
-    }
-    #homeCard {
-      width: 95%;
-      padding: 1.5rem;
-    }
+  /* Centrado vertical solo si hay espacio suficiente */
+  .page-center {
+    min-height: calc(100vh - 120px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 </style>

@@ -4,10 +4,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 <BaseLayout title="WELIKECHESS - Historial">
 
-  <div class="max-w-5xl mx-auto px-4 pt-20 pb-16">
+  <div class="max-w-5xl mx-auto px-4 pt-10 md:pt-20 pb-16">
 
     <h1
-      class="text-6xl font-black mb-12 text-center
+      class="text-3xl sm:text-4xl md:text-6xl font-black mb-8 md:mb-12 text-center
             bg-gradient-to-b from-[#d4af37] via-[#f2d47e] to-[#996515]
             bg-clip-text text-transparent drop-shadow-[0_2px_15px_rgba(212,175,55,0.4)]"
       style="font-family: 'Cinzel', serif;"
@@ -18,7 +18,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <div id="history-container" class="history-panel">
       <div id="loadingHistory" class="flex flex-col items-center justify-center py-20 gap-4">
         <div class="w-10 h-10 border-4 border-gold/20 border-t-gold rounded-full animate-spin"></div>
-        <p class="text-gold/60 text-lg italic tracking-widest uppercase animate-pulse">
+        <p class="text-gold/60 text-base md:text-lg italic tracking-widest uppercase animate-pulse text-center">
           Recuperando registros...
         </p>
       </div>
@@ -35,40 +35,65 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 <style>
   .history-panel {
     width: 100%;
-    max-width: 700px; /* Un poco más ancho para mejor legibilidad */
-    min-height: 650px;
+    max-width: 700px;
+    min-height: 400px; /* Reducido min-height en móvil */
     margin: 0 auto;
-    padding: 2.5rem;
-    border-radius: 35px;
+    padding: 1.5rem; /* Padding más pequeño en móvil */
+    border-radius: 25px; /* Bordes ligeramente más suaves en móvil */
     background: rgba(15, 15, 15, 0.95);
     border: 2px solid rgba(212, 175, 55, 0.3);
-    box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
     overflow-y: auto;
     backdrop-filter: blur(20px);
+  }
+
+  @media (min-width: 768px) {
+    .history-panel {
+      padding: 2.5rem;
+      border-radius: 35px;
+      min-height: 650px;
+    }
   }
 
   /* Estilos para las tarjetas de historial inyectadas */
   :global(.history-card) {
     background: rgba(255, 255, 255, 0.02);
-    border-radius: 20px;
-    padding: 1.5rem;
-    margin-bottom: 1.2rem;
+    border-radius: 15px;
+    padding: 1rem;
+    margin-bottom: 1rem;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column; /* Por defecto vertical en móvil */
+    gap: 0.5rem;
+    text-align: center;
     border: 1px solid rgba(212, 175, 55, 0.1);
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     font-family: 'Cinzel', serif;
   }
 
+  @media (min-width: 640px) {
+    :global(.history-card) {
+      flex-direction: row; /* Horizontal en tablets/PC */
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      text-align: left;
+    }
+  }
+
   :global(.history-card:hover) {
-    transform: scale(1.03) translateX(10px);
+    transform: scale(1.02);
     background: rgba(212, 175, 55, 0.1);
     border-color: #d4af37;
   }
 
+  @media (min-width: 768px) {
+    :global(.history-card:hover) {
+      transform: scale(1.03) translateX(10px);
+    }
+  }
+
   /* Scrollbar personalizada */
-  .history-panel::-webkit-scrollbar { width: 8px; }
+  .history-panel::-webkit-scrollbar { width: 6px; }
   .history-panel::-webkit-scrollbar-thumb {
     background: #996515;
     border-radius: 10px;

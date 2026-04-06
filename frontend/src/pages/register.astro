@@ -4,93 +4,91 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 <BaseLayout title="WELIKECHESS - Registro">
 
-  <div class="h-[calc(100vh-4rem)] flex flex-col items-center justify-center -translate-y-17.5">
+  <div class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center p-4 py-8">
 
-    <div class="flex justify-center mb-4">
+    <div class="flex justify-center mb-6">
       <img
         id="kingIcon"
         src="/pieces/w_king.svg"
         alt="Logo"
-        class="w-16 opacity-90 cursor-pointer transition-all duration-300"
+        class="w-12 md:w-16 opacity-90 cursor-pointer transition-all duration-300 hover:scale-110"
       />
     </div>
 
-    <!-- TARJETA REGISTRO -->
     <div
       id="registerCard"
-      class="register-card w-95 p-8 rounded-xl shadow-lg transition-all duration-300
+      class="register-card w-full max-w-[400px] p-6 md:p-8 rounded-2xl shadow-2xl transition-all duration-300
              bg-white text-black
-             dark:bg-[rgba(20,20,20,0.85)]
-             dark:border dark:border-[#d4af37]
+             dark:bg-[rgba(15,15,15,0.95)]
+             dark:border dark:border-[#d4af37]/50
              dark:text-white"
     >
 
-      <h1 class="text-3xl font-bold mb-6 text-center dark:text-white" style="font-family: 'Cinzel', serif;">
+      <h1 class="text-2xl md:text-3xl font-bold mb-6 text-center dark:text-white tracking-tight" style="font-family: 'Cinzel', serif;">
         Registro
       </h1>
 
-      <form id="registerForm" class="flex flex-col gap-4">
+      <form id="registerForm" class="flex flex-col gap-5">
 
-        <!-- Nombre -->
-        <div>
-          <label class="block mb-1 font-medium dark:text-white">Nombre</label>
+        <div class="space-y-1.5">
+          <label class="block text-xs md:text-sm font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Nombre de Usuario</label>
           <input
             id="registerUsername"
             type="text"
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 text-black
-                   focus:ring-2 focus:ring-green-500 focus:outline-none
-                   dark:bg-[rgba(255,255,255,0.08)]
-                   dark:border-[#d4af37]
-                   dark:text-white dark:placeholder-gray-300"
+            placeholder="Ej: Kasparov99"
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 text-black
+                   focus:ring-2 focus:ring-[#d4af37] focus:outline-none transition-all
+                   dark:bg-white/5
+                   dark:border-white/10
+                   dark:text-white dark:placeholder:text-zinc-600"
             required
           />
         </div>
 
-        <!-- Email -->
-        <div>
-          <label class="block mb-1 font-medium dark:text-white">Email</label>
+        <div class="space-y-1.5">
+          <label class="block text-xs md:text-sm font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Correo Electrónico</label>
           <input
             id="registerEmail"
             type="email"
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 text-black
-                   focus:ring-2 focus:ring-green-500 focus:outline-none
-                   dark:bg-[rgba(255,255,255,0.08)]
-                   dark:border-[#d4af37]
-                   dark:text-white dark:placeholder-gray-300"
+            placeholder="tu@email.com"
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 text-black
+                   focus:ring-2 focus:ring-[#d4af37] focus:outline-none transition-all
+                   dark:bg-white/5
+                   dark:border-white/10
+                   dark:text-white dark:placeholder:text-zinc-600"
             required
           />
         </div>
 
-        <!-- Contraseña -->
-        <div>
-          <label class="block mb-1 font-medium dark:text-white">Contraseña</label>
+        <div class="space-y-1.5">
+          <label class="block text-xs md:text-sm font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Contraseña</label>
           <input
             id="registerPassword"
             type="password"
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 text-black
-                   focus:ring-2 focus:ring-green-500 focus:outline-none
-                   dark:bg-[rgba(255,255,255,0.08)]
-                   dark:border-[#d4af37]
-                   dark:text-white dark:placeholder-gray-300"
+            placeholder="••••••••"
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 text-black
+                   focus:ring-2 focus:ring-[#d4af37] focus:outline-none transition-all
+                   dark:bg-white/5
+                   dark:border-white/10
+                   dark:text-white dark:placeholder:text-zinc-600"
             required
           />
         </div>
 
-        <!-- Botón -->
         <button
           type="submit"
-          class="w-full py-2 rounded-lg font-semibold transition cursor-pointer
-                 bg-green-600 hover:bg-green-700 text-white
-                 dark:bg-linear-to-br dark:from-[#d4af37] dark:to-[#f5d67b]
-                 dark:text-black"
+          class="w-full py-4 mt-2 rounded-xl font-black uppercase tracking-[0.2em] text-xs transition-all cursor-pointer
+                 bg-zinc-900 text-white hover:bg-black
+                 dark:bg-[#d4af37] dark:hover:bg-[#f5d67b] dark:text-black
+                 shadow-[0_10px_20px_rgba(0,0,0,0.2)] active:scale-95"
         >
           Crear cuenta
         </button>
       </form>
 
-      <p class="text-center text-sm text-gray-500 mt-4 dark:text-gray-300">
+      <p class="text-center text-xs md:text-sm text-gray-500 mt-6 dark:text-gray-400">
         ¿Ya tienes cuenta?
-        <a href="/login" class="text-green-600 hover:underline dark:text-[#f5d67b]">Inicia sesión</a>
+        <a href="/login" class="font-bold text-zinc-900 hover:underline dark:text-[#d4af37]">Inicia sesión</a>
       </p>
     </div>
   </div>
@@ -102,83 +100,22 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 </BaseLayout>
 
 <style>
-  .settings-wrapper { padding: 2rem; max-width: 1100px; margin: 0 auto; }
-  
-  .settings-panel {
-    background: var(--bg-panel);
-    border: 2px solid var(--border-panel);
-    border-radius: 20px;
-    padding: 2.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+  /* Animación de entrada suave */
+  .register-card {
+    animation: cardEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .settings-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2.5rem;
+  @keyframes cardEnter {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
-  .settings-section {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 15px;
-    padding: 1.5rem;
-    height: 100%;
+  /* Mejora visual para los inputs en modo oscuro al hacer autofill */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: white;
+    -webkit-box-shadow: 0 0 0px 1000px #1a1a1a inset;
+    transition: background-color 5000s ease-in-out 0s;
   }
-
-  .settings-section h2 {
-    color: var(--color-gold-light);
-    font-family: 'Cinzel', serif;
-    font-size: 1.2rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-    padding-bottom: 0.5rem;
-  }
-
-  .setting-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.2rem;
-    color: var(--text-main);
-  }
-
-  /* Inputs y Selects */
-  input[type="text"], input[type="email"], select {
-    background: var(--bg-card);
-    color: var(--text-main);
-    border: 1px solid var(--border-panel);
-    padding: 0.5rem;
-    border-radius: 8px;
-  }
-
-  /* Estilo del Switch (Toggle) */
-  .switch {
-    position: relative;
-    width: 50px;
-    height: 24px;
-  }
-  .switch input { opacity: 0; width: 0; height: 0; }
-  .slider {
-    position: absolute;
-    cursor: pointer;
-    inset: 0;
-    background: #444;
-    transition: .4s;
-    border-radius: 34px;
-  }
-  .slider:before {
-    position: absolute;
-    content: "";
-    height: 18px; width: 18px; left: 4px; bottom: 3px;
-    background: white;
-    transition: .4s;
-    border-radius: 50%;
-  }
-  input:checked + .slider { background: var(--color-gold); }
-  input:checked + .slider:before { transform: translateX(26px); }
-
-  @media (max-width: 850px) { .settings-grid { grid-template-columns: 1fr; } }
 </style>

@@ -13,7 +13,6 @@ const { title = "WELIKECHESS" } = Astro.props;
     <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
 
     <script is:inline>
-      // Este se queda tal cual para evitar el destello blanco al cargar
       (function() {
         const savedTheme = localStorage.getItem("theme") || "dark";
         if (savedTheme === "dark") {
@@ -27,8 +26,8 @@ const { title = "WELIKECHESS" } = Astro.props;
 
   <body class="transition-colors duration-300">
 
-    <nav class="fixed top-0 left-0 w-full h-20 bg-white/80 shadow-lg flex items-center px-8 z-50 backdrop-blur-md border-b border-gold/20">
-      <button id="menuBtn" class="text-3xl focus:outline-none cursor-pointer hover:rotate-12 transition-transform">
+    <nav class="fixed top-0 left-0 w-full h-16 md:h-20 bg-white/80 shadow-lg flex items-center px-4 md:px-8 z-50 backdrop-blur-md border-b border-gold/20">
+      <button id="menuBtn" class="text-2xl md:text-3xl focus:outline-none cursor-pointer hover:rotate-12 transition-transform z-50">
         <span class="hamburger-icon">☰</span>
       </button>
 
@@ -36,7 +35,7 @@ const { title = "WELIKECHESS" } = Astro.props;
         <a href="/" class="inline-block group">
           <h1
             id="navBrand"
-            class="text-4xl md:text-5xl font-black tracking-[0.2em] 
+            class="text-2xl sm:text-3xl md:text-5xl font-black tracking-[0.1em] md:tracking-[0.2em] 
                    bg-gradient-to-b from-[#d4af37] via-[#f2d47e] to-[#996515]
                    bg-clip-text text-transparent cursor-pointer 
                    transition-all duration-500 transform group-hover:scale-105"
@@ -50,14 +49,14 @@ const { title = "WELIKECHESS" } = Astro.props;
     </nav>
 
     <div id="sideMenu"
-      class="fixed top-0 left-0 h-full w-72 bg-white shadow-2xl transform -translate-x-full transition-transform duration-500 z-50 border-r border-gold/30">
+      class="fixed top-0 left-0 h-full w-full sm:w-72 bg-white shadow-2xl transform -translate-x-full transition-transform duration-500 z-50 border-r border-gold/30">
 
-      <div class="p-8 flex flex-col h-full">
-        <h2 class="text-4xl font-black mb-8 italic" style="font-family: 'Cinzel', serif; color: #d4af37;">
+      <div class="p-6 md:p-8 flex flex-col h-full">
+        <h2 class="text-3xl md:text-4xl font-black mb-6 md:mb-8 italic" style="font-family: 'Cinzel', serif; color: #d4af37;">
           MENÚ
         </h2>
 
-        <ul class="flex flex-col gap-5 text-xl overflow-y-auto flex-grow" style="font-family: 'Cinzel', serif;">
+        <ul class="flex flex-col gap-4 md:gap-5 text-lg md:text-xl overflow-y-auto flex-grow" style="font-family: 'Cinzel', serif;">
           <li><a href="/" class="menu-link">HOME</a></li>
           <li><a href="/play-online" class="menu-link">JUGAR ONLINE</a></li>
           <li><a href="/play-ia" class="menu-link">JUGAR VS IA</a></li>
@@ -69,10 +68,10 @@ const { title = "WELIKECHESS" } = Astro.props;
           <li><a href="/profile" class="menu-link">PERFIL</a></li>
         </ul>
 
-        <div class="pt-8 mt-auto border-t border-gold/10">
+        <div class="pt-6 mt-auto border-t border-gold/10">
             <a href="/settings" class="settings-container group flex items-center gap-4">
-              <img src="/assets/gear.png" class="w-14 h-14 settings-icon" alt="Settings" />
-              <span class="font-bold tracking-widest text-[#d4af37] opacity-0 group-hover:opacity-100 transition-opacity" style="font-family: 'Cinzel', serif;">AJUSTES</span>
+              <img src="/assets/gear.png" class="w-10 h-10 md:w-14 md:h-14 settings-icon" alt="Settings" />
+              <span class="font-bold tracking-widest text-[#d4af37] opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" style="font-family: 'Cinzel', serif;">AJUSTES</span>
             </a>
         </div>
       </div>
@@ -82,12 +81,11 @@ const { title = "WELIKECHESS" } = Astro.props;
       class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden z-40">
     </div>
 
-    <main class="pt-28 max-w-7xl mx-auto px-4 min-h-screen">
+    <main class="pt-20 md:pt-28 max-w-7xl mx-auto px-4 min-h-screen">
       <slot />
     </main>
 
     <script>
-      // Importamos la lógica de los scripts de forma que Astro los gestione
       import "../scripts/theme.ts";
       import "../scripts/layout.ts";
     </script>
@@ -96,7 +94,7 @@ const { title = "WELIKECHESS" } = Astro.props;
 </html>
 
 <style is:global>
-  /* Estos estilos se aplican a toda la app */
+  /* Se mantienen tus estilos base */
   :root {
     --bg-card: #ffffff;
     --bg-panel: #f8f8f8;
@@ -112,6 +110,8 @@ const { title = "WELIKECHESS" } = Astro.props;
   body {
     background-color: var(--bg-panel);
     color: var(--text-main);
+    /* Evita scroll horizontal accidental */
+    overflow-x: hidden;
   }
 
   #navBrand {
@@ -141,19 +141,21 @@ const { title = "WELIKECHESS" } = Astro.props;
     padding-left: 15px;
   }
 
-  .menu-link::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 0;
-    height: 1px;
-    background: #d4af37;
-    transition: width 0.3s ease;
-  }
-
-  .menu-link:hover::after {
-    width: 100%;
+  /* El subrayado solo en pantallas donde el hover tiene sentido */
+  @media (min-width: 768px) {
+    .menu-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: #d4af37;
+      transition: width 0.3s ease;
+    }
+    .menu-link:hover::after {
+      width: 100%;
+    }
   }
 
   .settings-icon {
@@ -165,14 +167,12 @@ const { title = "WELIKECHESS" } = Astro.props;
     transform: rotate(180deg) scale(1.1);
   }
 
-  /* Dark mode overrides específicos */
   .dark-mode nav {
     background-color: rgba(10, 10, 10, 0.85);
     border-bottom: 1px solid rgba(212, 175, 55, 0.2);
   }
 
-  /* Ajuste para el tablero si es necesario en modo oscuro */
   .dark-mode .chessboard-63f59 {
-     filter: brightness(0.8) contrast(1.2);
+      filter: brightness(0.8) contrast(1.2);
   }
 </style>

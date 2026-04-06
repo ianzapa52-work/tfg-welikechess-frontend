@@ -4,10 +4,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 <BaseLayout title="WELIKECHESS - Ranking Global">
 
-  <div class="max-w-7xl mx-auto px-6 py-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-16">
 
     <h1
-      class="text-6xl md:text-7xl font-black mb-16 text-center
+      class="text-4xl sm:text-6xl md:text-7xl font-black mb-8 md:mb-16 text-center
              bg-gradient-to-b from-[#d4af37] via-[#f2d47e] to-[#996515]
              bg-clip-text text-transparent drop-shadow-[0_2px_15px_rgba(212,175,55,0.4)]"
       style="font-family: 'Cinzel', serif;"
@@ -16,9 +16,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     </h1>
 
     <div id="ranking-container" class="ranking-panel">
-      <div id="loadingRanking" class="flex flex-col items-center justify-center py-20 gap-4">
-        <div class="w-12 h-12 border-4 border-yellow-600/20 border-t-yellow-500 rounded-full animate-spin"></div>
-        <p class="text-gray-400 text-lg italic tracking-widest uppercase animate-pulse">
+      <div id="loadingRanking" class="flex flex-col items-center justify-center py-12 md:py-20 gap-4">
+        <div class="w-10 h-10 md:w-12 md:h-12 border-4 border-yellow-600/20 border-t-yellow-500 rounded-full animate-spin"></div>
+        <p class="text-gray-400 text-sm md:text-lg italic tracking-widest uppercase animate-pulse text-center">
           Cargando Maestros...
         </p>
       </div>
@@ -32,152 +32,173 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 </BaseLayout>
 
-<style>
+<style is:global>
   .ranking-panel {
-    background: rgba(10, 10, 10, 0.9);
-    border: 2px solid rgba(212, 175, 55, 0.4);
-    border-radius: 40px;
-    padding: 3rem;
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 20px;
+    padding: 1rem;
     backdrop-filter: blur(20px);
     max-width: 1150px;
     margin: 0 auto;
-    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.9);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
   }
 
-  /* Enlace contenedor */
-  :global(.ranking-link) {
+  @media (min-width: 768px) {
+    .ranking-panel { border-radius: 40px; padding: 3rem; border-width: 2px; }
+  }
+
+  .ranking-link {
     text-decoration: none;
     display: block;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
   }
 
-  :global(.ranking-row) {
-    display: flex;
+  /* FILA DINÁMICA: Columna en móvil, Row en Desktop */
+  .ranking-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 2.5rem;
-    padding: 2rem 3rem;
-    background: rgba(255, 255, 255, 0.02);
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(212, 175, 55, 0.15);
-    border-radius: 35px;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    cursor: pointer;
+    border-radius: 15px;
+    transition: all 0.3s ease;
   }
 
-  :global(.ranking-link:hover .ranking-row) {
-    transform: scale(1.02) translateX(15px);
-    background: rgba(212, 175, 55, 0.12);
-    border-color: #ffd700;
+  @media (min-width: 768px) {
+    .ranking-row {
+      display: flex;
+      gap: 2.5rem;
+      padding: 2rem 3rem;
+      border-radius: 35px;
+    }
+    .ranking-link:hover .ranking-row {
+      transform: scale(1.02) translateX(10px);
+      background: rgba(212, 175, 55, 0.12);
+      border-color: #ffd700;
+    }
   }
 
-  /* --- POSICIÓN Y MEDALLAS --- */
-  :global(.rank-position-wrapper) {
-    min-width: 120px;
+  /* POSICIÓN */
+  .rank-position-wrapper {
+    min-width: 50px;
     display: flex;
     flex-direction: column;
     align-items: center;
   }
+  @media (min-width: 768px) { .rank-position-wrapper { min-width: 100px; } }
 
-  :global(.rank-medal-img) {
-    width: 85px; /* Medallas imponentes */
+  .rank-medal-img {
+    width: 40px;
     height: auto;
-    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.6));
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
   }
+  @media (min-width: 768px) { .rank-medal-img { width: 85px; } }
 
-  :global(.rank-number) {
+  .rank-number {
     font-family: 'Cinzel', serif;
     font-weight: 900;
-    font-size: 1.4rem;
-    color: #555;
-    margin-top: 5px;
+    font-size: 0.9rem;
+    color: #888;
   }
+  @media (min-width: 768px) { .rank-number { font-size: 1.4rem; } }
 
-  /* --- AVATARES Y BANDERAS (VERSION AGRANDADA) --- */
-  :global(.rank-visuals) {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
+  /* AVATAR Y BANDERA */
+  .rank-visuals { position: relative; }
 
-  :global(.rank-avatar) {
-    width: 100px;
-    height: 100px;
-    border-radius: 24px;
-    border: 3px solid rgba(255,255,255,0.1);
+  .rank-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
     object-fit: cover;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+  }
+  @media (min-width: 768px) { 
+    .rank-avatar { width: 90px; height: 90px; border-radius: 24px; border-width: 3px; } 
   }
 
-  /* Bandera: Más grande y prominente */
-  :global(.flag-wrapper) {
+  .flag-wrapper {
     position: absolute;
-    bottom: -2px; /* Un poco más hacia afuera para que resalte */
+    bottom: -2px;
     right: -2px;
-    width: 38px;  /* Aumentado de 28px */
-    height: 26px; /* Proporción ajustada */
+    width: 20px;
+    height: 14px;
     overflow: hidden;
-    border-radius: 6px;
-    border: 2.5px solid #111; /* Borde un poco más grueso para contraste */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.9);
+    border-radius: 3px;
+    border: 1.5px solid #111;
     background: #000;
   }
+  @media (min-width: 768px) { .flag-wrapper { width: 34px; height: 22px; border-radius: 6px; border-width: 2px; } }
 
-  :global(.rank-flag) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  .rank-flag { width: 100%; height: 100%; object-fit: cover; }
+
+  /* INFO DEL JUGADOR */
+  .rank-info { min-width: 0; } /* Permite truncado de texto */
+
+  .rank-name { 
+    font-family: 'Cinzel', serif; 
+    font-size: 1.1rem; 
+    font-weight: 800; 
+    color: white; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+  }
+  @media (min-width: 768px) { .rank-name { font-size: 2rem; overflow: visible; } }
+
+  .rank-tier {
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: #d4af37;
+    font-weight: 900;
+    letter-spacing: 1px;
+    display: inline-block;
+    margin-top: 4px;
+  }
+  @media (min-width: 768px) { .rank-tier { font-size: 0.75rem; padding: 4px 12px; margin-left: 15px; margin-top: 0; } }
+
+  .rank-stats { color: #666; font-size: 0.7rem; display: flex; gap: 8px; margin-top: 4px; }
+  @media (min-width: 768px) { .rank-stats { font-size: 0.9rem; gap: 12px; margin-top: 8px; } }
+
+  /* ELO BOX */
+  .rank-elo-box {
+    background: rgba(0,0,0,0.4);
+    padding: 10px 15px;
+    border-radius: 12px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    text-align: center;
+    min-width: 70px;
+  }
+  @media (min-width: 768px) { 
+    .rank-elo-box { padding: 18px 30px; border-radius: 20px; min-width: 140px; background: linear-gradient(135deg, #1a1a1a 0%, #050505 100%); } 
   }
 
-  /* Ajustes Top 1 */
-  :global(.rank-1 .rank-avatar) { 
-    width: 130px; 
-    height: 130px; 
-    border-color: #ffd700; 
-    border-width: 4px; 
-  }
-  
-  :global(.rank-1 .rank-medal-img) { 
-    width: 100px; 
-  }
-  
-  :global(.rank-1 .rank-number) { 
+  .rank-elo-val { 
     color: #ffd700; 
-    font-size: 2rem; 
+    font-weight: 900; 
+    font-size: 1.2rem; 
+    line-height: 1; 
+    font-family: 'Cinzel', serif; 
   }
+  @media (min-width: 768px) { .rank-elo-val { font-size: 2.2rem; } }
 
-  /* Ajustes Top 2 y 3 */
-  :global(.rank-2 .rank-avatar, .rank-3 .rank-avatar) { 
-    width: 115px; 
-    height: 115px; 
-  }
-  
-  :global(.rank-2 .flag-wrapper, .rank-3 .flag-wrapper) {
-    width: 40px;
-    height: 28px;
-  }
+  .rank-elo-label { font-size: 0.5rem; color: #555; letter-spacing: 1px; margin-top: 2px; text-transform: uppercase; }
+  @media (min-width: 768px) { .rank-elo-label { font-size: 0.7rem; letter-spacing: 2px; } }
 
-  /* --- INFORMACIÓN --- */
-  :global(.rank-info) { flex-grow: 1; }
-  :global(.rank-name) { font-family: 'Cinzel', serif; font-size: 2.2rem; font-weight: 800; color: white; }
-  :global(.rank-tier) {
-    font-size: 0.8rem; padding: 4px 14px; border-radius: 8px;
-    background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3);
-    color: #d4af37; font-weight: 900; letter-spacing: 2px;
-    margin-left: 15px;
+  /* AJUSTES ESPECIALES TOP 1 (Móvil) */
+  @media (max-width: 767px) {
+    .rank-1 { border-color: rgba(255, 215, 0, 0.4); background: rgba(255, 215, 0, 0.05); }
+    .rank-1 .rank-avatar { border-color: #ffd700; }
   }
-  :global(.rank-stats) { color: #888; font-size: 1rem; display: flex; gap: 12px; margin-top: 8px; }
-
-  /* --- CAJA DE ELO --- */
-  :global(.rank-elo-box) {
-    background: linear-gradient(135deg, #1a1a1a 0%, #050505 100%);
-    padding: 18px 35px; border-radius: 25px;
-    border: 1px solid rgba(212, 175, 55, 0.4); text-align: center; min-width: 160px;
-  }
-  :global(.rank-elo-val) { display: block; color: #ffd700; font-weight: 900; font-size: 2.6rem; line-height: 1; font-family: 'Cinzel', serif; }
-  :global(.rank-elo-label) { font-size: 0.75rem; color: #555; letter-spacing: 3px; margin-top: 6px; }
 
   @keyframes slideIn {
-    from { opacity: 0; transform: translateY(30px); }
+    from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  :global(.ranking-link) { animation: slideIn 0.6s ease-out forwards; }
+  .ranking-link { animation: slideIn 0.5s ease-out forwards; }
 </style>

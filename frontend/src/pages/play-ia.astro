@@ -7,19 +7,18 @@ import "../styles/chessboard.css";
   <div class="main-screen">
     <div class="game-wrapper">
       
-      <aside class="side-panel">
+      <aside class="side-panel top-panel">
         <div class="player-box ai-card">
           <div class="player-header"><span>🤖 EINSTEIN (IA)</span></div>
-          <select id="ai-level" class="gold-select">
-            <option value="1">NIVEL: APRENDIZ</option>
-            <option value="5" selected>NIVEL: MAESTRO</option>
-            <option value="15">NIVEL: DEMONIO</option>
-          </select>
+          <div class="controls-row">
+            <select id="ai-level" class="gold-select">
+              <option value="1">NIVEL: APRENDIZ</option>
+              <option value="5" selected>NIVEL: MAESTRO</option>
+              <option value="15">NIVEL: DEMONIO</option>
+            </select>
+            <div id="game-status" class="mobile-status">TU TURNO</div>
+          </div>
           <div id="captured-white" class="mini-captured"></div>
-        </div>
-        
-        <div class="status-box">
-          <div id="game-status">TU TURNO</div>
         </div>
       </aside>
 
@@ -39,21 +38,24 @@ import "../styles/chessboard.css";
         </div>
       </section>
 
-      <aside class="side-panel">
-        <div class="player-box user-card">
-          <div class="player-header"><span>♔ TÚ (BLANCAS)</span></div>
-          <div id="captured-black" class="mini-captured"></div>
+      <aside class="side-panel bottom-panel">
+        <div class="user-row">
+          <div class="player-box user-card flex-1">
+            <div class="player-header"><span>♔ TÚ (BLANCAS)</span></div>
+            <div id="captured-black" class="mini-captured"></div>
+          </div>
+          
+          <button id="resetBtn" class="gold-btn mobile-reset">REINICIAR</button>
         </div>
 
         <div class="history-card">
           <div class="history-header">HISTORIAL</div>
           <div class="history-scroll">
-            <table>
+            <table class="w-full">
               <tbody id="move-body"></tbody>
             </table>
           </div>
         </div>
-        <button id="resetBtn" class="gold-btn">REINICIAR</button>
       </aside>
 
     </div>
@@ -69,116 +71,127 @@ import "../styles/chessboard.css";
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    /* Cambiado de center a flex-start + padding para subirlo */
     align-items: flex-start; 
-    padding-top: 50px; 
+    padding: 20px 10px; /* Padding reducido para ganar espacio */
   }
 
+  /* LAYOUT RESPONSIVO: De 1 columna a 3 columnas */
   .game-wrapper {
-    display: grid;
-    grid-template-columns: 240px 680px 240px; 
-    gap: 40px;
-    align-items: start; /* Alinea los paneles laterales arriba también */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 600px; /* En móvil no queremos que exceda el tablero */
+    gap: 15px;
+  }
+
+  @media (min-width: 1200px) {
+    .game-wrapper {
+      display: grid;
+      grid-template-columns: 240px 680px 240px; 
+      max-width: 1200px;
+      gap: 40px;
+      align-items: start;
+    }
   }
 
   .side-panel {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
   }
 
-  /* Estética Premium */
+  /* Ajustes para compactar la UI en móviles */
+  .controls-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 5px;
+  }
+
+  .user-row {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+  }
+
   .player-box, .history-card, .status-box {
     background: rgba(15, 15, 15, 0.95);
     border: 1px solid rgba(212, 175, 55, 0.4);
-    padding: 15px;
+    padding: 12px;
     border-radius: 4px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
 
-  .player-header, .history-header {
-    font-family: 'Cinzel', serif;
-    color: #d4af37;
-    text-align: center;
-    font-size: 0.85rem;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-    letter-spacing: 1px;
-  }
-
-  /* El Tablero: Colores Clásicos */
+  /* EL TABLERO RESPONSIVO */
   .board-frame {
-    background: #2c2c2c; /* Marco sólido */
-    padding: 20px;
+    background: #2c2c2c;
+    padding: 10px; /* Padding reducido en móvil */
     border-radius: 4px;
     border: 4px solid #3d3d3d;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    margin: 0 auto;
+    width: fit-content;
   }
 
+  /* Tamaño dinámico basado en el ancho de pantalla */
   .compact-board {
-    width: 600px;
-    height: 600px;
+    width: 85vw; /* Casi todo el ancho del móvil */
+    height: 85vw;
+    max-width: 600px;
+    max-height: 600px;
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
   }
 
-  /* Colores de tablero tipo Lichess/Chess.com */
+  @media (min-width: 768px) {
+    .board-frame { padding: 20px; }
+    .compact-board { width: 600px; height: 600px; }
+  }
+
+  /* Las piezas deben escalar con el tablero */
   .square { 
-    width: 75px; 
-    height: 75px; 
+    width: 100%; 
+    height: 100%; 
     display: flex; 
     justify-content: center; 
     align-items: center; 
   }
   
-  .square.light { 
-    background: #ebecd0; /* Crema claro */
+  .piece { 
+    width: 90%; 
+    height: 90%; 
+    cursor: grab; 
+    filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3)); 
   }
+
+  /* Coordenadas */
+  .coords-h { display: flex; justify-content: space-around; padding-left: 20px; margin-bottom: 4px; color: #d4af37; font-size: 0.75rem; }
+  .coords-v { display: flex; flex-direction: column; justify-content: space-around; width: 20px; color: #d4af37; font-size: 0.75rem; }
   
-  .square.dark { 
-    background: #779556; /* Verde mate clásico */
+  /* Ajustes de Historial para móvil */
+  .history-scroll { 
+    height: 120px; /* Más bajo en móvil para no empujar todo abajo */
+    overflow-y: auto; 
+    font-size: 0.8rem; 
   }
 
-  .square.selected { 
-    background: rgba(255, 255, 0, 0.5) !important; /* Resaltado amarillo clásico */
+  @media (min-width: 1200px) {
+    .history-scroll { height: 300px; }
+    .mobile-reset { width: 100%; }
   }
-
-  /* Coordenadas - Ahora en blanco/oro para que resalten sobre el nuevo marco */
-  .coords-h { display: flex; justify-content: space-around; padding-left: 25px; margin-bottom: 8px; color: #d4af37; font-weight: bold; font-size: 0.9rem; }
-  .coords-v { display: flex; flex-direction: column; justify-content: space-around; width: 25px; color: #d4af37; font-weight: bold; font-size: 0.9rem; }
-  .board-flex { display: flex; }
-
-  /* UI de control */
-  .gold-select {
-    width: 100%;
-    background: #111;
-    color: #d4af37;
-    border: 1px solid #d4af37;
-    padding: 8px;
-    font-family: 'Cinzel', serif;
-    font-size: 0.75rem;
-    outline: none;
-  }
-
-  #game-status { color: #d4af37; font-family: 'Cinzel'; text-align: center; font-size: 0.9rem; font-weight: bold; }
-  
-  .history-scroll { height: 300px; overflow-y: auto; font-size: 0.8rem; color: #eee; }
-  .history-scroll td { padding: 8px; border-bottom: 1px solid rgba(212,175,55,0.1); }
 
   .gold-btn {
     background: transparent;
     border: 1px solid #d4af37;
     color: #d4af37;
-    padding: 12px;
+    padding: 10px;
     cursor: pointer;
     font-family: 'Cinzel';
-    transition: 0.3s;
     font-weight: bold;
-    margin-top: 10px;
   }
-  .gold-btn:hover { background: #d4af37; color: black; }
 
-  .piece { width: 70px; height: 70px; cursor: grab; transition: transform 0.1s; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3)); }
+  .mobile-status {
+    flex: 1;
+    white-space: nowrap;
+    font-size: 0.75rem !important;
+  }
 </style>
