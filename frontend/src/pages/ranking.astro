@@ -33,33 +33,35 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 </BaseLayout>
 
 <style is:global>
+  /* PANEL PRINCIPAL */
   .ranking-panel {
     background: rgba(10, 10, 10, 0.8);
     border: 1px solid rgba(212, 175, 55, 0.3);
     border-radius: 20px;
     padding: 1rem;
     backdrop-filter: blur(20px);
-    max-width: 1150px;
+    max-width: 1100px;
     margin: 0 auto;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
   }
 
   @media (min-width: 768px) {
-    .ranking-panel { border-radius: 40px; padding: 3rem; border-width: 2px; }
+    .ranking-panel { border-radius: 40px; padding: 2.5rem; }
   }
 
   .ranking-link {
     text-decoration: none;
     display: block;
     margin-bottom: 1rem;
+    animation: slideIn 0.5s ease-out forwards;
   }
 
-  /* FILA DINÁMICA: Columna en móvil, Row en Desktop */
+  /* FILA DE RANKING */
   .ranking-row {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: 45px 55px 1fr auto;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     padding: 1rem;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(212, 175, 55, 0.15);
@@ -69,136 +71,181 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
   @media (min-width: 768px) {
     .ranking-row {
-      display: flex;
+      grid-template-columns: 100px 100px 1fr 160px;
       gap: 2.5rem;
-      padding: 2rem 3rem;
-      border-radius: 35px;
+      padding: 1.5rem 2.5rem;
+      border-radius: 30px;
     }
     .ranking-link:hover .ranking-row {
-      transform: scale(1.02) translateX(10px);
-      background: rgba(212, 175, 55, 0.12);
+      transform: scale(1.01) translateX(10px);
+      background: rgba(212, 175, 55, 0.08);
       border-color: #ffd700;
     }
   }
 
-  /* POSICIÓN */
+  /* POSICIÓN Y MEDALLA */
   .rank-position-wrapper {
-    min-width: 50px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
   }
-  @media (min-width: 768px) { .rank-position-wrapper { min-width: 100px; } }
 
   .rank-medal-img {
-    width: 40px;
+    width: 35px;
     height: auto;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
   }
-  @media (min-width: 768px) { .rank-medal-img { width: 85px; } }
 
   .rank-number {
     font-family: 'Cinzel', serif;
     font-weight: 900;
-    font-size: 0.9rem;
-    color: #888;
+    font-size: 0.8rem;
+    color: #666;
   }
-  @media (min-width: 768px) { .rank-number { font-size: 1.4rem; } }
+
+  @media (min-width: 768px) {
+    .rank-medal-img { width: 70px; }
+    .rank-number { font-size: 1.2rem; }
+  }
 
   /* AVATAR Y BANDERA */
-  .rank-visuals { position: relative; }
-
-  .rank-avatar {
+  .rank-visuals { 
+    position: relative;
     width: 50px;
     height: 50px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.1);
-    object-fit: cover;
   }
-  @media (min-width: 768px) { 
-    .rank-avatar { width: 90px; height: 90px; border-radius: 24px; border-width: 3px; } 
+
+  @media (min-width: 768px) {
+    .rank-visuals { width: 90px; height: 90px; }
+  }
+
+  .rank-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    object-fit: cover;
   }
 
   .flag-wrapper {
     position: absolute;
-    bottom: -2px;
-    right: -2px;
-    width: 20px;
-    height: 14px;
+    bottom: -3px;
+    right: -3px;
+    width: 18px;
+    height: 12px;
+    border-radius: 2px;
+    border: 1px solid #000;
     overflow: hidden;
-    border-radius: 3px;
-    border: 1.5px solid #111;
-    background: #000;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
   }
-  @media (min-width: 768px) { .flag-wrapper { width: 34px; height: 22px; border-radius: 6px; border-width: 2px; } }
 
-  .rank-flag { width: 100%; height: 100%; object-fit: cover; }
+  @media (min-width: 768px) {
+    .rank-avatar { border-radius: 20px; border-width: 2px; }
+    .flag-wrapper { width: 30px; height: 20px; border-radius: 4px; bottom: -5px; right: -5px; }
+  }
 
   /* INFO DEL JUGADOR */
-  .rank-info { min-width: 0; } /* Permite truncado de texto */
-
-  .rank-name { 
-    font-family: 'Cinzel', serif; 
-    font-size: 1.1rem; 
-    font-weight: 800; 
-    color: white; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
+  .rank-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-left: 5px;
   }
-  @media (min-width: 768px) { .rank-name { font-size: 2rem; overflow: visible; } }
 
+  .rank-name-container {
+    display: flex;
+    flex-direction: row; /* Fuerza fila */
+    align-items: center; 
+    flex-wrap: nowrap;   /* Evita que el badge baje */
+    gap: 15px;           /* Separación mínima entre texto y badge */
+  }
+
+  .rank-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Si el nombre es gigante, se corta con puntos */
+  }
+
+  /* LA CAJITA DEL RANGO (BADGE) */
   .rank-tier {
-    font-size: 0.6rem;
-    padding: 2px 8px;
-    border-radius: 4px;
-    background: rgba(212, 175, 55, 0.1);
-    border: 1px solid rgba(212, 175, 55, 0.3);
+    font-size: 0.55rem;
     color: #d4af37;
-    font-weight: 900;
+    text-transform: uppercase;
     letter-spacing: 1px;
-    display: inline-block;
-    margin-top: 4px;
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.5); 
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    padding: 3px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    flex-shrink: 0; /* Impide que el badge se encoja */
   }
-  @media (min-width: 768px) { .rank-tier { font-size: 0.75rem; padding: 4px 12px; margin-left: 15px; margin-top: 0; } }
 
-  .rank-stats { color: #666; font-size: 0.7rem; display: flex; gap: 8px; margin-top: 4px; }
-  @media (min-width: 768px) { .rank-stats { font-size: 0.9rem; gap: 12px; margin-top: 8px; } }
+  .rank-stats {
+    font-size: 0.65rem;
+    color: #777;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  @media (min-width: 768px) {
+    .rank-info { padding-left: 15px; }
+    .rank-name-container { gap: 25px; }
+    .rank-name { font-size: 1.8rem; }
+    .rank-tier { 
+      font-size: 0.75rem; 
+      padding: 5px 15px; 
+    }
+    .rank-stats { font-size: 0.85rem; }
+  }
 
   /* ELO BOX */
   .rank-elo-box {
-    background: rgba(0,0,0,0.4);
-    padding: 10px 15px;
-    border-radius: 12px;
-    border: 1px solid rgba(212, 175, 55, 0.3);
     text-align: center;
-    min-width: 70px;
-  }
-  @media (min-width: 768px) { 
-    .rank-elo-box { padding: 18px 30px; border-radius: 20px; min-width: 140px; background: linear-gradient(135deg, #1a1a1a 0%, #050505 100%); } 
+    padding-left: 10px;
+    border-left: 1px solid rgba(212, 175, 55, 0.2);
   }
 
-  .rank-elo-val { 
-    color: #ffd700; 
-    font-weight: 900; 
-    font-size: 1.2rem; 
-    line-height: 1; 
-    font-family: 'Cinzel', serif; 
+  .rank-elo-val {
+    font-family: 'Cinzel', serif;
+    color: #ffd700;
+    font-weight: 900;
+    font-size: 1.1rem;
+    display: block;
   }
-  @media (min-width: 768px) { .rank-elo-val { font-size: 2.2rem; } }
 
-  .rank-elo-label { font-size: 0.5rem; color: #555; letter-spacing: 1px; margin-top: 2px; text-transform: uppercase; }
-  @media (min-width: 768px) { .rank-elo-label { font-size: 0.7rem; letter-spacing: 2px; } }
+  .rank-elo-label {
+    font-size: 0.5rem;
+    color: #555;
+    text-transform: uppercase;
+  }
 
-  /* AJUSTES ESPECIALES TOP 1 (Móvil) */
-  @media (max-width: 767px) {
-    .rank-1 { border-color: rgba(255, 215, 0, 0.4); background: rgba(255, 215, 0, 0.05); }
-    .rank-1 .rank-avatar { border-color: #ffd700; }
+  @media (min-width: 768px) {
+    .rank-elo-box { 
+      padding: 10px 20px;
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-radius: 15px;
+      background: rgba(0,0,0,0.3);
+      min-width: 140px;
+    }
+    .rank-elo-val { font-size: 2.2rem; }
+    .rank-elo-label { font-size: 0.7rem; }
+  }
+
+  /* TOP 1 BRILLO */
+  .rank-1 {
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.05) 0%, rgba(255, 215, 0, 0.1) 50%, rgba(212, 175, 55, 0.05) 100%);
+    border-color: rgba(212, 175, 55, 0.5);
   }
 
   @keyframes slideIn {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(15px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  .ranking-link { animation: slideIn 0.5s ease-out forwards; }
 </style>
