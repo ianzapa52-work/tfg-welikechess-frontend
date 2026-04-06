@@ -42,14 +42,10 @@ import "../styles/chessboard.css";
               <p class="text-[10px] uppercase tracking-widest text-zinc-500">Resueltos</p>
               <span id="solved-count" class="gold-text">0</span>
             </div>
-            <div id="already-done-badge" class="hidden-badge mt-2">
-              ✨ COMPLETADO
-            </div>
+            <div id="already-done-badge" class="hidden-badge mt-2">✨ COMPLETADO</div>
           </div>
 
-          <button id="nextPuzzle" class="gold-btn flex-1 !py-4 md:!py-3">
-            SIGUIENTE PUZZLE
-          </button>
+          <button id="nextPuzzle" class="gold-btn flex-1 !py-4">SIGUIENTE PUZZLE</button>
         </div>
       </aside>
 
@@ -62,151 +58,39 @@ import "../styles/chessboard.css";
 </BaseLayout>
 
 <style is:global>
-  .main-screen { 
-    min-height: 100vh; 
-    display: flex; 
-    justify-content: center; 
-    align-items: flex-start; 
-    padding: 10px; 
-    background: transparent;
-  }
+  .main-screen { min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 15px 10px; }
 
-  /* Grid dinámico */
-  .game-wrapper { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 15px; 
-    width: 100%;
-    max-width: 600px;
-  }
+  .game-wrapper { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 600px; }
 
   @media (min-width: 1200px) {
-    .game-wrapper { 
-      display: grid; 
-      grid-template-columns: 240px 640px 240px; 
-      gap: 40px; 
-      align-items: start; 
-      max-width: 1200px;
-    }
-    .main-screen { padding-top: 50px; align-items: center; }
+    .game-wrapper { display: grid; grid-template-columns: 240px 600px 240px; gap: 40px; align-items: center; max-width: 1200px; }
   }
 
-  .side-panel { display: flex; flex-direction: column; gap: 15px; }
-  
-  /* Cajas Estilizadas */
-  .player-box, .history-card, .status-box {
-    background: rgba(10, 10, 10, 0.9);
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    padding: 12px; 
-    border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  }
-
-  .player-header, .history-header {
-    font-family: 'Cinzel', serif;
-    color: #d4af37;
-    font-size: 0.7rem;
-    text-align: center;
-    border-bottom: 1px solid rgba(212,175,55,0.1);
-    padding-bottom: 6px;
-    margin-bottom: 8px;
-    letter-spacing: 1px;
-  }
-
-  .status-text { color: #eee; text-align: center; font-family: 'Cinzel', serif; font-size: 0.75rem; }
-  .gold-text { color: #d4af37; font-weight: 900; font-size: 1.2rem; font-family: 'Marcellus', serif; }
-  
-  .hidden-badge { 
-    display: none; 
-    background: rgba(212, 175, 55, 0.1); 
-    color: #d4af37; 
-    padding: 6px; 
-    border-radius: 4px; 
-    font-size: 0.65rem; 
-    text-align: center;
-    border: 1px dashed rgba(212, 175, 55, 0.5);
-    font-weight: bold;
-  }
-
-  /* EL TABLERO LÍQUIDO */
   .board-frame { 
     background: #1a1a1a; 
-    padding: 8px; 
+    padding: 10px; 
     border-radius: 6px; 
-    border: 3px solid #333;
-    box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+    border: 3px solid #333; 
+    margin: 0 auto;
   }
 
   .compact-board { 
-    width: 88vw; 
-    height: 88vw; 
-    max-width: 600px; 
-    max-height: 600px; 
+    width: 82vw; 
+    height: 82vw; 
+    max-width: 500px; 
+    max-height: 500px; 
     display: grid; 
     grid-template-columns: repeat(8, 1fr); 
+    grid-template-rows: repeat(8, 1fr); /* CORRECCIÓN FILA PEQUEÑA */
+    aspect-ratio: 1/1;
   }
 
-  @media (min-width: 768px) {
-    .board-frame { padding: 20px; border-width: 4px; }
-    .compact-board { width: 560px; height: 560px; }
-  }
-
-  .square { 
-    width: 100%; 
-    height: 100%; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    position: relative; 
-  }
-  
-  .square.light { background: #ebecd0; }
-  .square.dark { background: #779556; }
-  
-  /* Feedback Visual */
-  .square.selected { background: rgba(212, 175, 55, 0.6) !important; }
-  .square.error-flash { 
-    animation: flashRed 0.4s ease;
-  }
-
-  @keyframes flashRed {
-    0%, 100% { background: inherit; }
-    50% { background: rgba(239, 68, 68, 0.8) !important; }
-  }
-
-  .coords-h, .coords-v { color: #d4af37; font-weight: bold; font-size: 0.7rem; font-family: 'Cinzel'; opacity: 0.7; }
-  .coords-h { display: flex; justify-content: space-around; padding-left: 20px; margin-bottom: 4px; }
-  .coords-v { display: flex; flex-direction: column; justify-content: space-around; width: 20px; }
   .board-flex { display: flex; }
 
-  .gold-btn {
-    background: #d4af37; 
-    border: none; 
-    color: black;
-    padding: 12px; 
-    cursor: pointer; 
-    font-family: 'Cinzel'; 
-    transition: 0.3s; 
-    font-weight: 900;
-    font-size: 0.8rem;
-    border-radius: 6px;
-    letter-spacing: 1px;
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-  }
-  
-  .gold-btn:hover { 
-    background: #f2d47e; 
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
-  }
+  .coords-h { display: grid; grid-template-columns: repeat(8, 1fr); margin-left: 20px; text-align: center; color: #d4af37; font-size: 0.7rem; margin-bottom: 4px; }
+  .coords-v { display: grid; grid-template-rows: repeat(8, 1fr); width: 20px; text-align: center; align-items: center; color: #d4af37; font-size: 0.7rem; }
 
-  .gold-btn:active { transform: translateY(0); }
-  
-  .piece { 
-    width: 90%; 
-    height: 90%; 
-    cursor: grab; 
-    z-index: 10;
-    filter: drop-shadow(0 4px 4px rgba(0,0,0,0.4));
-  }
+  .player-box, .history-card, .status-box { background: rgba(10, 10, 10, 0.9); border: 1px solid rgba(212, 175, 55, 0.3); padding: 12px; border-radius: 8px; }
+  .gold-text { color: #d4af37; font-weight: 900; font-size: 1.2rem; }
+  .gold-btn { background: #d4af37; border: none; color: black; font-family: 'Cinzel', serif; font-weight: bold; border-radius: 6px; cursor: pointer; }
 </style>
