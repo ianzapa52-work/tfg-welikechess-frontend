@@ -3,92 +3,126 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout title="WELIKECHESS - Perfil" bodyClass="perfil-page">
-
-  <div class="min-h-screen pt-6 pb-24 px-4 sm:px-12 max-w-7xl mx-auto flex flex-col">
+  <div class="min-h-screen pt-10 pb-24 px-4 sm:px-6 lg:px-12 max-w-[1400px] mx-auto">
     
-    <div id="profile-user" class="hidden flex flex-col gap-8 md:gap-20">
+    <div id="profile-user" class="flex flex-col opacity-0 transition-opacity duration-500">
       
-      <header class="bg-black/30 backdrop-blur-xl border border-white/10 rounded-[2rem] md:rounded-[3rem] p-6 md:p-16 shadow-2xl relative overflow-hidden">
-        <div class="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-yellow-600/10 blur-[80px] md:blur-[150px] rounded-full"></div>
-        
-        <div class="relative z-10 flex flex-col md:flex-row items-center gap-8 md:gap-16">
+      <header class="bg-zinc-900/60 backdrop-blur-2xl border border-white/10 rounded-t-[3.5rem] p-10 pb-16 shadow-2xl relative z-20">
+        <div class="relative z-10 flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
           <div class="relative group">
-            <div class="absolute -inset-2 md:-inset-4 bg-gradient-to-tr from-yellow-600 to-amber-400 rounded-[2rem] md:rounded-[3rem] blur opacity-20 group-hover:opacity-40 transition duration-700"></div>
-            
-            <img id="current-avatar" src="/avatars/w_king_avatar.png" class="relative w-40 h-40 md:w-64 md:h-64 rounded-[2rem] md:rounded-[2.5rem] border-2 border-yellow-500/20 object-cover shadow-2xl z-10"/>
-            
-            <button id="openAvatarMenu" class="absolute -bottom-3 left-1/2 -translate-x-1/2 px-6 py-2 md:px-8 md:py-3 bg-yellow-500 hover:bg-yellow-400 text-black font-black rounded-xl md:rounded-2xl text-[10px] md:text-xs uppercase shadow-2xl transition-transform hover:scale-110 whitespace-nowrap cursor-pointer z-30">
-              Cambiar Foto
+            <div class="absolute -inset-6 bg-gradient-to-tr from-yellow-600 to-amber-400 rounded-[4rem] blur-2xl opacity-20 group-hover:opacity-40 transition duration-700"></div>
+            <img id="current-avatar" src="/avatars/w_king_avatar.png" class="relative w-56 h-56 md:w-80 md:h-80 rounded-[3.5rem] border-4 border-yellow-500/20 object-cover shadow-2xl z-10" />
+            <button id="openAvatarMenu" class="absolute -bottom-4 left-1/2 -translate-x-1/2 px-10 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-black rounded-2xl text-xs md:text-sm uppercase shadow-xl transition-all hover:scale-110 active:scale-95 whitespace-nowrap cursor-pointer z-[50]">
+              CAMBIAR AVATAR
             </button>
-
-            <div id="avatarMenu" class="hidden absolute top-full left-1/2 -translate-x-1/2 mt-4 z-50 bg-[#1a1a1a] border-2 border-yellow-500 p-4 rounded-[1.5rem] shadow-2xl w-[260px]">
-            </div>
           </div>
 
-          <div class="flex-1 space-y-6 md:space-y-10 text-center md:text-left w-full">
-            <div>
-              <div class="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 mb-2 md:mb-4">
-                <h2 class="text-4xl sm:text-5xl md:text-8xl font-black text-white tracking-tighter break-words" id="profile-username">---</h2>
-                <span class="inline-block self-center md:self-auto bg-yellow-500/10 border border-yellow-500/20 px-4 py-1 rounded-full text-yellow-500 text-[10px] font-black uppercase tracking-widest">Premium</span>
-              </div>
-              <p class="text-zinc-400 text-lg md:text-2xl font-medium italic truncate" id="profile-email">---</p>
+          <div class="flex-1 text-center lg:text-left space-y-8">
+            <div class="space-y-2">
+              <h2 class="text-6xl md:text-9xl font-black text-white tracking-tighter italic uppercase leading-none" id="profile-username">USUARIO</h2>
+              <p class="text-zinc-500 text-xl md:text-3xl font-medium italic" id="profile-email">---</p>
             </div>
             
-            <div class="flex flex-col sm:flex-row justify-center md:justify-start gap-6 md:gap-12">
-              <div class="flex flex-col gap-2 md:gap-3">
-                <span class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Nivel Actual</span>
-                <div class="bg-zinc-900/80 border border-white/5 px-6 py-4 md:px-10 md:py-6 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center md:justify-start gap-4 md:gap-6">
-                    <span class="text-4xl md:text-6xl font-black text-white" id="stat-rating">0</span>
-                    <span class="text-yellow-600 font-black text-base md:text-xl uppercase">ELO</span>
-                </div>
+            <div class="flex flex-wrap justify-center lg:justify-start gap-6 pt-4">
+              <div class="bg-black/40 border border-white/5 backdrop-blur-md px-10 py-6 rounded-[2rem] text-center min-w-[180px]">
+                <span class="block text-[10px] font-black text-yellow-600 uppercase tracking-widest mb-2">RANKING GLOBAL</span>
+                <span class="text-4xl md:text-5xl font-black text-white italic" id="stat-ranking">#---</span>
               </div>
-              <div class="flex items-center justify-center md:items-end md:pb-2">
-                <button id="logoutBtn" class="w-full sm:w-auto px-8 py-4 bg-red-950/20 hover:bg-red-900/40 border border-red-900/30 text-red-400 rounded-2xl transition-all text-[10px] font-black uppercase tracking-widest cursor-pointer">Cerrar Sesión</button>
+              <div class="bg-black/40 border border-white/5 backdrop-blur-md px-10 py-6 rounded-[2rem] text-center min-w-[180px]">
+                <span class="block text-[10px] font-black text-yellow-600 uppercase tracking-widest mb-2">ELO ACTUAL</span>
+                <span class="text-4xl md:text-5xl font-black text-white italic" id="stat-rating">1200</span>
               </div>
             </div>
           </div>
+        </div>
+
+        <div id="avatarMenu" class="hidden overflow-hidden transition-all duration-500 ease-in-out">
+            <div class="mt-16 pt-10 border-t border-white/5">
+                <h4 class="text-yellow-500 font-black text-center mb-8 tracking-widest text-xs">SELECCIONA TU AVATAR</h4>
+                <div id="avatarScrollContainer" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-6 p-2 max-h-[500px] overflow-y-auto custom-scroll">
+                </div>
+            </div>
         </div>
       </header>
 
-      <main class="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-16">
+      <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 -mt-8">
         
-        <div class="lg:col-span-8 bg-zinc-900/20 border border-white/5 p-8 md:p-16 rounded-[2.5rem] md:rounded-[4rem] shadow-xl">
-          <h3 class="text-white font-black uppercase text-xs tracking-[0.3em] mb-10 md:mb-20 flex items-center gap-4 md:gap-6">
-            <span class="w-8 md:w-12 h-[2px] bg-yellow-600"></span> ESTADÍSTICAS
-          </h3>
-          
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-8 md:gap-12 text-center md:text-left">
-            <div class="space-y-2 md:space-y-4">
-                <p class="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Jugadas</p>
-                <p id="stat-games" class="text-4xl md:text-7xl font-black text-white leading-none">0</p>
+        <div class="lg:col-span-8">
+          <div class="bg-zinc-900/40 backdrop-blur-xl border border-white/10 p-8 md:p-12 rounded-[3.5rem] shadow-2xl h-full">
+            <h3 class="text-white font-black uppercase text-sm tracking-[0.4em] italic flex items-center gap-4 mb-12">
+                <span class="w-12 h-[3px] bg-yellow-600"></span> RENDIMIENTO EN COMBATE
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              <div class="relative overflow-hidden bg-emerald-500/5 border border-emerald-500/20 rounded-[2.5rem] p-8 text-center group">
+                <span class="block text-emerald-500 font-black text-[10px] tracking-widest mb-2">VICTORIAS</span>
+                <span class="text-5xl font-black text-white italic" id="stat-wins">0</span>
+              </div>
+
+              <div class="relative overflow-hidden bg-red-500/5 border border-red-500/20 rounded-[2.5rem] p-8 text-center group">
+                <span class="block text-red-500 font-black text-[10px] tracking-widest mb-2">DERROTAS</span>
+                <span class="text-5xl font-black text-white italic" id="stat-losses">0</span>
+              </div>
+
+              <div class="relative overflow-hidden bg-zinc-500/5 border border-zinc-500/20 rounded-[2.5rem] p-8 text-center group">
+                <span class="block text-zinc-400 font-black text-[10px] tracking-widest mb-2">TABLAS</span>
+                <span class="text-5xl font-black text-white italic" id="stat-draws">0</span>
+              </div>
             </div>
-            <div class="space-y-2 md:space-y-4">
-                <p class="text-green-500/60 text-[10px] font-black uppercase tracking-widest">Win</p>
-                <p id="stat-wins" class="text-4xl md:text-7xl font-black text-green-400 leading-none">0</p>
-            </div>
-            <div class="space-y-2 md:space-y-4">
-                <p class="text-red-500/60 text-[10px] font-black uppercase tracking-widest">Loss</p>
-                <p id="stat-losses" class="text-4xl md:text-7xl font-black text-red-400 leading-none">0</p>
-            </div>
-            <div class="space-y-2 md:space-y-4">
-                <p class="text-blue-500/60 text-[10px] font-black uppercase tracking-widest">Draw</p>
-                <p id="stat-draws" class="text-4xl md:text-7xl font-black text-blue-400 leading-none">0</p>
+
+            <div class="space-y-4">
+              <div class="flex justify-between items-end">
+                <div>
+                  <p class="text-white font-black italic text-2xl tracking-tight">WIN RATE</p>
+                  <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Dominio del tablero</p>
+                </div>
+                <span id="win-rate-percent" class="text-4xl font-black text-emerald-500 italic">0%</span>
+              </div>
+              <div class="h-4 w-full bg-zinc-950 rounded-full overflow-hidden flex border border-white/5 p-1">
+                <div id="bar-wins" class="h-full bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all duration-1000" style="width: 0%"></div>
+                <div id="bar-losses" class="h-full bg-red-500/40 ml-1 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                <div class="h-full bg-zinc-700 ml-1 rounded-full flex-1"></div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="lg:col-span-4 bg-zinc-900/20 border border-white/5 p-8 md:p-16 rounded-[2.5rem] md:rounded-[4rem] flex flex-col justify-between shadow-xl">
-          <div class="space-y-4 md:space-y-8">
-            <h3 class="text-white font-black uppercase text-xs tracking-[0.3em]">Puzzles</h3>
-            <p id="stat-puzzles-solved" class="text-6xl md:text-8xl font-black text-white leading-none">0</p>
-            <p id="stat-puzzles-failed" class="text-zinc-500 text-[10px] font-black uppercase">Fallos: 0</p>
-          </div>
-          <div class="space-y-6 pt-8 md:pt-12">
-            <div class="w-full bg-black/40 rounded-full h-3 md:h-4 p-1">
-                <div id="puzzle-progress" class="bg-gradient-to-r from-yellow-600 to-yellow-400 h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+        <div class="lg:col-span-4 space-y-6">
+          <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-white/10 p-10 rounded-[3.5rem] shadow-2xl relative overflow-hidden group h-full">
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-yellow-600/10 rounded-full blur-[100px] group-hover:bg-yellow-600/20 transition-colors duration-700"></div>
+            
+            <h3 class="text-zinc-500 font-black uppercase text-[10px] tracking-[0.3em] italic mb-8 relative z-10">PUZZLES SCORE</h3>
+            
+            <div class="relative z-10">
+              <div class="flex items-baseline gap-4 mb-2">
+                  <span id="stat-puzzles-solved" class="text-8xl font-black text-white italic leading-none tracking-tighter">0</span>
+                  <span class="text-yellow-600 font-black italic text-2xl">PTS</span>
+              </div>
+              <p class="text-zinc-400 text-xs font-bold italic mb-12 uppercase">Nivel Maestro</p>
+              
+              <div class="space-y-3">
+                <div class="flex justify-between text-[10px] font-black tracking-widest text-zinc-500 uppercase">
+                  <span>Siguiente Rango</span>
+                  <span id="puzzle-milestone-text" class="text-yellow-500">0/500</span>
+                </div>
+                <div class="w-full bg-black/60 rounded-full h-5 p-1 border border-white/5">
+                    <div id="puzzle-progress" class="bg-gradient-to-r from-yellow-600 to-amber-400 h-full rounded-full shadow-[0_0_20px_rgba(234,179,8,0.5)] transition-all duration-1000" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <div class="mt-12 pt-8 border-t border-white/5 flex items-center gap-6">
+                <div class="w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
+                  <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.99 7.99 0 0121 13a8.14 8.14 0 01-.343 2.343z"/></svg>
+                </div>
+                <div>
+                  <span class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest">Racha Actual</span>
+                  <span id="stat-streak" class="text-2xl font-black text-white italic">0 Victorias</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
       </main>
     </div>
   </div>
@@ -96,42 +130,38 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <script>
     import "../scripts/profile.ts";
   </script>
-
 </BaseLayout>
 
 <style>
-  #profile-user { animation: fadeIn 0.8s ease-out forwards; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-  #avatarMenu {
-    display: none;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    max-height: 300px;
-    overflow-y: auto;
-  }
-  
-  #avatarMenu:not(.hidden) {
-    display: grid;
+  .custom-scroll::-webkit-scrollbar { width: 5px; }
+  .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+  .custom-scroll::-webkit-scrollbar-thumb { 
+    background: rgba(234, 179, 8, 0.2); 
+    border-radius: 10px; 
   }
 
-  /* Ajuste de avatares para que quepan bien en el menú móvil */
-  :global(#avatarMenu img) {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    border-radius: 8px;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s ease;
+  :global(#avatarScrollContainer img) {
+    width: 100%; aspect-ratio: 1/1; object-fit: cover;
+    border-radius: 1.5rem; cursor: pointer; border: 3px solid transparent;
+    transition: all 0.3s ease;
+    background: #1a1a1a;
   }
-
-  :global(#avatarMenu img:hover) {
+  :global(#avatarScrollContainer img:hover) {
     transform: scale(1.05);
-    border-color: #d4af37;
+    border-color: rgba(234, 179, 8, 0.3);
+  }
+  :global(#avatarScrollContainer img.active) {
+    border-color: #eab308;
+    box-shadow: 0 0 20px rgba(234, 179, 8, 0.4);
   }
 
-  /* Scrollbar fina para el menú de avatares */
-  #avatarMenu::-webkit-scrollbar { width: 4px; }
-  #avatarMenu::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 10px; }
+  #avatarMenu:not(.hidden) {
+    display: block;
+    animation: expandDown 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes expandDown {
+    from { opacity: 0; max-height: 0; transform: translateY(-10px); }
+    to { opacity: 1; max-height: 1000px; transform: translateY(0); }
+  }
 </style>

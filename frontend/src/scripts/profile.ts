@@ -1,67 +1,114 @@
 // @ts-nocheck
 const initProfile = () => {
-  const profileContainer = document.getElementById("profile-user");
-  if (!profileContainer) { setTimeout(initProfile, 50); return; }
-
-  const userData = localStorage.getItem("user");
-  if (!userData || userData === "null") { window.location.href = "/login"; return; }
-
-  const user = JSON.parse(userData);
-  profileContainer.classList.remove("hidden");
-  profileContainer.style.display = "flex";
-
-  // Datos básicos
-  document.getElementById("profile-username").textContent = user.name;
-  document.getElementById("profile-email").textContent = user.email;
-  document.getElementById("current-avatar").src = user.avatar || "/avatars/w_king_avatar.png";
-
-  // Estadísticas (Sincronizadas con Puzzles)
-  const stats = JSON.parse(localStorage.getItem("stats") || '{"rating":1200, "totalGames":0, "wins":0, "losses":0, "draws":0, "puzzlesSolved":0, "puzzlesFailed":0}');
-  
-  const updateText = (id, val) => { if(document.getElementById(id)) document.getElementById(id).textContent = val; };
-
-  updateText("stat-rating", stats.rating);
-  updateText("stat-games", stats.totalGames);
-  updateText("stat-wins", stats.wins);
-  updateText("stat-losses", stats.losses);
-  updateText("stat-draws", stats.draws);
-  updateText("stat-puzzles-solved", stats.puzzlesSolved);
-  updateText("stat-puzzles-failed", `Fallos: ${stats.puzzlesFailed}`);
-
-  // Barra de progreso de Puzzles
-  const progressEl = document.getElementById("puzzle-progress");
-  if (progressEl) {
-    const total = stats.puzzlesSolved + stats.puzzlesFailed;
-    const ratio = total > 0 ? (stats.puzzlesSolved / total) * 100 : 0;
-    progressEl.style.width = `${ratio}%`;
-  }
-
-  // Logout
-  document.getElementById("logoutBtn").onclick = () => { localStorage.clear(); window.location.href = "/login"; };
-
-  // Gestión de Avatares (Simplificado)
-  const avatarBtn = document.getElementById("openAvatarMenu");
-  const avatarMenu = document.getElementById("avatarMenu");
-  if (avatarBtn && avatarMenu) {
-    avatarBtn.onclick = (e) => { e.stopPropagation(); avatarMenu.classList.toggle("hidden"); };
-    
-    // Si el menú está vacío, lo llenamos
-    if (avatarMenu.innerHTML.trim() === "") {
-        const avatars = ["b_king_avatar.png", "w_king_avatar.png", "b_queen_avatar.png", "w_queen_avatar.png"];
-        avatarMenu.innerHTML = avatars.map(a => `<img src="/avatars/${a}" data-file="${a}" />`).join("");
+    const profileContainer = document.getElementById("profile-user");
+    if (!profileContainer) {
+        setTimeout(initProfile, 100);
+        return;
     }
 
-    avatarMenu.onclick = (e) => {
-      if (e.target.tagName === "IMG") {
-        const path = `/avatars/${e.target.dataset.file}`;
-        user.avatar = path;
-        localStorage.setItem("user", JSON.stringify(user));
-        document.getElementById("current-avatar").src = path;
-        avatarMenu.classList.add("hidden");
-      }
-    };
-  }
+    let userData;
+    try {
+        const stored = localStorage.getItem("user");
+        userData = (stored && stored !== "null") ? JSON.parse(stored) : {
+            name: "NUEVO REY",
+            email: "jugador@welikechess.com",
+            avatar: "/avatars/w_king_avatar.png",
+            rating: 1200,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            puzzlesSolved: 0,
+            streak: 0,
+            ranking: "---"
+        };
+    } catch (e) {
+        userData = { name: "USUARIO", email: "invitado@chess.com", avatar: "/avatars/w_king_avatar.png" };
+    }
+
+    // 1. Datos Básicos del Perfil
+    document.getElementById("profile-username").textContent = userData.name || "USUARIO";
+    document.getElementById("profile-email").textContent = userData.email || "";
+    document.getElementById("current-avatar").src = userData.avatar || "/avatars/w_king_avatar.png";
+    document.getElementById("stat-rating").textContent = userData.rating || 1200;
+    document.getElementById("stat-ranking").textContent = `#${userData.ranking || '---'}`;
+
+    // 2. Rendimiento en Combate (Wins, Losses, Draws)
+    const wins = userData.wins || 0;
+    const losses = userData.losses || 0;
+    const draws = userData.draws || 0;
+    
+    document.getElementById("stat-wins").textContent = wins;
+    document.getElementById("stat-losses").textContent = losses;
+    document.getElementById("stat-draws").textContent = draws;
+
+    // 3. Win Rate y Barras de Progreso
+    const total = wins + losses + draws;
+    const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
+    const lossRate = total > 0 ? Math.round((losses / total) * 100) : 0;
+
+    document.getElementById("win-rate-percent").textContent = `${winRate}%`;
+    document.getElementById("bar-wins").style.width = `${winRate}%`;
+    document.getElementById("bar-losses").style.width = `${lossRate}%`;
+
+    // 4. Puzzles (Aquí es donde se verán tus 3 resueltos)
+    const puzzles = userData.puzzlesSolved || 0;
+    const nextGoal = 500;
+    document.getElementById("stat-puzzles-solved").textContent = puzzles;
+    document.getElementById("puzzle-milestone-text").textContent = `${puzzles % nextGoal} / ${nextGoal}`;
+    document.getElementById("puzzle-progress").style.width = `${(puzzles % nextGoal / nextGoal) * 100}%`;
+
+    // 5. Racha (Streak)
+    document.getElementById("stat-streak").textContent = `${userData.streak || 0} Victorias`;
+
+    // --- LÓGICA DEL MENÚ DE AVATAR ---
+    const avatarBtn = document.getElementById("openAvatarMenu");
+    const avatarMenu = document.getElementById("avatarMenu");
+    const scrollContainer = document.getElementById("avatarScrollContainer");
+
+    if (avatarBtn && avatarMenu && scrollContainer) {
+        avatarBtn.onclick = (e) => {
+            e.stopPropagation();
+            avatarMenu.classList.toggle("hidden");
+        };
+
+        if (scrollContainer.innerHTML.trim() === "") {
+            const avatars = [
+                "b_king_avatar.png", "b_queen_avatar.png", "b_bishop_avatar.png", 
+                "b_horse_avatar.png", "b_rook_avatar.png", "b_pawn_avatar.png",
+                "w_king_avatar.png", "w_queen_avatar.png", "w_bishop_avatar.png", 
+                "w_horse_avatar.png", "w_rook_avatar.png", "w_pawn_avatar.png"
+            ];
+            
+            scrollContainer.innerHTML = avatars.map(img => {
+                const isActive = userData.avatar?.includes(img) ? 'active' : '';
+                return `<img src="/avatars/${img}" data-file="${img}" class="${isActive}" />`;
+            }).join("");
+        }
+
+        scrollContainer.onclick = (e) => {
+            if (e.target.tagName === "IMG") {
+                const fileName = e.target.dataset.file;
+                const newPath = `/avatars/${fileName}`;
+                scrollContainer.querySelectorAll('img').forEach(img => img.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                userData.avatar = newPath;
+                localStorage.setItem("user", JSON.stringify(userData));
+                document.getElementById("current-avatar").src = newPath;
+                setTimeout(() => avatarMenu.classList.add("hidden"), 300);
+            }
+        };
+
+        document.addEventListener('click', (e) => {
+            if (!avatarMenu.contains(e.target) && e.target !== avatarBtn) {
+                avatarMenu.classList.add("hidden");
+            }
+        });
+    }
+
+    profileContainer.style.opacity = "1";
 };
 
+// Reiniciar cada vez que Astro cargue la página
 document.addEventListener('astro:page-load', initProfile);
 if (document.readyState !== 'loading') initProfile();
