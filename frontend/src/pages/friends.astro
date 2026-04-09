@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import ChatWindow from "../components/ChatWindow";
 ---
 
 <BaseLayout title="WELIKECHESS - Amigos">
@@ -31,6 +32,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
     </div>
   </div>
+
+  <ChatWindow client:load />
 
   <script>
     import "../scripts/friends.ts";
@@ -101,28 +104,24 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     border-radius: 14px;
     font-size: 1rem;
     width: 320px;
-    outline: none; /* Quitamos el borde azul por defecto del navegador */
+    outline: none;
     transition: var(--transition-smooth);
     backdrop-filter: blur(5px);
   }
 
-  /* Efecto al pasar el ratón (Hover) */
   .search-bar-xl:hover {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(212, 175, 55, 0.4);
   }
 
-  /* EFECTO DE BRILLO AL HACER FOCUS (Click) */
   .search-bar-xl:focus {
     background: rgba(255, 255, 255, 0.1);
     border-color: var(--gold-primary);
-    /* Resplandor dorado exterior */
     box-shadow: 0 0 20px rgba(212, 175, 55, 0.25), 
                 inset 0 0 10px rgba(212, 175, 55, 0.1);
-    width: 350px; /* Opcional: un ligero crecimiento al escribir */
+    width: 350px;
   }
 
-  /* Estilo del placeholder */
   .search-bar-xl::placeholder {
     color: rgba(255, 255, 255, 0.3);
     transition: opacity 0.3s ease;
@@ -132,7 +131,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     opacity: 0.5;
   }
 
-  /* --- TARJETA CLICABLE GENERAL (TODOS LOS AMIGOS Y SOLICITUDES) --- */
+  /* --- TARJETA CLICABLE GENERAL --- */
   :global(.friend-card) {
     display: flex;
     align-items: center;
@@ -141,25 +140,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     background: rgba(255, 255, 255, 0.03);
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.06);
-    
-    /* Borde izquierdo dorado unificado */
     border-left: 5px solid var(--gold-primary);
-    
     margin-bottom: 1rem;
-    
-    /* Agregamos transform a la transición para el efecto de agrandado */
     transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
-    
     position: relative;
     cursor: pointer;
   }
 
-  /* --- EFECTOS HOVER UNIFICADOS (AGRANDADO Y BRILLO DE BORDE) --- */
   :global(.friend-card:hover) {
-    /* 1. Efecto de agrandado sutil (sacado de la card original) */
     transform: scale(1.02);
-    
-    /* 2. Feedback visual de fondo y borde lateral (sacado de la card original) */
     background: rgba(255, 255, 255, 0.08);
     border-left-color: var(--gold-light);
   }
@@ -172,7 +161,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     pointer-events: none;
   }
 
-  /* --- INFO DE TEXTO (NOMBRE Y ELO) --- */
   :global(.friend-text-info) {
     display: flex;
     flex-direction: column;
@@ -195,12 +183,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     opacity: 0.85;
   }
 
-  /* Iluminación del nombre al hacer hover en CUALQUIER card */
   :global(.friend-card:hover .friend-name), :global(.friend-card:hover .req-name) {
     color: var(--gold-light);
   }
 
-  /* --- AVATARES --- */
   :global(.avatar-img) {
     width: 120px !important;
     height: 120px !important;
@@ -218,7 +204,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     border: 3.5px solid #151515;
   }
 
-  /* --- BOTONES DE ACCIÓN --- */
   :global(.btn-group) { 
     display: flex; 
     gap: 1.2rem; 
@@ -240,9 +225,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
   :global(.btn-icon-img) { width: 26px; height: 26px; object-fit: contain; }
 
-  /* Colores de botones y Assets */
   :global(.btn-primary-action) {
-  background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));border: none !important; }
+    background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
+    border: none !important; 
+  }
   :global(.btn-primary-action .btn-icon-img) {filter: brightness(0); }
   :global(.btn-aceptar) { background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.3) !important; }
   :global(.btn-aceptar .btn-icon-img) { filter: invert(72%) sepia(85%) saturate(336%) hue-rotate(94deg); }
@@ -272,9 +258,25 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     filter: drop-shadow(0 0 4px rgba(255, 40, 0, 0.6));
   }
 
-  /* SCROLLBAR */
   .custom-scrollbar::-webkit-scrollbar { width: 8px; }
   .custom-scrollbar::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, var(--gold-primary), var(--gold-dark)); border-radius: 10px; }
 
   @media (max-width: 1400px) { .friends-hybrid-grid { grid-template-columns: 1fr; } }
+
+  /* --- ESTILOS INYECTADOS PARA EL CHAT WINDOW --- */
+  :global(.chat-overlay) {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px); opacity: 0; pointer-events: none;
+    transition: opacity 0.5s ease; z-index: 2000;
+  }
+  :global(.chat-overlay.active) { opacity: 1; pointer-events: auto; }
+
+  :global(.chat-drawer) {
+    position: fixed; top: 0; right: -500px; width: 450px; height: 100vh;
+    background: linear-gradient(180deg, #151515 0%, #0a0a0a 100%);
+    border-left: 2px solid var(--gold-primary); box-shadow: -20px 0 60px rgba(0,0,0,0.9);
+    z-index: 2001; display: flex; flex-direction: column;
+    transition: right 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  :global(.chat-drawer.open) { right: 0; }
 </style>

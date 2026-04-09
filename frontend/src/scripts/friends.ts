@@ -1,4 +1,5 @@
 // friends.ts
+export {}; 
 
 interface Friend {
   id: string;
@@ -17,13 +18,6 @@ interface FriendRequest {
   avatar: string;
 }
 
-const ICON_CHALLENGE = `<img src="/assets/swords.svg" class="btn-icon-img" alt="Retar" />`;
-const ICON_CHAT      = `<img src="/assets/message.svg" class="btn-icon-img" alt="Chat" />`;
-const ICON_CHECK     = `<img src="/assets/check.svg" class="btn-icon-img" alt="Aceptar" />`;
-const ICON_X         = `<img src="/assets/x.svg" class="btn-icon-img" alt="Rechazar" />`;
-const ICON_EYE = `<img src="/assets/eye.svg" class="btn-icon-img" alt="Espectear" />`;
-const ICON_FIRE = `<img src="/assets/flame.svg" class="streak-icon" alt="Racha" />`;
-
 const DUMMY_FRIENDS: Friend[] = [
   { id: "1", name: "Magnus_Fan", elo: 2850, avatar: "/avatars/w_king_avatar.png", online: true, winStreak: 7 },
   { id: "2", name: "GambitoDeDama", elo: 1920, avatar: "/avatars/w_queen_avatar.png", online: true, winStreak: 3 },
@@ -39,6 +33,34 @@ const DUMMY_REQUESTS: FriendRequest[] = [
   { id: "req1", name: "Kasparov_Jr", elo: 1600, avatar: "/avatars/b_bishop_avatar.png" },
   { id: "req2", name: "BobbyF", elo: 2450, avatar: "/avatars/w_horse_avatar.png" },
 ];
+
+// Declaración corregida para el scope global
+declare global {
+  interface Window {
+    openChat: (name: string) => void;
+  }
+}
+
+// MODIFICACIÓN AQUÍ: Ahora busca el estado del amigo antes de enviar el evento
+window.openChat = (name: string) => {
+  const friend = DUMMY_FRIENDS.find(f => f.name === name);
+  const status = friend?.online ? 'online' : 'offline';
+  
+  const event = new CustomEvent('open-chat', { 
+    detail: { 
+      name,
+      status // Enviamos 'online' u 'offline' al componente de React
+    } 
+  });
+  window.dispatchEvent(event);
+};
+
+const ICON_CHALLENGE = `<img src="/assets/swords.svg" class="btn-icon-img" alt="Retar" />`;
+const ICON_CHAT      = `<img src="/assets/message.svg" class="btn-icon-img" alt="Chat" />`;
+const ICON_CHECK     = `<img src="/assets/check.svg" class="btn-icon-img" alt="Aceptar" />`;
+const ICON_X         = `<img src="/assets/x.svg" class="btn-icon-img" alt="Rechazar" />`;
+const ICON_EYE = `<img src="/assets/eye.svg" class="btn-icon-img" alt="Espectear" />`;
+const ICON_FIRE = `<img src="/assets/flame.svg" class="streak-icon" alt="Racha" />`;
 
 const createFriendCard = (friend: Friend): string => `
   <div class="friend-card" onclick="window.location.href='/profile'">
@@ -70,7 +92,7 @@ const createFriendCard = (friend: Friend): string => `
         <button class="btn-action btn-primary-action">${ICON_EYE}</button>
         <button class="btn-action btn-primary-action">${ICON_CHALLENGE}</button>
       ` : ''}
-      <button class="btn-action btn-primary-action">${ICON_CHAT}</button>
+      <button onclick="window.openChat('${friend.name}')" class="btn-action btn-primary-action">${ICON_CHAT}</button>
     </div>
   </div>
 `;
