@@ -3,166 +3,278 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout title="WELIKECHESS - Amigos">
-
   <div class="friends-wrapper">
-
-    <h1
-      class="text-6xl font-black mb-12 text-center
-            bg-gradient-to-b from-[#d4af37] via-[#f2d47e] to-[#996515]
-            bg-clip-text text-transparent drop-shadow-[0_2px_15px_rgba(212,175,55,0.4)]"
-      style="font-family: 'Cinzel', serif;"
-    >
-      AMIGOS
-    </h1>
-
-    <!-- GRID DE 3 COLUMNAS -->
-    <div class="friends-grid">
-
-      <!-- Conectados -->
-      <section class="friends-section col-online">
-        <h2>En línea</h2>
-        <div id="friendsOnlineList"></div>
+    <div class="friends-hybrid-grid">
+      
+      <section class="friends-section main-col custom-scrollbar">
+        <div class="section-header">
+          <h2>Todos los amigos</h2>
+          <input 
+            type="text" 
+            id="friendSearch" 
+            class="search-bar-xl" 
+            placeholder="Buscar por nombre o ELO..."
+          />
+        </div>
+        <div id="friendsAllList" class="friends-list-container xl"></div>
       </section>
 
-      <!-- Solicitudes -->
-      <section class="friends-section col-requests">
-        <h2>Solicitudes</h2>
-        <div id="friendsRequestsList"></div>
-      </section>
-
-      <!-- Todos -->
-      <section class="friends-section col-all">
-        <h2>Todos los amigos</h2>
-        <div id="friendsAllList"></div>
-      </section>
+      <aside class="side-col">
+        <section class="friends-section solicitudes-full custom-scrollbar">
+          <div class="section-header">
+            <h3>Solicitudes</h3>
+            <span class="count-badge req" id="reqCount">0</span>
+          </div>
+          <div id="friendsRequestsList" class="friends-list-container compact"></div>
+        </section>
+      </aside>
 
     </div>
-
   </div>
 
   <script>
     import "../scripts/friends.ts";
   </script>
-
 </BaseLayout>
 
 <style>
-  /* --- FUENTES --- */
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Marcellus&display=swap');
+
+  :root {
+    --gold-primary: #d4af37;
+    --gold-dark: #996515;
+    --gold-light: #f2d47e;
+    --bg-dark: rgba(12, 12, 12, 0.75);
+    --border-gold: rgba(212, 175, 55, 0.18);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
   .friends-wrapper {
     width: 100%;
     padding: 2rem;
     min-height: 100vh;
+    background: radial-gradient(circle at top, rgba(153, 101, 21, 0.15) 0%, transparent 70%);
   }
 
-  /* --- GRID DE 3 COLUMNAS --- */
-  .friends-grid {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 3rem;
-    width: max-content;
-    margin: 2rem auto;
+  .friends-hybrid-grid {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr;
+    gap: 2rem;
+    margin: 0 auto;
+    width: 98%;
+    max-width: 1600px;
+    align-items: stretch;
   }
 
-  /* Anchos específicos de tus paneles */
-  .col-online { width: 360px; }
-  .col-requests { width: 420px; }
-  .col-all { width: 420px; }
-
-  /* --- PANEL INDIVIDUAL (SECCIÓN) --- */
   .friends-section {
-    background: var(--bg-panel);
-    border-radius: 18px;
-    border: 2px solid var(--border-panel);
-    backdrop-filter: blur(14px);
-    padding: 1.8rem;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-    font-family: 'Cinzel', serif;
-    height: 650px;
+    background: var(--bg-dark);
+    border-radius: 24px;
+    border: 2px solid var(--border-gold);
+    backdrop-filter: blur(18px);
+    padding: 2rem;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  }
+
+  .main-col, .solicitudes-full {
+    height: 680px;
     overflow-y: auto;
-    transition: transform 0.3s ease, border-color 0.3s ease;
   }
 
-  .friends-section:hover {
-    transform: translateY(-5px);
-    border-color: var(--color-gold);
-  }
-
-  /* --- SCROLLBAR DORADA --- */
-  .friends-section::-webkit-scrollbar { width: 10px; }
-  .friends-section::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
-  .friends-section::-webkit-scrollbar-thumb {
-    background: linear-gradient(var(--color-gold-dark), var(--color-gold));
-    border-radius: 10px;
-  }
-
-  .friends-section h2 {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--text-main);
-    margin-bottom: 1.5rem;
-    border-left: 4px solid var(--color-gold);
-    padding-left: 12px;
-  }
-
-  /* --- TARJETA DE AMIGO (Generada por JS) --- */
-  /* Nota: Aunque se generen por JS, el CSS Scoped de Astro las detecta */
-  :global(.friend-card) {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid var(--border-color);
-    border-radius: 14px;
-    padding: 1rem;
-    margin-bottom: 1rem;
+  .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: all 0.2s ease;
-    animation: fadeUp 0.4s ease forwards;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-gold);
   }
 
+  h2, h3 { font-family: 'Cinzel', serif; color: var(--gold-light); text-transform: uppercase; letter-spacing: 1px;}
+  h2 { font-size: 1.7rem; } h3 { font-size: 1.3rem; }
+
+  /* --- BUSCADOR --- */
+  .search-bar-xl {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-gold);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 14px;
+    font-size: 1rem;
+    width: 320px;
+    outline: none; /* Quitamos el borde azul por defecto del navegador */
+    transition: var(--transition-smooth);
+    backdrop-filter: blur(5px);
+  }
+
+  /* Efecto al pasar el ratón (Hover) */
+  .search-bar-xl:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(212, 175, 55, 0.4);
+  }
+
+  /* EFECTO DE BRILLO AL HACER FOCUS (Click) */
+  .search-bar-xl:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--gold-primary);
+    /* Resplandor dorado exterior */
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.25), 
+                inset 0 0 10px rgba(212, 175, 55, 0.1);
+    width: 350px; /* Opcional: un ligero crecimiento al escribir */
+  }
+
+  /* Estilo del placeholder */
+  .search-bar-xl::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+    transition: opacity 0.3s ease;
+  }
+
+  .search-bar-xl:focus::placeholder {
+    opacity: 0.5;
+  }
+
+  /* --- TARJETA CLICABLE GENERAL (TODOS LOS AMIGOS Y SOLICITUDES) --- */
+  :global(.friend-card) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    
+    /* Borde izquierdo dorado unificado */
+    border-left: 5px solid var(--gold-primary);
+    
+    margin-bottom: 1rem;
+    
+    /* Agregamos transform a la transición para el efecto de agrandado */
+    transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+    
+    position: relative;
+    cursor: pointer;
+  }
+
+  /* --- EFECTOS HOVER UNIFICADOS (AGRANDADO Y BRILLO DE BORDE) --- */
   :global(.friend-card:hover) {
-    background: rgba(255, 255, 255, 0.15);
+    /* 1. Efecto de agrandado sutil (sacado de la card original) */
     transform: scale(1.02);
+    
+    /* 2. Feedback visual de fondo y borde lateral (sacado de la card original) */
+    background: rgba(255, 255, 255, 0.08);
+    border-left-color: var(--gold-light);
+  }
+
+  :global(.friend-content) {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    flex-grow: 1;
+    pointer-events: none;
+  }
+
+  /* --- INFO DE TEXTO (NOMBRE Y ELO) --- */
+  :global(.friend-text-info) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  :global(.friend-name), :global(.req-name) { 
+    font-size: 1.6rem; 
+    font-family: 'Marcellus', serif; 
+    color: white; 
+    line-height: 1;
+    transition: color 0.3s;
+  }
+
+  :global(.friend-elo), :global(.req-elo) { 
+    font-size: 1.1rem; 
+    color: var(--gold-primary); 
+    font-family: monospace;
+    letter-spacing: 2px;
+    opacity: 0.85;
+  }
+
+  /* Iluminación del nombre al hacer hover en CUALQUIER card */
+  :global(.friend-card:hover .friend-name), :global(.friend-card:hover .req-name) {
+    color: var(--gold-light);
+  }
+
+  /* --- AVATARES --- */
+  :global(.avatar-img) {
+    width: 120px !important;
+    height: 120px !important;
+    border-radius: 50%;
+    border: 3.5px solid rgba(212, 175, 55, 0.35);
+    object-fit: cover;
+    background: #111;
+  }
+  :global(.small-avatar) { width: 90px !important; height: 90px !important; }
+
+  :global(.status-dot-container) { position: relative; flex-shrink: 0; }
+  :global(.online-indicator) {
+    position: absolute; bottom: 6px; right: 6px; 
+    width: 18px; height: 18px; border-radius: 50%; 
+    border: 3.5px solid #151515;
   }
 
   /* --- BOTONES DE ACCIÓN --- */
-  :global(.friend-btn) {
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: filter 0.2s;
+  :global(.btn-group) { 
+    display: flex; 
+    gap: 1.2rem; 
+    z-index: 10; 
+    position: relative; 
+    pointer-events: auto;
+  }
+  
+  :global(.btn-action) {
+    width: 50px; height: 50px; border-radius: 14px;
+    cursor: pointer; transition: transform 0.2s ease, filter 0.2s;
+    border: none; display: flex; align-items: center; justify-content: center;
   }
 
-  :global(.friend-btn.challenge) {
-    background: linear-gradient(135deg, var(--color-gold), var(--color-gold-light));
-    color: #000;
+  :global(.btn-action:hover) { 
+    transform: scale(1.1); 
+    filter: brightness(1.2); 
   }
 
-  :global(.friend-btn.accept) {
-    background: linear-gradient(135deg, var(--color-success), var(--color-success-alt));
-    color: #000;
+  :global(.btn-icon-img) { width: 26px; height: 26px; object-fit: contain; }
+
+  /* Colores de botones y Assets */
+  :global(.btn-primary-action) {
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));border: none !important; }
+  :global(.btn-primary-action .btn-icon-img) {filter: brightness(0); }
+  :global(.btn-aceptar) { background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.3) !important; }
+  :global(.btn-aceptar .btn-icon-img) { filter: invert(72%) sepia(85%) saturate(336%) hue-rotate(94deg); }
+  :global(.btn-rechazar) { background: rgba(223, 243, 4, 0.1); border: 1px solid rgba(248, 113, 113, 0.3) !important; }
+  :global(.btn-rechazar .btn-icon-img) { filter: invert(56%) sepia(57%) saturate(2854%) hue-rotate(320deg); }
+
+  :global(.streak-badge) {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: rgba(255, 120, 0, 0.18);
+    border: 1px solid rgba(255, 120, 0, 0.45);
+    color: #ffb066;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    margin-left: 14px;
   }
 
-  :global(.friend-btn.decline) {
-    background: linear-gradient(135deg, var(--color-danger), var(--color-danger-dark));
-    color: #fff;
+  :global(.streak-icon) {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 4px rgba(255, 40, 0, 0.6));
   }
 
-  :global(.friend-btn:hover) {
-    filter: brightness(1.2);
-  }
+  /* SCROLLBAR */
+  .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, var(--gold-primary), var(--gold-dark)); border-radius: 10px; }
 
-  /* --- RESPONSIVE --- */
-  @media (max-width: 1250px) {
-    .friends-grid {
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-    }
-    .friends-section { width: 100% !important; max-width: 500px; height: 500px; }
-  }
+  @media (max-width: 1400px) { .friends-hybrid-grid { grid-template-columns: 1fr; } }
 </style>
