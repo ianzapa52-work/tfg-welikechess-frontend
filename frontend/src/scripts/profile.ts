@@ -26,8 +26,12 @@ const initProfile = () => {
     }
 
     // 1. Datos Básicos del Perfil
+    const cleanEmail = (userData.email || "").length > 50 
+        ? userData.email.substring(0, 50) 
+        : (userData.email || "");
+
     document.getElementById("profile-username").textContent = userData.name || "USUARIO";
-    document.getElementById("profile-email").textContent = userData.email || "";
+    document.getElementById("profile-email").textContent = cleanEmail;
     document.getElementById("current-avatar").src = userData.avatar || "/avatars/w_king_avatar.png";
     document.getElementById("stat-rating").textContent = userData.rating || 1200;
     document.getElementById("stat-ranking").textContent = `#${userData.ranking || '---'}`;
@@ -66,9 +70,12 @@ const initProfile = () => {
     const scrollContainer = document.getElementById("avatarScrollContainer");
 
     if (avatarBtn && avatarMenu && scrollContainer) {
+        // Función reutilizable para cerrar el menú animado
+        const closeMenu = () => avatarMenu.classList.remove("is-open");
+
         avatarBtn.onclick = (e) => {
             e.stopPropagation();
-            avatarMenu.classList.toggle("hidden");
+            avatarMenu.classList.toggle("is-open");
         };
 
         if (scrollContainer.innerHTML.trim() === "") {
@@ -89,19 +96,23 @@ const initProfile = () => {
             if (e.target.tagName === "IMG") {
                 const fileName = e.target.dataset.file;
                 const newPath = `/avatars/${fileName}`;
+                
                 scrollContainer.querySelectorAll('img').forEach(img => img.classList.remove('active'));
                 e.target.classList.add('active');
                 
                 userData.avatar = newPath;
                 localStorage.setItem("user", JSON.stringify(userData));
                 document.getElementById("current-avatar").src = newPath;
-                setTimeout(() => avatarMenu.classList.add("hidden"), 300);
+                
+                // Cierre animado: esperamos un poco para que se vea la selección
+                setTimeout(closeMenu, 300);
             }
         };
 
+        // Cerrar al hacer clic fuera
         document.addEventListener('click', (e) => {
             if (!avatarMenu.contains(e.target) && e.target !== avatarBtn) {
-                avatarMenu.classList.add("hidden");
+                closeMenu();
             }
         });
     }

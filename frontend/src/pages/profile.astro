@@ -35,15 +35,19 @@ import BaseLayout from "../layouts/BaseLayout.astro";
               </button>
             </div>
 
-            <div class="flex-1 min-w-[300px] lg:min-w-[680px] text-center lg:text-left space-y-8">
+            <div class="flex-1 min-w-[300px] lg:min-w-[900px] text-center lg:text-left space-y-8">
               <div class="space-y-2">
                 <h2 
                   id="profile-username"
                   class="font-black text-white tracking-tighter italic uppercase leading-none
-                        max-w-[500px] truncate
+                        max-w-[900px] truncate
                         text-[clamp(2rem,8vw,5.5rem)]">
                 </h2>
-                <p class="text-zinc-500 text-xl md:text-3xl font-medium italic" id="profile-email">---</p>
+                <p 
+                  class="text-zinc-500 text-xl md:text-3xl font-medium italic truncate max-w-[500px] lg:max-w-none" 
+                  id="profile-email">
+                  ---
+                </p>
               </div>
               
               <div class="flex flex-wrap justify-center lg:justify-start gap-6 pt-4">
@@ -178,9 +182,24 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     box-shadow: 0 0 20px rgba(234, 179, 8, 0.4);
   }
 
-  #avatarMenu:not(.hidden) {
+  #avatarMenu {
     display: block;
-    animation: expandDown 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                opacity 0.4s ease,
+                transform 0.4s ease;
+    transform: translateY(-10px);
+    pointer-events: none;
+  }
+
+  #avatarMenu.is-open {
+    max-height: 1000px;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    margin-top: 4rem;
   }
 
   @keyframes expandDown {
