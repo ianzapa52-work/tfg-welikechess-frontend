@@ -28,20 +28,31 @@ export default function ModalManager() {
 
   return (
     <>
-      <ModalFrame isOpen={activeModal === 'settings'} onClose={() => setActiveModal(null)}>
+      {/* Modal de Ajustes (Grande) */}
+      <ModalFrame 
+        isOpen={activeModal === 'settings'} 
+        onClose={() => setActiveModal(null)}
+        size="max-w-[115rem]"
+      >
         <SettingsForm />
       </ModalFrame>
 
-      <ModalFrame isOpen={activeModal === 'login'} onClose={() => setActiveModal(null)}>
-        <LoginForm 
-          onSwitchToRegister={() => setActiveModal('register')} 
-        />
+      {/* Modal de Login (Ancho intermedio) */}
+      <ModalFrame 
+        isOpen={activeModal === 'login'} 
+        onClose={() => setActiveModal(null)}
+        size="max-w-lg" 
+      >
+        <LoginForm onSwitchToRegister={() => setActiveModal('register')} />
       </ModalFrame>
 
-      <ModalFrame isOpen={activeModal === 'register'} onClose={() => setActiveModal(null)}>
-        <RegisterForm 
-          onSwitchToLogin={() => setActiveModal('login')} 
-        />
+      {/* Modal de Registro (Ancho intermedio) */}
+      <ModalFrame 
+        isOpen={activeModal === 'register'} 
+        onClose={() => setActiveModal(null)}
+        size="max-w-lg"
+      >
+        <RegisterForm onSwitchToLogin={() => setActiveModal('login')} />
       </ModalFrame>
     </>
   );

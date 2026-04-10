@@ -121,7 +121,7 @@ const initProfile = () => {
     if (logoutBtn) {
         logoutBtn.addEventListener("click", () => {
             localStorage.removeItem("user");
-            window.location.href = "/login";
+            window.location.href = "/";
         });
     }
 
