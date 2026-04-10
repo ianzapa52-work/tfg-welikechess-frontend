@@ -12,8 +12,8 @@ window.addEventListener("load", () => {
 
     const game = new Chess();
     let selectedSquare: Square | null = null;
+    let draggedPiece: HTMLElement | null = null;
 
-    // Sonidos
     const moveSound = new Audio("/sounds/move_sound.mp3");
     const captureSound = new Audio("/sounds/capture_sound.mp3");
 
@@ -28,18 +28,11 @@ window.addEventListener("load", () => {
         for (let i = 0; i < 64; i++) {
             const row = Math.floor(i / 8);
             const col = i % 8;
-            const square = document.createElement("div");
             const coord = (String.fromCharCode(97 + col) + (8 - row)) as Square;
+            const square = document.createElement("div");
             
             square.className = `square ${(row + col) % 2 === 1 ? "dark" : "light"}`;
             square.dataset.coord = coord;
-
-            square.addEventListener("dragover", (e) => e.preventDefault());
-            square.addEventListener("drop", (e) => {
-                e.preventDefault();
-                const from = e.dataTransfer?.getData("text/plain") as Square;
-                if (from) executeMove(from, coord);
-            });
 
             square.onclick = () => handleSquareClick(coord);
             boardEl.appendChild(square);
@@ -53,14 +46,11 @@ window.addEventListener("load", () => {
 
         squares.forEach((sq, i) => {
             const squareEl = sq as HTMLElement;
-            const row = Math.floor(i / 8);
-            const col = i % 8;
-            const piece = state[row][col];
             const coord = squareEl.dataset.coord as Square;
+            const piece = state[Math.floor(i / 8)][i % 8];
 
-            // Limpiamos siempre las marcas de movimientos legales previos
-            squareEl.classList.remove("legal-move");
-            // NOTA: Se ha eliminado squareEl.classList.remove("selected") ya que no se usa
+            // ELIMINADO: Ya no añadimos la clase 'selected' aquí para evitar el brillo azul
+            squareEl.classList.remove("selected", "legal-move");
 
             let img = squareEl.querySelector("img");
             if (piece) {
@@ -69,14 +59,30 @@ window.addEventListener("load", () => {
                     img.className = "piece";
                     squareEl.appendChild(img);
                 }
-                const newSrc = getPieceImage(piece);
-                if (img.getAttribute("src") !== newSrc) img.src = newSrc;
-                
-                img.draggable = piece.color === game.turn();
-                img.ondragstart = (e) => {
-                    e.dataTransfer?.setData("text/plain", coord);
+                img.src = getPieceImage(piece);
+                img.style.opacity = "1";
+
+                img.onmousedown = (e) => {
+                    if (piece.color !== game.turn()) return;
+                    e.preventDefault();
+                    
                     selectedSquare = coord;
+                    const originalPiece = img as HTMLElement;
+
+                    originalPiece.style.opacity = "0.4";
+                    
+                    draggedPiece = originalPiece.cloneNode(true) as HTMLElement;
+                    draggedPiece.style.opacity = "1";
+                    draggedPiece.classList.add("dragging-active");
+                    
+                    document.body.appendChild(draggedPiece);
+                    document.body.classList.add("is-dragging");
+                    
+                    movePieceAt(e.pageX, e.pageY);
                     highlightLegalMoves(coord);
+                    
+                    // Nos aseguramos de que al empezar a arrastrar no haya ninguna casilla con brillo azul
+                    boardEl.querySelectorAll(".square").forEach(s => s.classList.remove("selected"));
                 };
             } else if (img) {
                 img.remove();
@@ -84,35 +90,61 @@ window.addEventListener("load", () => {
         });
     }
 
+    document.onmousemove = (e) => {
+        if (draggedPiece) movePieceAt(e.pageX, e.pageY);
+    };
+
+    document.onmouseup = (e) => {
+        if (!draggedPiece || !selectedSquare) return;
+
+        const from = selectedSquare;
+        draggedPiece.remove();
+        draggedPiece = null;
+        document.body.classList.remove("is-dragging");
+
+        const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+        const squareBelow = elementBelow?.closest(".square") as HTMLElement;
+        const to = squareBelow?.dataset.coord as Square;
+
+        if (to && from !== to) {
+            executeMove(from, to);
+        } else {
+            updateBoardPieces();
+        }
+    };
+
+    function movePieceAt(x: number, y: number) {
+        if (draggedPiece) {
+            draggedPiece.style.left = x + "px";
+            draggedPiece.style.top = y + "px";
+        }
+    }
+
     function highlightLegalMoves(square: Square) {
-        // Limpiamos puntos de movimientos legales actuales antes de poner los nuevos
         boardEl.querySelectorAll(".square").forEach(s => s.classList.remove("legal-move"));
-        
         const moves = game.moves({ square, verbose: true });
         moves.forEach(m => {
-            const target = boardEl.querySelector(`[data-coord="${m.to}"]`);
-            target?.classList.add("legal-move");
+            boardEl.querySelector(`[data-coord="${m.to}"]`)?.classList.add("legal-move");
         });
     }
 
     function handleSquareClick(coord: Square) {
         const piece = game.get(coord);
-
+        
         if (selectedSquare) {
-            // CAMBIO DIRECTO: Si haces clic en otra pieza de tu color, cambia la selección
             if (piece && piece.color === game.turn() && coord !== selectedSquare) {
                 selectedSquare = coord;
+                updateBoardPieces();
                 highlightLegalMoves(coord);
+                // Si quieres que al hacer CLICK (no arrastre) sí brille, podrías añadirlo aquí,
+                // pero como pides quitarlo, lo dejamos limpio.
                 return;
             }
-            // Si es un movimiento a casilla vacía o captura, intentamos ejecutar
             executeMove(selectedSquare, coord);
-        } else {
-            // Primera selección (siempre que sea pieza del color del turno)
-            if (piece && piece.color === game.turn()) {
-                selectedSquare = coord;
-                highlightLegalMoves(coord);
-            }
+        } else if (piece && piece.color === game.turn()) {
+            selectedSquare = coord;
+            updateBoardPieces();
+            highlightLegalMoves(coord);
         }
     }
 
@@ -120,25 +152,25 @@ window.addEventListener("load", () => {
         try {
             const move = game.move({ from, to, promotion: "q" });
             if (move) {
+                selectedSquare = null;
                 move.captured ? captureSound.play().catch(()=>null) : moveSound.play().catch(()=>null);
                 if (move.captured) addCaptured(move);
                 updateUI();
             }
-        } catch (e) { /* Movimiento inválido */ }
+        } catch (e) {}
 
-        // Al mover o fallar, reseteamos estado y limpiamos visuales
         selectedSquare = null;
-        boardEl.querySelectorAll(".square").forEach(s => s.classList.remove("legal-move"));
         updateBoardPieces();
     }
 
     function addCaptured(move: ChessMove) {
-        const container = move.color === "w" ? capWhite : capBlack;
+        const container = move.color === "w" ? capBlack : capWhite;
         const img = document.createElement("img");
         const map: Record<string, string> = { p: "pawn", r: "rook", n: "horse", b: "bishop", q: "queen", k: "king" };
         const colorChar = move.color === "w" ? "b" : "w"; 
+        
         img.src = `/pieces/${colorChar}_${map[move.captured!]}.svg`;
-        img.style.width = "20px";
+        img.style.width = "22px";
         img.style.filter = "drop-shadow(0 2px 2px rgba(0,0,0,0.5))";
         container.appendChild(img);
     }
@@ -162,7 +194,7 @@ window.addEventListener("load", () => {
             moveBody.appendChild(tr);
         }
         
-        const scroll = moveBody.parentElement?.parentElement;
+        const scroll = moveBody.closest(".history-scroll");
         if (scroll) scroll.scrollTop = scroll.scrollHeight;
     }
 
@@ -170,7 +202,7 @@ window.addEventListener("load", () => {
         game.reset();
         capWhite.innerHTML = "";
         capBlack.innerHTML = "";
-        selectedSquare = null; // Limpiar selección en reset
+        selectedSquare = null;
         updateUI();
         updateBoardPieces();
     };

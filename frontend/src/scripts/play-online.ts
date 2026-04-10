@@ -34,6 +34,7 @@ window.addEventListener("load", () => {
         const square = document.createElement("div");
         const coord = (String.fromCharCode(97 + colIndex) + (8 - rowIndex)) as Square;
         square.className = `square ${(rowIndex + colIndex) % 2 === 1 ? "dark" : "light"}`;
+        square.dataset.coord = coord;
         
         if (selectedSquare === coord) square.classList.add("selected");
 
@@ -41,12 +42,25 @@ window.addEventListener("load", () => {
           const img = document.createElement("img");
           img.src = getPieceImage(piece);
           img.className = "piece";
+          
           // Solo permitir drag si es el turno
           img.draggable = piece.color === state.turn;
+
+          // EVENTO: INICIO DEL ARRASTRE
           img.addEventListener("dragstart", (e) => {
             e.dataTransfer?.setData("text/plain", coord);
             selectedSquare = coord;
+            // Aquí llamarías a tu función de resaltar movimientos si la tienes implementada
+            // highlightLegalMoves(coord); 
           });
+
+          // EVENTO: AL SOLTAR (CORRECCIÓN CLAVE)
+          // 'dragend' se dispara siempre al soltar la pieza, sea un movimiento válido o no
+          img.addEventListener("dragend", () => {
+            boardEl.querySelectorAll(".square").forEach(s => s.classList.remove("legal-move", "selected"));
+            selectedSquare = null;
+          });
+
           square.appendChild(img);
         }
 
@@ -55,20 +69,27 @@ window.addEventListener("load", () => {
             if (piece && piece.color === state.turn) {
                 selectedSquare = coord;
                 renderState(state); 
+                // highlightLegalMoves(coord);
             }
           } else {
             sendMove(selectedSquare, coord);
             selectedSquare = null;
+            boardEl.querySelectorAll(".square").forEach(s => s.classList.remove("legal-move", "selected"));
           }
         };
 
         square.addEventListener("dragover", (e) => e.preventDefault());
+
         square.addEventListener("drop", (e) => {
           e.preventDefault();
           const from = e.dataTransfer?.getData("text/plain") as Square;
           if (from) sendMove(from, coord);
+          
+          // Limpieza inmediata tras el drop
           selectedSquare = null;
+          boardEl.querySelectorAll(".square").forEach(s => s.classList.remove("legal-move", "selected"));
         });
+
         boardEl.appendChild(square);
       });
     });

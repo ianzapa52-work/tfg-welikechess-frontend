@@ -12,6 +12,7 @@ window.addEventListener("load", () => {
 
     const game = new Chess();
     let selectedSquare: Square | null = null;
+    let draggedPiece: HTMLElement | null = null;
 
     const moveSound = new Audio("/sounds/move_sound.mp3");
     const captureSound = new Audio("/sounds/capture_sound.mp3");
@@ -27,19 +28,11 @@ window.addEventListener("load", () => {
         for (let i = 0; i < 64; i++) {
             const row = Math.floor(i / 8);
             const col = i % 8;
-            const square = document.createElement("div");
             const coord = (String.fromCharCode(97 + col) + (8 - row)) as Square;
+            const square = document.createElement("div");
             
             square.className = `square ${(row + col) % 2 === 1 ? "dark" : "light"}`;
             square.dataset.coord = coord;
-
-            square.addEventListener("dragover", (e) => e.preventDefault());
-            square.addEventListener("drop", (e) => {
-                e.preventDefault();
-                if (game.turn() !== 'w') return;
-                const from = e.dataTransfer?.getData("text/plain") as Square;
-                if (from) executeMove(from, coord);
-            });
 
             square.onclick = () => { if (game.turn() === 'w') handleSquareClick(coord); };
             boardEl.appendChild(square);
@@ -51,13 +44,11 @@ window.addEventListener("load", () => {
         const state = game.board();
         const squares = boardEl.querySelectorAll(".square");
 
-        squares.forEach((sq) => {
+        squares.forEach((sq, i) => {
             const squareEl = sq as HTMLElement;
             const coord = squareEl.dataset.coord as Square;
-            const pos = { row: 8 - parseInt(coord[1]), col: coord.charCodeAt(0) - 97 };
-            const piece = state[pos.row][pos.col];
+            const piece = state[Math.floor(i / 8)][i % 8];
 
-            // Limpieza: quitamos selected y legal-move siempre al actualizar
             squareEl.classList.remove("selected", "legal-move");
             if (selectedSquare === coord) squareEl.classList.add("selected");
 
@@ -69,11 +60,27 @@ window.addEventListener("load", () => {
                     squareEl.appendChild(img);
                 }
                 img.src = getPieceImage(piece);
-                img.draggable = piece.color === 'w' && game.turn() === 'w';
-                img.ondragstart = (e) => {
-                    if (game.turn() !== 'w') return;
-                    e.dataTransfer?.setData("text/plain", coord);
+                img.style.opacity = "1";
+
+                img.onmousedown = (e) => {
+                    if (game.turn() !== 'w' || piece.color !== 'w') return;
+                    e.preventDefault();
+                    
                     selectedSquare = coord;
+                    const originalPiece = img as HTMLElement;
+
+                    // 1. Efecto fantasma en la casilla de origen
+                    originalPiece.style.opacity = "0.4";
+                    
+                    // 2. Crear clon y asegurar que sea 100% sólido
+                    draggedPiece = originalPiece.cloneNode(true) as HTMLElement;
+                    draggedPiece.style.opacity = "1"; // <--- Forzamos solidez aquí
+                    draggedPiece.classList.add("dragging-active");
+                    
+                    document.body.appendChild(draggedPiece);
+                    document.body.classList.add("is-dragging");
+                    
+                    movePieceAt(e.pageX, e.pageY);
                     highlightLegalMoves(coord);
                 };
             } else if (img) {
@@ -82,12 +89,41 @@ window.addEventListener("load", () => {
         });
     }
 
+    document.onmousemove = (e) => {
+        if (draggedPiece) movePieceAt(e.pageX, e.pageY);
+    };
+
+    document.onmouseup = (e) => {
+        if (!draggedPiece || !selectedSquare) return;
+
+        const from = selectedSquare;
+        draggedPiece.remove();
+        draggedPiece = null;
+        document.body.classList.remove("is-dragging");
+
+        const elementBelow = document.elementFromPoint(e.clientX, e.clientY);
+        const squareBelow = elementBelow?.closest(".square") as HTMLElement;
+        const to = squareBelow?.dataset.coord as Square;
+
+        if (to && from !== to) {
+            executeMove(from, to);
+        } else {
+            updateBoardPieces(); // Restaura la opacidad si se suelta fuera
+        }
+    };
+
+    function movePieceAt(x: number, y: number) {
+        if (draggedPiece) {
+            draggedPiece.style.left = x + "px";
+            draggedPiece.style.top = y + "px";
+        }
+    }
+
     function highlightLegalMoves(square: Square) {
         boardEl.querySelectorAll(".square").forEach(s => s.classList.remove("legal-move"));
         const moves = game.moves({ square, verbose: true });
         moves.forEach(m => {
-            const target = boardEl.querySelector(`[data-coord="${m.to}"]`);
-            target?.classList.add("legal-move");
+            boardEl.querySelector(`[data-coord="${m.to}"]`)?.classList.add("legal-move");
         });
     }
 
@@ -97,6 +133,7 @@ window.addEventListener("load", () => {
             if (piece && piece.color === "w") {
                 selectedSquare = coord;
                 highlightLegalMoves(coord);
+                updateBoardPieces();
             }
         } else {
             executeMove(selectedSquare, coord);
@@ -107,15 +144,19 @@ window.addEventListener("load", () => {
         try {
             const move = game.move({ from, to, promotion: "q" });
             if (move) {
-                selectedSquare = null; // Quitamos la selección para que no brille la casilla origen
+                selectedSquare = null;
                 move.captured ? captureSound.play().catch(()=>null) : moveSound.play().catch(()=>null);
                 if (move.captured) updateCaptured(move);
+                
                 updateUI();
                 updateBoardPieces();
 
                 if (!game.isGameOver()) {
                     setTimeout(makeAIMove, 600);
                 }
+            } else {
+                selectedSquare = null;
+                updateBoardPieces();
             }
         } catch (e) { 
             selectedSquare = null;
@@ -126,6 +167,7 @@ window.addEventListener("load", () => {
     function makeAIMove() {
         const moves = game.moves({ verbose: true });
         if (moves.length === 0) return;
+        
         const captureMoves = moves.filter(m => m.captured);
         const finalMove = captureMoves.length > 0 
             ? captureMoves[Math.floor(Math.random() * captureMoves.length)]
@@ -134,6 +176,7 @@ window.addEventListener("load", () => {
         const move = game.move(finalMove);
         move.captured ? captureSound.play().catch(()=>null) : moveSound.play().catch(()=>null);
         if (move.captured) updateCaptured(move);
+        
         updateUI();
         updateBoardPieces();
     }
@@ -144,7 +187,7 @@ window.addEventListener("load", () => {
         const map: Record<string, string> = { p: "pawn", r: "rook", n: "horse", b: "bishop", q: "queen", k: "king" };
         const colorChar = move.color === "w" ? "b" : "w"; 
         img.src = `/pieces/${colorChar}_${map[move.captured!]}.svg`;
-        img.style.width = "28px";
+        img.style.width = "24px";
         container.appendChild(img);
     }
 

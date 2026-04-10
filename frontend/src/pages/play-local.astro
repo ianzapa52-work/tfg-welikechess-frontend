@@ -54,6 +54,10 @@ import "../styles/chessboard.css";
 </BaseLayout>
 
 <style is:global>
+  body.is-dragging, body.is-dragging * {
+    cursor: grabbing !important;
+  }
+
   .main-screen {
     min-height: calc(100vh - 80px);
     display: flex;
@@ -63,7 +67,6 @@ import "../styles/chessboard.css";
     overflow-x: hidden;
   }
 
-  /* LAYOUT: Columna en móvil, Grid en Desktop */
   .game-wrapper {
     display: flex;
     flex-direction: column;
@@ -85,7 +88,6 @@ import "../styles/chessboard.css";
 
   .side-panel { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 500px; }
 
-  /* Estética Premium */
   .player-box, .history-card {
     background: rgba(0, 0, 0, 0.75);
     border: 1px solid rgba(212, 175, 55, 0.4);
@@ -94,7 +96,6 @@ import "../styles/chessboard.css";
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
 
-  /* Ajuste para que los jugadores salgan en fila en móvil si hay espacio */
   .players {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -117,7 +118,6 @@ import "../styles/chessboard.css";
     text-align: center;
   }
 
-  /* EL TABLERO RESPONSIVO */
   .board-frame {
     background: rgba(0, 0, 0, 0.4);
     padding: 10px;
@@ -134,6 +134,7 @@ import "../styles/chessboard.css";
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
+    position: relative;
   }
 
   @media (min-width: 768px) {
@@ -163,14 +164,27 @@ import "../styles/chessboard.css";
     height: 90%;
     cursor: grab;
     filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
+    touch-action: none;
+    user-select: none;
+    z-index: 5;
+    transition: opacity 0.2s ease;
   }
 
-  /* Coordenadas adaptadas */
+  .piece.dragging-active {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    width: 65px;
+    height: 65px;
+    transform: translate(-50%, -50%) scale(1.15);
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+    cursor: grabbing !important;
+  }
+
   .coords-h { display: flex; justify-content: space-around; margin-left: 20px; color: #d4af37; font-size: 0.7rem; opacity: 0.6; }
   .coords-v { display: flex; flex-direction: column; justify-content: space-around; width: 20px; color: #d4af37; font-size: 0.7rem; opacity: 0.6; }
   .board-flex { display: flex; }
 
-  /* Historial compacto en móvil */
   .history-scroll { height: 100px; overflow-y: auto; color: #ccc; font-size: 0.8rem; }
   
   @media (min-width: 1200px) {
@@ -196,5 +210,12 @@ import "../styles/chessboard.css";
     font-family: 'Cinzel', serif;
     cursor: pointer;
     font-size: 0.8rem;
+  }
+
+  .mini-captured {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    min-height: 24px;
   }
 </style>
