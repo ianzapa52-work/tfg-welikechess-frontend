@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
-import SettingsManager from "../components/SettingsManager.tsx";
+// Importamos el Manager que centraliza los popups de Login y Settings
+import ModalManager from "../components/modals/ModalManager";
 const { title = "WELIKECHESS" } = Astro.props;
 ---
 
@@ -44,15 +45,8 @@ const { title = "WELIKECHESS" } = Astro.props;
 
       <div class="flex-1 text-center">
         <a href="/" class="inline-block group">
-          <h1
-            id="navBrand"
-            class="text-2xl sm:text-3xl md:text-5xl font-black tracking-[0.1em] md:tracking-[0.2em] 
-                   bg-gradient-to-b from-[#d4af37] via-[#f2d47e] to-[#996515]
-                   bg-clip-text text-transparent cursor-pointer 
-                   transition-all duration-500 transform group-hover:scale-105"
-            style="font-family: 'Cinzel', serif; filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.3));"
-          >
-            WELIKECHESS
+          <h1 class="text-4xl md:text-5xl font-black tracking-tight" style="font-family: 'Cinzel', serif;">
+            <span class="bg-gradient-to-b from-[#fefcf0] via-[#d4af37] to-[#996515] bg-clip-text text-transparent">WELIKE</span><span class="text-white">CHESS</span>
           </h1>
           <div class="h-[2px] w-0 group-hover:w-full bg-gradient-to-r from-transparent via-[#d4af37] to-transparent transition-all duration-500 opacity-50"></div>
         </a>
@@ -108,7 +102,7 @@ const { title = "WELIKECHESS" } = Astro.props;
       <slot />
     </main>
 
-    <SettingsManager client:load />
+    <ModalManager client:load />
 
     <script>
       import "../scripts/theme.ts";

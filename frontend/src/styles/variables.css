@@ -29,7 +29,7 @@
 
 /* CAMBIO AQUÍ: Usamos :root para evitar el flashazo */
 :root.dark-mode {
-  --bg-body: url("/backgrounds/wood-dark.jpg");
+  --bg-body: url("/backgrounds/black_background.jpg");
   --bg-panel: #141414;
   --bg-card: rgba(25, 25, 25, 0.95);
   --text-main: #f5f5f5;
