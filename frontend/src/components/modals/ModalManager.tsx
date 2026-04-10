@@ -1,37 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import ModalFrame from './ModalFrame';
-import LoginForm from '../LoginForm';
 import SettingsForm from '../SettingsForm';
+import LoginForm from '../LoginForm';
+import RegisterForm from '../RegisterForm';
 
 export default function ModalManager() {
-  const [activeModal, setActiveModal] = useState<null | 'auth' | 'settings'>(null);
+  const [activeModal, setActiveModal] = useState<'settings' | 'login' | 'register' | null>(null);
 
   useEffect(() => {
-    const openAuth = () => setActiveModal('auth');
     const openSettings = () => setActiveModal('settings');
-    const closeAll = () => setActiveModal(null);
+    const openLogin = () => setActiveModal('login');
+    const openRegister = () => setActiveModal('register');
+    const closeModals = () => setActiveModal(null);
 
-    window.addEventListener('open-auth', openAuth);
     window.addEventListener('open-settings', openSettings);
-    window.addEventListener('close-modals', closeAll);
+    window.addEventListener('open-login', openLogin);
+    window.addEventListener('open-register', openRegister);
+    window.addEventListener('close-modals', closeModals);
 
     return () => {
-      window.removeEventListener('open-auth', openAuth);
       window.removeEventListener('open-settings', openSettings);
-      window.removeEventListener('close-modals', closeAll);
+      window.removeEventListener('open-login', openLogin);
+      window.removeEventListener('open-register', openRegister);
+      window.removeEventListener('close-modals', closeModals);
     };
   }, []);
 
-  const close = () => setActiveModal(null);
-
   return (
     <>
-      <ModalFrame isOpen={activeModal === 'auth'} onClose={close}>
-        <div className="p-8"><LoginForm /></div>
+      <ModalFrame isOpen={activeModal === 'settings'} onClose={() => setActiveModal(null)}>
+        <SettingsForm />
       </ModalFrame>
 
-      <ModalFrame isOpen={activeModal === 'settings'} onClose={close}>
-        <div className="p-8"><SettingsForm /></div>
+      <ModalFrame isOpen={activeModal === 'login'} onClose={() => setActiveModal(null)}>
+        <LoginForm 
+          onSwitchToRegister={() => setActiveModal('register')} 
+        />
+      </ModalFrame>
+
+      <ModalFrame isOpen={activeModal === 'register'} onClose={() => setActiveModal(null)}>
+        <RegisterForm 
+          onSwitchToLogin={() => setActiveModal('login')} 
+        />
       </ModalFrame>
     </>
   );

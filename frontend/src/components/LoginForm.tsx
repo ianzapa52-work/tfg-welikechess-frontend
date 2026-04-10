@@ -1,87 +1,69 @@
 import React, { useState } from 'react';
 
-export default function LoginForm() {
+export default function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => void }) {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Tu lógica de negocio actual
+    const emailValue = email || "user@chess.com";
     const user = {
-      name: email.split('@')[0].toUpperCase(),
-      email: email,
+      name: emailValue.split('@')[0].toUpperCase(),
+      email: emailValue,
       avatar: "/avatars/w_king_avatar.png"
     };
-
-    const stats = {
-      rating: 1200, 
-      totalGames: 0, 
-      wins: 0, 
-      losses: 0, 
-      draws: 0, 
-      puzzlesSolved: 0, 
-      puzzlesFailed: 0
-    };
-
     localStorage.setItem("user", JSON.stringify(user));
-    localStorage.setItem("stats", JSON.stringify(stats));
-
-    // Redirección profesional
     window.location.assign("/profile");
   };
 
   return (
-    <div className="w-full max-w-[420px] p-8 rounded-xl border border-[#d4af37]/30 bg-[rgba(20,20,20,0.85)] backdrop-blur-xl shadow-[0_10px_50px_rgba(0,0,0,0.5)]">
-      
-      <div className="flex justify-center mb-6">
-        <img src="/pieces/w_king.svg" alt="Logo" className="w-16 drop-shadow-[0_0_10px_rgba(212,175,55,0.4)]" />
+    <div className="w-full p-12 md:p-20 space-y-12 flex flex-col items-center">
+      <div className="text-center space-y-4">
+        <h2 className="text-7xl font-black text-white tracking-[0.3em] font-['Cinzel'] leading-none uppercase">
+          Acceso
+        </h2>
+        <p className="text-[#d4af37] text-lg tracking-[0.4em] uppercase font-bold opacity-70">
+          Identifícate, Gran Maestro
+        </p>
       </div>
 
-      <h1 className="text-3xl font-bold mb-8 text-center text-white tracking-tight" style={{ fontFamily: "'Cinzel', serif" }}>
-        INICIAR SESIÓN
-      </h1>
-
-      <form onSubmit={handleLogin} className="flex flex-col gap-5">
-        <div>
-          <label className="block mb-2 text-[10px] uppercase tracking-[0.2em] font-bold text-[#d4af37]">Email</label>
-          <input
-            type="email"
+      <form onSubmit={handleSubmit} className="w-full max-w-2xl space-y-10">
+        <div className="space-y-6">
+          <input 
+            type="email" 
+            placeholder="EMAIL@CHESS.COM"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg bg-white/5 border border-zinc-800 text-white focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/30 outline-none transition-all placeholder:text-zinc-600"
-            placeholder="maestro@chess.com"
-            required
+            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-6 text-white text-xl focus:border-[#d4af37]/50 transition-all outline-none"
+          />
+          <input 
+            type="password" 
+            placeholder="CONTRASEÑA"
+            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-6 text-white text-xl focus:border-[#d4af37]/50 transition-all outline-none"
           />
         </div>
 
-        <div>
-          <label className="block mb-2 text-[10px] uppercase tracking-[0.2em] font-bold text-[#d4af37]">Contraseña</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg bg-white/5 border border-zinc-800 text-white focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/30 outline-none transition-all placeholder:text-zinc-600"
-            placeholder="••••••••"
-            required
-          />
+        <div className="flex items-center gap-8 w-full">
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#d4af37]/40"></div>
+          <button 
+            type="submit"
+            className="w-fit px-20 py-8 bg-gradient-to-r from-[#8a6d1d] via-[#d4af37] to-[#8a6d1d] text-black font-black uppercase text-xl tracking-[0.4em] rounded-[2rem] hover:scale-105 transition-all shadow-[0_20px_40px_rgba(212,175,55,0.2)] cursor-pointer"
+          >
+            Entrar
+          </button>
+          <div className="flex-1 h-px bg-gradient-to-r from-[#d4af37]/40 to-transparent"></div>
         </div>
-
-        <button
-          type="submit"
-          className="w-full py-4 mt-2 rounded-lg font-bold bg-gradient-to-br from-[#d4af37] to-[#996515] text-black hover:brightness-110 active:scale-[0.98] transition-all uppercase text-[11px] tracking-[0.2em]"
-          style={{ fontFamily: "'Cinzel', serif" }}
-        >
-          Entrar al Club
-        </button>
       </form>
 
-      <p className="text-center text-xs text-zinc-500 mt-6 tracking-wide">
-        ¿Aún no tienes rango? 
-        <a href="/register" className="ml-2 text-[#d4af37] hover:text-white transition-colors underline-offset-4 hover:underline">
-          Regístrate aquí
-        </a>
-      </p>
+      {/* ENLACE PARA CAMBIAR AL MODAL DE REGISTRO */}
+      <div className="flex flex-col items-center gap-4 text-xs font-black uppercase tracking-[0.2em]">
+        <span className="text-zinc-500 opacity-50">¿Aún no tienes cuenta?</span>
+        <button 
+          onClick={onSwitchToRegister}
+          className="text-[#d4af37] hover:text-white transition-colors cursor-pointer underline underline-offset-8 decoration-[#d4af37]/30"
+        >
+          Registrar nuevo gran maestro
+        </button>
+      </div>
     </div>
   );
 }
