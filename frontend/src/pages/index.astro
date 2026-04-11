@@ -123,7 +123,12 @@ import BaseLayout from "../layouts/BaseLayout.astro";
                 <h3 class="text-xs font-black uppercase text-[#d4af37] tracking-[0.2em] flex items-center gap-2">
                   <span class="w-1.5 h-1.5 bg-[#d4af37] rounded-full animate-pulse"></span> Actividad Reciente
                 </h3>
-                <a href="/history" class="text-[10px] text-zinc-500 hover:text-[#d4af37] uppercase font-bold transition-all">Ver todo</a>
+                <button 
+                  onclick="window.dispatchEvent(new CustomEvent('open-history'))" 
+                  class="text-[10px] text-zinc-500 hover:text-[#d4af37] uppercase font-bold transition-all cursor-pointer"
+                >
+                  Ver todo
+                </button>
             </div>
             <div class="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -137,7 +142,12 @@ import BaseLayout from "../layouts/BaseLayout.astro";
                       <p class="text-[10px] text-zinc-500">Blitz 3+2 • {i % 2 === 0 ? '+12' : '-10'} ELO</p>
                     </div>
                   </div>
-                  <a href="/history" class="px-4 py-1.5 bg-black border border-[#d4af37]/20 text-[10px] font-bold text-[#d4af37] rounded hover:bg-[#d4af37] hover:text-black transition-all transform active:scale-95">ANALIZAR</a>
+                  <button 
+                    onclick="window.dispatchEvent(new CustomEvent('open-history'))" 
+                    class="px-4 py-1.5 bg-black border border-[#d4af37]/20 text-[10px] font-bold text-[#d4af37] rounded hover:bg-[#d4af37] hover:text-black transition-all transform active:scale-95"
+                  >
+                    ANALIZAR
+                  </button>
                 </div>
               ))}
             </div>

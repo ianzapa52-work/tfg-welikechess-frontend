@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import EloWindow from './EloWindow';
 
 interface Player {
   id: string;
@@ -12,16 +11,20 @@ interface Player {
 }
 
 const PLAYERS_DATA: Player[] = [
-  { id: "1", name: "MAGNUS CARLSEN", elo: 2850, wins: 542, streak: 12, avatar: "/avatars/w_king_avatar.png", tier: "SUPER GRAN MAESTRO" },
-  { id: "2", name: "HIKARU NAKAMURA", elo: 2800, wins: 498, streak: 8, avatar: "/avatars/b_king_avatar.png", tier: "SUPER GRAN MAESTRO" },
-  { id: "3", name: "ALIREZA FIROUZJA", elo: 2780, wins: 320, streak: 5, avatar: "/avatars/w_rook_avatar.png", tier: "SUPER GRAN MAESTRO" },
-  { id: "4", name: "FABIANO CARUANA", elo: 2765, wins: 410, streak: 3, avatar: "/avatars/b_queen_avatar.png", tier: "SUPER GRAN MAESTRO" },
-  { id: "5", name: "IAN NEPOMNIACHTCHI", elo: 2750, wins: 380, streak: 0, avatar: "/avatars/b_bishop_avatar.png", tier: "SUPER GRAN MAESTRO" },
+  { id: "1", name: "MAGNUS CARLSEN", elo: 2850, wins: 542, streak: 12, avatar: "/avatars/w_king_avatar.png", tier: "GRAN MAESTRO" },
+  { id: "2", name: "HIKARU NAKAMURA", elo: 2800, wins: 498, streak: 8, avatar: "/avatars/b_king_avatar.png", tier: "GRAN MAESTRO" },
+  { id: "3", name: "ALIREZA FIROUZJA", elo: 2780, wins: 320, streak: 5, avatar: "/avatars/w_rook_avatar.png", tier: "GRAN MAESTRO" },
+  { id: "4", name: "FABIANO CARUANA", elo: 2765, wins: 410, streak: 3, avatar: "/avatars/b_queen_avatar.png", tier: "GRAN MAESTRO" },
+  { id: "5", name: "IAN NEPOMNIACHTCHI", elo: 2750, wins: 380, streak: 0, avatar: "/avatars/b_bishop_avatar.png", tier: "GRAN MAESTRO" },
 ];
 
 export default function RankingForm() {
   const [search, setSearch] = useState('');
-  const [isWindowOpen, setIsWindowOpen] = useState(false);
+
+  // Función para invocar el modal globalmente
+  const openEloReglamento = () => {
+    window.dispatchEvent(new Event('open-elo-info'));
+  };
 
   const filteredPlayers = useMemo(() => {
     return PLAYERS_DATA.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
@@ -45,7 +48,6 @@ export default function RankingForm() {
           <StatItem label="MAESTROS" value="3,120" />
         </div>
 
-        {/* REGISTRO CON SCROLL */}
         <div className="bg-black/40 border border-white/5 rounded-[32px] p-8 flex-grow flex flex-col min-h-0 overflow-hidden relative backdrop-blur-md">
            <h4 className="text-[#d4af37] font-['Cinzel'] text-[10px] tracking-[0.4em] mb-6 uppercase shrink-0">Registro de Actividad</h4>
            <div className="overflow-y-auto custom-scrollbar space-y-6 pr-2">
@@ -88,7 +90,7 @@ export default function RankingForm() {
             {topThree.map((p, i) => (
               <a key={p.id} href={`/players/${p.id}`} className="relative flex items-center gap-6 group">
                  <span className={`text-5xl font-['Cinzel'] font-black opacity-10 absolute -left-4 ${i === 0 ? 'text-[#d4af37]' : 'text-white'}`}>{i + 1}</span>
-                 <img src={p.avatar} className={`w-16 h-16 rounded-2xl border-2 ${i === 0 ? 'border-[#d4af37]' : 'border-white/10'} object-cover relative z-10 transition-transform group-hover:scale-105`} />
+                 <img src={p.avatar} className={`w-16 h-16 rounded-2xl border-2 ${i === 0 ? 'border-[#d4af37]' : 'border-white/10'} object-cover relative z-10 transition-transform group-hover:scale-105`} alt="" />
                  <div className="relative z-10">
                     <p className="text-white font-['Cinzel'] text-[11px] tracking-widest font-bold uppercase group-hover:text-[#d4af37] transition-colors">{p.name}</p>
                     <p className="text-[#d4af37] font-black text-lg">{p.elo}</p>
@@ -98,16 +100,13 @@ export default function RankingForm() {
           </div>
 
           <button 
-            onClick={() => setIsWindowOpen(true)}
+            onClick={openEloReglamento}
             className="mt-auto w-full py-5 bg-white/[0.03] border border-white/10 rounded-3xl text-[10px] text-white tracking-[0.4em] hover:bg-[#d4af37] hover:text-black transition-all font-black uppercase shadow-lg active:scale-95 cursor-pointer"
           >
             Reglamento ELO
           </button>
         </div>
       </div>
-
-      {/* COMPONENTE VENTANA */}
-      <EloWindow isOpen={isWindowOpen} onClose={() => setIsWindowOpen(false)} />
     </div>
   );
 }
@@ -139,10 +138,10 @@ function PlayerRow({ player, rank }: { player: Player, rank: number }) {
       </div>
       
       <div className="relative shrink-0">
-        <img src={player.avatar} className="w-16 h-16 md:w-20 md:h-20 rounded-[24px] object-cover border border-white/10 group-hover:border-[#d4af37]/40 transition-all duration-500 shadow-xl" />
+        <img src={player.avatar} className="w-16 h-16 md:w-20 md:h-20 rounded-[24px] object-cover border border-white/10 group-hover:border-[#d4af37]/40 transition-all duration-500 shadow-xl" alt="" />
         {player.streak >= 3 && (
           <div className="absolute -top-3 -right-3 flex flex-col items-center select-none">
-            <span className="text-xl drop-shadow-[0_0_8px_rgba(255,69,0,0.8)] animate-pulse-slow">🔥</span>
+            <span className="text-xl drop-shadow-[0_0_8px_rgba(255,69,0,0.8)] animate-pulse">🔥</span>
             <span className="text-[8px] bg-red-600/90 text-white font-black px-1.5 rounded-full -mt-2.5 relative z-10">x{player.streak}</span>
           </div>
         )}

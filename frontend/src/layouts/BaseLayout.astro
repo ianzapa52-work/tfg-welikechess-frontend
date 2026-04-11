@@ -82,7 +82,14 @@ const { title = "WELIKECHESS" } = Astro.props;
           <li><a href="/puzzles" class="menu-link">PUZZLES</a></li>
           <li><a href="/ranking" class="menu-link">RANKING</a></li>
           <li><a href="/friends" class="menu-link">AMIGOS</a></li>
-          <li><a href="/history" class="menu-link">HISTORIAL</a></li>
+          <li>
+            <button 
+              onclick="window.dispatchEvent(new CustomEvent('open-history'))" 
+              class="menu-link w-full text-left uppercase cursor-pointer"
+            >
+              Historial
+            </button>
+          </li>
           <li><a href="/profile" class="menu-link">PERFIL</a></li>
         </ul>
 

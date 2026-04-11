@@ -1,76 +1,37 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import HistoryForm from "../components/HistoryForm";
 ---
 
-<BaseLayout title="WELIKECHESS - Historial">
-
-  <div class="max-w-5xl mx-auto px-4 pt-20 pb-16">
-
-    <h1
-      class="text-6xl font-black mb-12 text-center
-            bg-gradient-to-b from-[#d4af37] via-[#f2d47e] to-[#996515]
-            bg-clip-text text-transparent drop-shadow-[0_2px_15px_rgba(212,175,55,0.4)]"
-      style="font-family: 'Cinzel', serif;"
-    >
-      HISTORIAL DE PARTIDAS
-    </h1>
-
-    <div id="history-container" class="history-panel">
-      <div id="loadingHistory" class="flex flex-col items-center justify-center py-20 gap-4">
-        <div class="w-10 h-10 border-4 border-gold/20 border-t-gold rounded-full animate-spin"></div>
-        <p class="text-gold/60 text-lg italic tracking-widest uppercase animate-pulse">
-          Recuperando registros...
-        </p>
-      </div>
-    </div>
-
-  </div>
-
-  <script>
-    import "../scripts/history.ts";
-  </script>
-
+<BaseLayout title="WELIKECHESS - Historial de Partidas">
+  <main class="min-h-screen bg-[#050505] relative overflow-hidden">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-[#d4af37]/5 blur-[120px] rounded-full pointer-events-none"></div>
+    
+    <HistoryForm client:load />
+  </main>
 </BaseLayout>
 
-<style>
-  .history-panel {
-    width: 100%;
-    max-width: 700px; /* Un poco más ancho para mejor legibilidad */
-    min-height: 650px;
-    margin: 0 auto;
-    padding: 2.5rem;
-    border-radius: 35px;
-    background: rgba(15, 15, 15, 0.95);
-    border: 2px solid rgba(212, 175, 55, 0.3);
-    box-shadow: 0 30px 60px rgba(0,0,0,0.7);
-    overflow-y: auto;
-    backdrop-filter: blur(20px);
+<style is:global>
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
   }
 
-  /* Estilos para las tarjetas de historial inyectadas */
-  :global(.history-card) {
+  .custom-scrollbar::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.02);
-    border-radius: 20px;
-    padding: 1.5rem;
-    margin-bottom: 1.2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid rgba(212, 175, 55, 0.1);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    font-family: 'Cinzel', serif;
-  }
-
-  :global(.history-card:hover) {
-    transform: scale(1.03) translateX(10px);
-    background: rgba(212, 175, 55, 0.1);
-    border-color: #d4af37;
-  }
-
-  /* Scrollbar personalizada */
-  .history-panel::-webkit-scrollbar { width: 8px; }
-  .history-panel::-webkit-scrollbar-thumb {
-    background: #996515;
     border-radius: 10px;
+    margin-block: 10px;
   }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.1);
+    border-radius: 10px;
+    transition: all 0.3s;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.4);
+  }
+
+  /* Aseguramos que Cinzel esté disponible */
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap');
 </style>
