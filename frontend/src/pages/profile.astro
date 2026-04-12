@@ -1,209 +1,39 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import ProfileForm from "../components/ProfileForm";
 ---
 
-<BaseLayout title="WELIKECHESS - Perfil" bodyClass="perfil-page">
-  <div class="min-h-screen pt-10 pb-24 px-4 sm:px-6 lg:px-12 max-w-[1400px] mx-auto">
+<BaseLayout title="Perfil de Maestro | WELIKECHESS">
+  <div class="h-[calc(100vh-80px)] w-full flex flex-col justify-end pb-10 relative overflow-hidden bg-[#050505]">
     
-    <div id="profile-user" class="flex flex-col opacity-0 transition-opacity duration-500">
+    {/* LUCES DE FONDO AMBIENTALES */}
+    <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#d4af37]/5 rounded-full blur-[160px]"></div>
+    <div class="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#d4af37]/5 rounded-full blur-[160px]"></div>
+
+    {/* HEADER TÉCNICO */}
+    <div class="max-w-[1800px] mx-auto w-full px-14 py-4 flex justify-between items-center opacity-30 select-none pointer-events-none">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2">
+          <div class="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse shadow-[0_0_8px_#eab308]"></div>
+          <span class="text-[9px] text-white tracking-[0.5em] font-bold uppercase">Estado: Gran Maestro</span>
+        </div>
+        <span class="text-white opacity-20 text-[9px]">|</span>
+        <span class="text-[9px] text-white tracking-[0.5em] font-light uppercase italic">User_Analytics_v3.4</span>
+      </div>
       
-      <header class="bg-zinc-900/60 backdrop-blur-2xl border border-white/10 rounded-t-[3.5rem] p-10 pb-16 shadow-2xl relative z-20">
-
-        <div class="relative pb-4">
-          
-          <button 
-            id="logoutBtn"
-            class="absolute bottom-0 right-0 px-8 py-3 
-                  bg-gradient-to-br from-red-700 to-red-600 
-                  hover:from-red-600 hover:to-red-500
-                  text-white font-black rounded-3xl text-xs uppercase tracking-widest
-                  shadow-[0_0_20px_rgba(255,0,0,0.25)]
-                  hover:shadow-[0_0_30px_rgba(255,60,60,0.45)]
-                  transition-all duration-300 hover:scale-110 active:scale-95
-                  border border-red-500/30 backdrop-blur-xl
-                  cursor-pointer
-                  z-[9999]">
-            CERRAR SESIÓN
-          </button>
-
-          <div class="relative z-10 flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
-            <div class="relative group">
-              <div class="absolute -inset-6 bg-gradient-to-tr from-yellow-600 to-amber-400 rounded-[4rem] blur-2xl opacity-20 group-hover:opacity-40 transition duration-700"></div>
-              <img id="current-avatar" src="/avatars/w_king_avatar.png" class="relative w-56 h-56 md:w-80 md:h-80 rounded-[3.5rem] border-4 border-yellow-500/20 object-cover shadow-2xl z-10" />
-              <button id="openAvatarMenu" class="absolute -bottom-4 left-1/2 -translate-x-1/2 px-10 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-black rounded-2xl text-xs md:text-sm uppercase shadow-xl transition-all hover:scale-110 active:scale-95 whitespace-nowrap cursor-pointer z-[50]">
-                CAMBIAR AVATAR
-              </button>
-            </div>
-
-            <div class="flex-1 min-w-[300px] lg:min-w-[900px] text-center lg:text-left space-y-8">
-              <div class="space-y-2">
-                <h2 
-                  id="profile-username"
-                  class="font-black text-white tracking-tighter italic uppercase leading-none
-                        max-w-[900px] truncate
-                        text-[clamp(2rem,8vw,5.5rem)]">
-                </h2>
-                <p 
-                  class="text-zinc-500 text-xl md:text-3xl font-medium italic truncate max-w-[500px] lg:max-w-none" 
-                  id="profile-email">
-                  ---
-                </p>
-              </div>
-              
-              <div class="flex flex-wrap justify-center lg:justify-start gap-6 pt-4">
-                <div class="bg-black/40 border border-white/5 backdrop-blur-md px-10 py-6 rounded-[2rem] text-center min-w-[180px]">
-                  <span class="block text-[10px] font-black text-yellow-600 uppercase tracking-widest mb-2">RANKING GLOBAL</span>
-                  <span class="text-4xl md:text-5xl font-black text-white italic" id="stat-ranking">#---</span>
-                </div>
-                <div class="bg-black/40 border border-white/5 backdrop-blur-md px-10 py-6 rounded-[2rem] text-center min-w-[180px]">
-                  <span class="block text-[10px] font-black text-yellow-600 uppercase tracking-widest mb-2">ELO ACTUAL</span>
-                  <span class="text-4xl md:text-5xl font-black text-white italic" id="stat-rating">1200</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div id="avatarMenu" class="hidden overflow-hidden transition-all duration-500 ease-in-out">
-            <div class="mt-16 pt-10 border-t border-white/5">
-                <h4 class="text-yellow-500 font-black text-center mb-8 tracking-widest text-xs">SELECCIONA TU AVATAR</h4>
-                <div id="avatarScrollContainer" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-6 p-2 max-h-[500px] overflow-y-auto custom-scroll">
-                </div>
-            </div>
-        </div>
-      </header>
-
-      <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 -mt-8">
-        
-        <div class="lg:col-span-8">
-          <div class="bg-zinc-900/40 backdrop-blur-xl border border-white/10 p-8 md:p-12 rounded-[3.5rem] shadow-2xl h-full">
-            <h3 class="text-white font-black uppercase text-sm tracking-[0.4em] italic flex items-center gap-4 mb-12">
-                <span class="w-12 h-[3px] bg-yellow-600"></span> RENDIMIENTO EN COMBATE
-            </h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              <div class="relative overflow-hidden bg-emerald-500/5 border border-emerald-500/20 rounded-[2.5rem] p-8 text-center group">
-                <span class="block text-emerald-500 font-black text-[10px] tracking-widest mb-2">VICTORIAS</span>
-                <span class="text-5xl font-black text-white italic" id="stat-wins">0</span>
-              </div>
-
-              <div class="relative overflow-hidden bg-red-500/5 border border-red-500/20 rounded-[2.5rem] p-8 text-center group">
-                <span class="block text-red-500 font-black text-[10px] tracking-widest mb-2">DERROTAS</span>
-                <span class="text-5xl font-black text-white italic" id="stat-losses">0</span>
-              </div>
-
-              <div class="relative overflow-hidden bg-zinc-500/5 border border-zinc-500/20 rounded-[2.5rem] p-8 text-center group">
-                <span class="block text-zinc-400 font-black text-[10px] tracking-widest mb-2">TABLAS</span>
-                <span class="text-5xl font-black text-white italic" id="stat-draws">0</span>
-              </div>
-            </div>
-
-            <div class="space-y-4">
-              <div class="flex justify-between items-end">
-                <div>
-                  <p class="text-white font-black italic text-2xl tracking-tight">WIN RATE</p>
-                  <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Dominio del tablero</p>
-                </div>
-                <span id="win-rate-percent" class="text-4xl font-black text-emerald-500 italic">0%</span>
-              </div>
-              <div class="h-4 w-full bg-zinc-950 rounded-full overflow-hidden flex border border-white/5 p-1">
-                <div id="bar-wins" class="h-full bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all duration-1000" style="width: 0%"></div>
-                <div id="bar-losses" class="h-full bg-red-500/40 ml-1 rounded-full transition-all duration-1000" style="width: 0%"></div>
-                <div class="h-full bg-zinc-700 ml-1 rounded-full flex-1"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="lg:col-span-4 space-y-6">
-          <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-white/10 p-10 rounded-[3.5rem] shadow-2xl relative overflow-hidden group h-full">
-            <div class="absolute -right-20 -top-20 w-64 h-64 bg-yellow-600/10 rounded-full blur-[100px] group-hover:bg-yellow-600/20 transition-colors duration-700"></div>
-            
-            <h3 class="text-zinc-500 font-black uppercase text-[10px] tracking-[0.3em] italic mb-8 relative z-10">PUZZLES SCORE</h3>
-            
-            <div class="relative z-10">
-              <div class="flex items-baseline gap-4 mb-2">
-                  <span id="stat-puzzles-solved" class="text-8xl font-black text-white italic leading-none tracking-tighter">0</span>
-                  <span class="text-yellow-600 font-black italic text-2xl">PTS</span>
-              </div>
-              <p class="text-zinc-400 text-xs font-bold italic mb-12 uppercase">Nivel Maestro</p>
-              
-              <div class="space-y-3">
-                <div class="flex justify-between text-[10px] font-black tracking-widest text-zinc-500 uppercase">
-                  <span>Siguiente Rango</span>
-                  <span id="puzzle-milestone-text" class="text-yellow-500">0/500</span>
-                </div>
-                <div class="w-full bg-black/60 rounded-full h-5 p-1 border border-white/5">
-                    <div id="puzzle-progress" class="bg-gradient-to-r from-yellow-600 to-amber-400 h-full rounded-full shadow-[0_0_20px_rgba(234,179,8,0.5)] transition-all duration-1000" style="width: 0%"></div>
-                </div>
-              </div>
-
-              <div class="mt-12 pt-8 border-t border-white/5 flex items-center gap-6">
-                <div class="w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
-                  <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.99 7.99 0 0121 13a8.14 8.14 0 01-.343 2.343z"/></svg>
-                </div>
-                <div>
-                  <span class="block text-[10px] font-black text-zinc-500 uppercase tracking-widest">Racha Actual</span>
-                  <span id="stat-streak" class="text-2xl font-black text-white italic">0 Victorias</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
+      <div class="flex items-center gap-8">
+        <span class="text-[9px] text-white tracking-[0.5em] font-light uppercase">ELO Promedio: 2400</span>
+        <span class="text-[9px] text-white tracking-[0.5em] font-bold uppercase">Servidor: Chess_Main_Node</span>
+      </div>
     </div>
-  </div>
 
-  <script>
-    import "../scripts/profile.ts";
-  </script>
+    {/* COMPONENTE REACT */}
+    <ProfileForm client:load />
+
+  </div>
 </BaseLayout>
 
-<style>
-  .custom-scroll::-webkit-scrollbar { width: 5px; }
-  .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-  .custom-scroll::-webkit-scrollbar-thumb { 
-    background: rgba(234, 179, 8, 0.2); 
-    border-radius: 10px; 
-  }
-
-  :global(#avatarScrollContainer img) {
-    width: 100%; aspect-ratio: 1/1; object-fit: cover;
-    border-radius: 1.5rem; cursor: pointer; border: 3px solid transparent;
-    transition: all 0.3s ease;
-    background: #1a1a1a;
-  }
-  :global(#avatarScrollContainer img:hover) {
-    transform: scale(1.05);
-    border-color: rgba(234, 179, 8, 0.3);
-  }
-  :global(#avatarScrollContainer img.active) {
-    border-color: #eab308;
-    box-shadow: 0 0 20px rgba(234, 179, 8, 0.4);
-  }
-
-  #avatarMenu {
-    display: block;
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                opacity 0.4s ease,
-                transform 0.4s ease;
-    transform: translateY(-10px);
-    pointer-events: none;
-  }
-
-  #avatarMenu.is-open {
-    max-height: 1000px;
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-    margin-top: 4rem;
-  }
-
-  @keyframes expandDown {
-    from { opacity: 0; max-height: 0; transform: translateY(-10px); }
-    to { opacity: 1; max-height: 1000px; transform: translateY(0); }
-  }
+<style is:global>
+  body { overflow: hidden !important; }
+  .custom-scrollbar::-webkit-scrollbar { display: none; }
 </style>

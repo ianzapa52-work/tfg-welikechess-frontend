@@ -18,7 +18,7 @@ export default function ModalFrame({ isOpen, onClose, children, size = "max-w-[1
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 overflow-hidden">
-          {/* OVERLAY */}
+          {/* OVERLAY con Blur animado */}
           <motion.div 
             initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
             animate={{ opacity: 1, backdropFilter: "blur(24px)" }}
@@ -27,7 +27,7 @@ export default function ModalFrame({ isOpen, onClose, children, size = "max-w-[1
             className="absolute inset-0 bg-black/85 cursor-pointer"
           />
           
-          {/* CONTAINER DEL MODAL */}
+          {/* CONTAINER con Fade + Scale */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -35,36 +35,24 @@ export default function ModalFrame({ isOpen, onClose, children, size = "max-w-[1
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className={`relative w-full ${size} bg-[#050505] border border-[#d4af37]/30 rounded-[2rem] shadow-[0_0_120px_rgba(0,0,0,0.8)] overflow-hidden z-10 flex flex-col`}
           >
-            {/* CABECERA MEJORADA */}
             <header className="relative w-full h-12 md:h-14 bg-zinc-900/40 border-b border-white/5 flex items-center px-6 shrink-0 z-20">
-              
-              {/* Decoración Central Izquierda (Opcional, para equilibrio visual) */}
               <div className="flex items-center gap-2 opacity-30">
                 <div className="w-1 h-1 rounded-full bg-white"></div>
                 <div className="w-1 h-1 rounded-full bg-white"></div>
               </div>
 
-              {/* Botón X Mejorado */}
               <div className="ml-auto flex items-center justify-center">
                 <button 
                   onClick={onClose}
                   className="group relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-white/5 transition-all duration-300 cursor-pointer"
-                  aria-label="Cerrar"
                 >
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    className="h-6 w-6 md:h-7 md:w-7 text-zinc-500 group-hover:text-[#d4af37] group-hover:rotate-90 transition-all duration-500 ease-out" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-7 md:w-7 text-zinc-500 group-hover:text-[#d4af37] group-hover:rotate-90 transition-all duration-500 ease-out" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
             </header>
 
-            {/* CONTENIDO */}
             <div className="flex-1 overflow-y-auto custom-scrollbar">
               {children}
             </div>
