@@ -40,7 +40,8 @@ export default function ModalManager() {
 
   return (
     <>
-      <ModalFrame isOpen={activeModal === 'settings'} onClose={() => setActiveModal(null)} size="max-w-[115rem]">
+      {/* CAMBIO AQUÍ: De max-w-4xl a max-w-6xl para que sea un poco más grande */}
+      <ModalFrame isOpen={activeModal === 'settings'} onClose={() => setActiveModal(null)} size="max-w-6xl">
         <SettingsForm />
       </ModalFrame>
 

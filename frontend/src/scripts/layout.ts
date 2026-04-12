@@ -1,41 +1,20 @@
-// layout.ts
+const initLayout = (): void => {
+  const loginBtn = document.querySelector("#loginBtnLayout");
+  const settingsBtn = document.querySelector("#settingsBtnLayout");
+  const historyBtn = document.querySelector("#historyBtnLayout");
 
-const initMenu = (): void => {
-  const menuBtn = document.querySelector("#menuBtn") as HTMLElement | null;
-  const sideMenu = document.querySelector("#sideMenu") as HTMLElement | null;
-  const overlay = document.querySelector("#menuOverlay") as HTMLElement | null;
+  loginBtn?.addEventListener("click", () => {
+    window.dispatchEvent(new CustomEvent('open-login'));
+  });
 
-  if (!menuBtn || !sideMenu || !overlay) {
-    console.warn("No se encontraron los elementos del menú en esta página.");
-    return;
-  }
+  settingsBtn?.addEventListener("click", () => {
+    window.dispatchEvent(new CustomEvent('open-settings'));
+  });
 
-  // Eliminamos listeners previos para evitar duplicados (limpieza)
-  const newMenuBtn = menuBtn.cloneNode(true) as HTMLElement;
-  menuBtn.parentNode?.replaceChild(newMenuBtn, menuBtn);
-
-  const newOverlay = overlay.cloneNode(true) as HTMLElement;
-  overlay.parentNode?.replaceChild(newOverlay, overlay);
-
-  // Funciones de acción
-  const openMenu = () => {
-    sideMenu.classList.remove("-translate-x-full");
-    newOverlay.classList.remove("hidden");
-  };
-
-  const closeMenu = () => {
-    sideMenu.classList.add("-translate-x-full");
-    newOverlay.classList.add("hidden");
-  };
-
-  newMenuBtn.addEventListener("click", openMenu);
-  newOverlay.addEventListener("click", closeMenu);
+  historyBtn?.addEventListener("click", () => {
+    window.dispatchEvent(new CustomEvent('open-history'));
+  });
 };
 
-document.addEventListener('astro:page-load', initMenu);
-
-if (document.readyState !== 'loading') {
-  initMenu();
-} else {
-  document.addEventListener('DOMContentLoaded', initMenu);
-}
+document.addEventListener('astro:page-load', initLayout);
+initLayout();
