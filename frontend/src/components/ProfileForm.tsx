@@ -20,12 +20,13 @@ interface UserData {
 export default function ProfileForm() {
   const [user, setUser] = useState<UserData | null>(null);
 
+  // Carga inicial y actualización desde localStorage
   const loadUser = () => {
     const stored = localStorage.getItem("user");
     if (stored && stored !== "null") {
       setUser(JSON.parse(stored));
     } else {
-      setUser({
+      const defaultUser = {
         name: "FFAWF",
         email: "ffawf@faf.com",
         avatar: "/avatars/w_king_avatar.png",
@@ -36,14 +37,38 @@ export default function ProfileForm() {
         puzzlesSolved: 1240,
         streak: 8,
         ranking: 20011
+      };
+      setUser(defaultUser);
+      localStorage.setItem("user", JSON.stringify(defaultUser));
+    }
+  };
+
+  // Función para manejar el cambio de avatar desde un evento externo
+  const handleAvatarUpdate = (event: any) => {
+    const newAvatarUrl = event.detail;
+    if (newAvatarUrl) {
+      setUser(prev => {
+        if (!prev) return prev;
+        const updated = { ...prev, avatar: newAvatarUrl };
+        localStorage.setItem("user", JSON.stringify(updated));
+        return updated;
       });
     }
   };
 
   useEffect(() => {
     loadUser();
+
+    // Escuchar actualizaciones generales del usuario
     window.addEventListener('user-updated', loadUser);
-    return () => window.removeEventListener('user-updated', loadUser);
+    
+    // Escuchar específicamente el cambio de avatar (evento personalizado)
+    window.addEventListener('avatar-changed', handleAvatarUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener('user-updated', loadUser);
+      window.removeEventListener('avatar-changed', handleAvatarUpdate as EventListener);
+    };
   }, []);
 
   const stats = useMemo(() => {
@@ -77,6 +102,7 @@ export default function ProfileForm() {
           
           <div className="relative group mb-6">
             <div className="absolute -inset-1 bg-[#d4af37] rounded-[38px] blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+            {/* La imagen ahora se actualiza reactivamente con el estado */}
             <img src={user.avatar} className="relative w-32 h-32 rounded-[32px] border-2 border-[#d4af37] shadow-lg object-cover" alt="Avatar" />
             <button 
               onClick={() => window.dispatchEvent(new Event('open-avatar'))} 
@@ -117,7 +143,7 @@ export default function ProfileForm() {
         </div>
       </div>
 
-      {/* CENTRAL: DASHBOARD CON SCROLL */}
+      {/* CENTRAL: DASHBOARD */}
       <div className="flex-grow flex flex-col gap-6 min-w-0 h-full overflow-hidden">
         <div className="flex-grow flex flex-col bg-white/[0.02] border border-white/10 rounded-[48px] overflow-hidden backdrop-blur-xl shadow-2xl">
           <div className="px-10 py-8 border-b border-white/5 flex justify-between items-center shrink-0">
@@ -129,14 +155,12 @@ export default function ProfileForm() {
           </div>
           
           <div className="flex-grow overflow-y-auto custom-scrollbar p-10 space-y-12">
-            {/* Métricas Principales */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <BigMetric label="Partidas Totales" value={user.wins + user.losses + user.draws} color="text-emerald-400" bg="bg-emerald-400/5" />
               <BigMetric label="Precisión Media" value="84.2%" color="text-[#d4af37]" bg="bg-[#d4af37]/5" />
               <BigMetric label="Mejor Victoria" value="2410" color="text-blue-400" bg="bg-blue-400/5" />
             </div>
 
-            {/* Win Rate Section */}
             <div className="relative flex flex-col items-center justify-center p-14 bg-black/60 border border-white/5 rounded-[40px] overflow-hidden group">
                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#d4af37]/40 to-transparent"></div>
                <p className="text-[#d4af37] font-['Cinzel'] text-7xl md:text-9xl font-black italic mb-2 drop-shadow-[0_0_40px_rgba(212,175,55,0.2)]">
@@ -149,7 +173,6 @@ export default function ProfileForm() {
                </div>
             </div>
 
-            {/* SECCIÓN NUEVA: APERTURAS FAVORITAS */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                <div className="bg-white/[0.03] border border-white/10 rounded-[32px] p-8">
                   <div className="flex items-center gap-3 mb-6">
@@ -177,7 +200,6 @@ export default function ProfileForm() {
                </div>
             </div>
 
-            {/* SECCIÓN NUEVA: HISTORIAL DE PROGRESO */}
             <div className="bg-black/40 border border-white/5 rounded-[40px] p-10">
                <div className="flex justify-between items-center mb-8">
                   <div className="flex items-center gap-3">
@@ -240,6 +262,8 @@ export default function ProfileForm() {
     </div>
   );
 }
+
+// --- Componentes Auxiliares ---
 
 function OpeningProgress({ label, percent, games }: { label: string, percent: number, games: number }) {
   return (
