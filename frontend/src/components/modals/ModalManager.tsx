@@ -6,9 +6,10 @@ import RegisterForm from '../RegisterForm';
 import EloWindow from '../EloWindow';
 import HistoryForm from '../HistoryForm';
 import AvatarWindow from '../AvatarWindow';
+import InviteWindow from '../InviteWindow';
 
 export default function ModalManager() {
-  const [activeModal, setActiveModal] = useState<'settings' | 'login' | 'register' | 'elo-info' | 'history' | 'avatar' | null>(null);
+  const [activeModal, setActiveModal] = useState<'settings' | 'login' | 'register' | 'elo-info' | 'history' | 'avatar' | 'invite' | null>(null);
 
   useEffect(() => {
     const openSettings = () => setActiveModal('settings');
@@ -17,6 +18,7 @@ export default function ModalManager() {
     const openElo = () => setActiveModal('elo-info');
     const openHistory = () => setActiveModal('history');
     const openAvatar = () => setActiveModal('avatar');
+    const openInvite = () => setActiveModal('invite');
     const closeModals = () => setActiveModal(null);
 
     window.addEventListener('open-settings', openSettings);
@@ -25,6 +27,7 @@ export default function ModalManager() {
     window.addEventListener('open-elo-info', openElo);
     window.addEventListener('open-history', openHistory);
     window.addEventListener('open-avatar', openAvatar);
+    window.addEventListener('open-invite', openInvite);
     window.addEventListener('close-modals', closeModals);
 
     return () => {
@@ -34,13 +37,13 @@ export default function ModalManager() {
       window.removeEventListener('open-elo-info', openElo);
       window.removeEventListener('open-history', openHistory);
       window.removeEventListener('open-avatar', openAvatar);
+      window.removeEventListener('open-invite', openInvite);
       window.removeEventListener('close-modals', closeModals);
     };
   }, []);
 
   return (
     <>
-      {/* CAMBIO AQUÍ: De max-w-4xl a max-w-6xl para que sea un poco más grande */}
       <ModalFrame isOpen={activeModal === 'settings'} onClose={() => setActiveModal(null)} size="max-w-6xl">
         <SettingsForm />
       </ModalFrame>
@@ -63,6 +66,10 @@ export default function ModalManager() {
 
       <ModalFrame isOpen={activeModal === 'avatar'} onClose={() => setActiveModal(null)} size="max-w-5xl">
         <AvatarWindow />
+      </ModalFrame>
+
+      <ModalFrame isOpen={activeModal === 'invite'} onClose={() => setActiveModal(null)} size="max-w-lg">
+        <InviteWindow />
       </ModalFrame>
     </>
   );
