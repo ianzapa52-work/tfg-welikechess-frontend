@@ -12,6 +12,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# NEXT.JS OUTPUT
+.next/
+out/
+build/
+
 # ENVIRONMENT VARIABLES
 .env
 .env.*

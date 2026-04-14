@@ -1,74 +1,74 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import ModalFrame from './ModalFrame';
-import SettingsForm from '../SettingsForm';
-import LoginForm from '../LoginForm';
-import RegisterForm from '../RegisterForm';
-import EloWindow from '../EloWindow';
-import HistoryForm from '../HistoryForm';
-import AvatarWindow from '../AvatarWindow';
-import InviteWindow from '../InviteWindow';
+import SettingsForm from '../settings/SettingsForm';
+import LoginForm from '../auth/LoginForm';
+import RegisterForm from '../auth/RegisterForm';
+import HistoryForm from '../history/HistoryForm';
+
+const EloWindow = dynamic(() => import('../views/EloWindow'), { ssr: false });
+const AvatarWindow = dynamic(() => import('../views/AvatarWindow'), { ssr: false });
+const InviteWindow = dynamic(() => import('../views/InviteWindow'), { ssr: false });
 
 export default function ModalManager() {
   const [activeModal, setActiveModal] = useState<'settings' | 'login' | 'register' | 'elo-info' | 'history' | 'avatar' | 'invite' | null>(null);
 
-  useEffect(() => {
-    const openSettings = () => setActiveModal('settings');
-    const openLogin = () => setActiveModal('login');
-    const openRegister = () => setActiveModal('register');
-    const openElo = () => setActiveModal('elo-info');
-    const openHistory = () => setActiveModal('history');
-    const openAvatar = () => setActiveModal('avatar');
-    const openInvite = () => setActiveModal('invite');
-    const closeModals = () => setActiveModal(null);
+  const closeModal = () => setActiveModal(null);
 
-    window.addEventListener('open-settings', openSettings);
-    window.addEventListener('open-login', openLogin);
-    window.addEventListener('open-register', openRegister);
-    window.addEventListener('open-elo-info', openElo);
-    window.addEventListener('open-history', openHistory);
-    window.addEventListener('open-avatar', openAvatar);
-    window.addEventListener('open-invite', openInvite);
-    window.addEventListener('close-modals', closeModals);
+  useEffect(() => {
+    const handleOpen = (type: typeof activeModal) => () => setActiveModal(type);
+    
+    const events = {
+      'open-settings': handleOpen('settings'),
+      'open-login': handleOpen('login'),
+      'open-register': handleOpen('register'),
+      'open-elo-info': handleOpen('elo-info'),
+      'open-history': handleOpen('history'),
+      'open-avatar': handleOpen('avatar'),
+      'open-invite': handleOpen('invite'),
+      'close-modals': closeModal
+    };
+
+    Object.entries(events).forEach(([name, handler]) => {
+      window.addEventListener(name, handler as any);
+    });
 
     return () => {
-      window.removeEventListener('open-settings', openSettings);
-      window.removeEventListener('open-login', openLogin);
-      window.removeEventListener('open-register', openRegister);
-      window.removeEventListener('open-elo-info', openElo);
-      window.removeEventListener('open-history', openHistory);
-      window.removeEventListener('open-avatar', openAvatar);
-      window.removeEventListener('open-invite', openInvite);
-      window.removeEventListener('close-modals', closeModals);
+      Object.entries(events).forEach(([name, handler]) => {
+        window.removeEventListener(name, handler as any);
+      });
     };
   }, []);
 
   return (
     <>
-      <ModalFrame isOpen={activeModal === 'settings'} onClose={() => setActiveModal(null)} size="max-w-6xl">
-        <SettingsForm />
+      <ModalFrame isOpen={activeModal === 'settings'} onClose={closeModal} size="max-w-6xl">
+        <SettingsForm onClose={closeModal} />
       </ModalFrame>
 
-      <ModalFrame isOpen={activeModal === 'login'} onClose={() => setActiveModal(null)} size="max-w-lg">
+      <ModalFrame isOpen={activeModal === 'login'} onClose={closeModal} size="max-w-lg">
         <LoginForm onSwitchToRegister={() => setActiveModal('register')} />
       </ModalFrame>
 
-      <ModalFrame isOpen={activeModal === 'register'} onClose={() => setActiveModal(null)} size="max-w-lg">
+      <ModalFrame isOpen={activeModal === 'register'} onClose={closeModal} size="max-w-lg">
         <RegisterForm onSwitchToLogin={() => setActiveModal('login')} />
       </ModalFrame>
 
-      <ModalFrame isOpen={activeModal === 'elo-info'} onClose={() => setActiveModal(null)} size="max-w-5xl">
-        <EloWindow />
-      </ModalFrame>
-
-      <ModalFrame isOpen={activeModal === 'history'} onClose={() => setActiveModal(null)} size="max-w-4xl">
+      <ModalFrame isOpen={activeModal === 'history'} onClose={closeModal} size="max-w-4xl">
         <HistoryForm />
       </ModalFrame>
 
-      <ModalFrame isOpen={activeModal === 'avatar'} onClose={() => setActiveModal(null)} size="max-w-5xl">
+      <ModalFrame isOpen={activeModal === 'elo-info'} onClose={closeModal} size="max-w-5xl">
+        <EloWindow />
+      </ModalFrame>
+
+      <ModalFrame isOpen={activeModal === 'avatar'} onClose={closeModal} size="max-w-5xl">
         <AvatarWindow />
       </ModalFrame>
 
-      <ModalFrame isOpen={activeModal === 'invite'} onClose={() => setActiveModal(null)} size="max-w-lg">
+      <ModalFrame isOpen={activeModal === 'invite'} onClose={closeModal} size="max-w-lg">
         <InviteWindow />
       </ModalFrame>
     </>

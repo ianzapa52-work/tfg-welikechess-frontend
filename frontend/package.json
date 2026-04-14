@@ -3,21 +3,27 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "astro": "astro dev",
+    "astro:build": "astro build",
+    "astro:preview": "astro preview"
   },
   "dependencies": {
     "@astrojs/react": "^5.0.3",
     "@astrojs/vercel": "^10.0.4",
+    "@tailwindcss/postcss": "^4.2.2",
     "@tailwindcss/vite": "^4.1.18",
     "astro": "^6.0.8",
     "chess.js": "^1.4.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.8.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
+    "next": "^16.2.3",
+    "postcss": "^8.5.9",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "tailwindcss": "^4.1.18"
   },
   "overrides": {
@@ -25,7 +31,9 @@
     "esbuild": "^0.25.0"
   },
   "devDependencies": {
+    "@types/node": "25.6.0",
     "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3"
+    "@types/react-dom": "^19.2.3",
+    "typescript": "6.0.2"
   }
 }
