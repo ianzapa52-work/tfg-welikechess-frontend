@@ -12,11 +12,9 @@
     "astro:preview": "astro preview"
   },
   "dependencies": {
-    "@astrojs/react": "^5.0.3",
     "@astrojs/vercel": "^10.0.4",
     "@tailwindcss/postcss": "^4.2.2",
     "@tailwindcss/vite": "^4.1.18",
-    "astro": "^6.0.8",
     "chess.js": "^1.4.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.8.0",

@@ -1,49 +1,42 @@
-# BUILD OUTPUT
-dist/
-.astro/
-
-# DEPENDENCIES
+# --- DEPENDENCIES ---
 node_modules/
+.pnp
+.pnp.js
 
-# LOGS
+# --- NEXT.JS / BUILD OUTPUT ---
+.next/
+out/
+build/
+dist/
+.tsbuildinfo
+
+# --- LOGS ---
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
+*.log
 
-# NEXT.JS OUTPUT
-.next/
-out/
-build/
-
-# ENVIRONMENT VARIABLES
+# --- ENV VARIABLES ---
 .env
-.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 !.env.example
 
-# OS-SPECIFIC FILES
+# --- SYSTEM FILES ---
 .DS_Store
 Thumbs.db
+*.tmp
+*.swp
+*.swo
 
-# EDITOR / IDE SETTINGS
+# --- IDE SETTINGS ---
 .vscode/
 .idea/
 *.code-workspace
 
-# TYPESCRIPT
-*.tsbuildinfo
-
-# ASTRO / VITE TEMP FILES
+# --- VITE / CACHE ---
 .vite/
 .cache/
-
-# DOCKER
-docker-data/
-*.pid
-
-# MISC
-*.log
-*.tmp
-*.swp
-*.swo
