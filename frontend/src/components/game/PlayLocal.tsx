@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Chess, Square } from 'chess.js';
 
 interface PlayLocalProps {
@@ -14,28 +14,28 @@ const PIECE_MAP: Record<string, string> = { p: "pawn", r: "rook", n: "horse", b:
 export default function PlayLocal({ onGameStateChange, onMove, resetSignal }: PlayLocalProps) {
   const [game, setGame] = useState(new Chess());
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
-  const [capturedW, setCapturedW] = useState<string[]>([]);
-  const [capturedB, setCapturedB] = useState<string[]>([]);
+  const [lastMove, setLastMove] = useState<{from: string, to: string} | null>(null);
   
-  const moveSound = useRef<HTMLAudioElement | null>(null);
-  const captureSound = useRef<HTMLAudioElement | null>(null);
+  const [capW, setCapW] = useState<string[]>([]);
+  const [capB, setCapB] = useState<string[]>([]);
+
+  const playSound = (type: 'move' | 'capture' | 'check') => {
+    // Rutas locales basadas en tu carpeta public/sounds
+    const audioPath = 
+      type === 'capture' ? '/sounds/capture_sound.mp3' : 
+      '/sounds/move_sound.mp3'; // Usamos move_sound para movimiento normal y jaque
+      
+    const audio = new Audio(audioPath);
+    audio.play().catch(() => {});
+  };
 
   useEffect(() => {
-    moveSound.current = new Audio("/sounds/move_sound.mp3");
-    captureSound.current = new Audio("/sounds/capture_sound.mp3");
-  }, []);
-
-  useEffect(() => {
-    const newGame = new Chess();
-    setGame(newGame);
-    setCapturedW([]);
-    setCapturedB([]);
+    setGame(new Chess());
+    setLastMove(null);
     setSelectedSquare(null);
-    onMove([], [], []);
-    onGameStateChange("TURNO BLANCAS");
+    setCapW([]);
+    setCapB([]);
   }, [resetSignal]);
-
-  const getPieceImg = (color: string, type: string) => `/pieces/${color}_${PIECE_MAP[type]}.svg`;
 
   const executeMove = useCallback((moveData: any) => {
     try {
@@ -43,70 +43,100 @@ export default function PlayLocal({ onGameStateChange, onMove, resetSignal }: Pl
       const result = gameCopy.move(moveData);
 
       if (result) {
-        if (result.captured) captureSound.current?.play().catch(() => null);
-        else moveSound.current?.play().catch(() => null);
+        if (gameCopy.isCheck()) playSound('check');
+        else if (result.captured) playSound('capture');
+        else playSound('move');
 
-        let newCapturedW = [...capturedW];
-        let newCapturedB = [...capturedB];
+        let newCapW = [...capW];
+        let newCapB = [...capB];
 
         if (result.captured) {
-          const img = getPieceImg(result.color === 'w' ? 'b' : 'w', result.captured);
+          const pieceImg = `/pieces/${result.color === 'w' ? 'b' : 'w'}_${PIECE_MAP[result.captured]}.svg`;
           if (result.color === 'w') {
-            newCapturedB.push(img);
-            setCapturedB(newCapturedB);
+            newCapB = [...newCapB, pieceImg];
+            setCapB(newCapB);
           } else {
-            newCapturedW.push(img);
-            setCapturedW(newCapturedW);
+            newCapW = [...newCapW, pieceImg];
+            setCapW(newCapW);
           }
         }
 
         setGame(gameCopy);
-        onMove(gameCopy.history(), newCapturedW, newCapturedB);
+        setLastMove({ from: result.from, to: result.to });
+        
+        onMove(gameCopy.history(), newCapW, newCapB);
 
         let status = gameCopy.turn() === 'w' ? "TURNO BLANCAS" : "TURNO NEGRAS";
         if (gameCopy.isCheckmate()) status = "¡JAQUE MATE!";
-        else if (gameCopy.isCheck()) status += " (¡JAQUE!)";
-        else if (gameCopy.isDraw()) status = "TABLAS";
+        else if (gameCopy.isCheck()) status = `JAQUE AL ${gameCopy.turn() === 'w' ? 'REY BLANCO' : 'REY NEGRO'}`;
         onGameStateChange(status);
+        return true;
       }
-      return result;
-    } catch (e) { return null; }
-  }, [game, capturedW, capturedB, onMove, onGameStateChange]);
+      return false;
+    } catch (e) { return false; }
+  }, [game, capW, capB, onMove, onGameStateChange]);
 
-  const handleSquareClick = (square: Square) => {
+  const onDragStart = (e: React.DragEvent, square: Square) => {
     const piece = game.get(square);
-    if (selectedSquare) {
-      const move = executeMove({ from: selectedSquare, to: square, promotion: 'q' });
-      if (!move && piece && piece.color === game.turn()) setSelectedSquare(square);
-      else setSelectedSquare(null);
-    } else if (piece && piece.color === game.turn()) {
+    if (piece && piece.color === game.turn()) {
+      e.dataTransfer.setData("fromSquare", square);
       setSelectedSquare(square);
-    }
+    } else e.preventDefault();
+  };
+
+  const onDrop = (e: React.DragEvent, toSquare: Square) => {
+    const fromSquare = e.dataTransfer.getData("fromSquare") as Square;
+    executeMove({ from: fromSquare, to: toSquare, promotion: 'q' });
+    setSelectedSquare(null);
   };
 
   return (
-    <div className="chess-board-grid">
-      {game.board().map((row, i) =>
-        row.map((piece, j) => {
-          const coord = (String.fromCharCode(97 + j) + (8 - i)) as Square;
-          const isDark = (i + j) % 2 === 1;
-          const isSelected = selectedSquare === coord;
-          const isLegal = selectedSquare && game.moves({ square: selectedSquare, verbose: true }).some(m => m.to === coord);
+    <div className="chess-board-wrapper p-2">
+      <div className="grid grid-cols-8 grid-rows-8 w-[min(85vw,750px)] h-[min(85vw,750px)] bg-[#1a1a1a] shadow-2xl">
+        {game.board().map((row, i) =>
+          row.map((piece, j) => {
+            const coord = (String.fromCharCode(97 + j) + (8 - i)) as Square;
+            const isDark = (i + j) % 2 === 1;
+            const isSelected = selectedSquare === coord;
+            const isLastMove = lastMove?.from === coord || lastMove?.to === coord;
+            const isCheck = game.isCheck() && piece?.type === 'k' && piece?.color === game.turn();
+            const isLegal = selectedSquare && game.moves({ square: selectedSquare, verbose: true }).some(m => m.to === coord);
 
-          return (
-            <div
-              key={coord}
-              onClick={() => handleSquareClick(coord)}
-              className={`chess-square ${isDark ? 'bg-[#6085a1]' : 'bg-[#dee3e6]'} ${isSelected ? 'bg-gold/40' : ''}`}
-            >
-              {isLegal && <div className="absolute w-3 h-3 bg-black/10 rounded-full z-20" />}
-              {piece && (
-                <img src={getPieceImg(piece.color, piece.type)} className="chess-piece" alt="" />
-              )}
-            </div>
-          );
-        })
-      )}
+            return (
+              <div
+                key={coord}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => onDrop(e, coord)}
+                onClick={() => {
+                  if (selectedSquare) {
+                    executeMove({ from: selectedSquare, to: coord, promotion: 'q' });
+                    setSelectedSquare(null);
+                  } else if (piece && piece.color === game.turn()) setSelectedSquare(coord);
+                }}
+                className={`
+                  chess-square ${isDark ? 'chess-square-dark' : 'chess-square-light'}
+                  ${isSelected ? 'chess-square-selected' : ''}
+                  ${isCheck ? 'check-warning' : ''}
+                  ${isLastMove ? 'before:absolute before:inset-0 before:bg-gold/10' : ''}
+                `}
+              >
+                {j === 0 && <span className="square-label top-1 left-1 opacity-40">{8 - i}</span>}
+                {i === 7 && <span className="square-label bottom-1 right-1 opacity-40 uppercase">{String.fromCharCode(97 + j)}</span>}
+                {isLegal && <div className={`absolute z-10 rounded-full ${piece ? 'w-[90%] h-[90%] border-4 border-gold/20' : 'w-4 h-4 bg-gold/20'}`} />}
+                {piece && (
+                  <img 
+                    src={`/pieces/${piece.color}_${PIECE_MAP[piece.type]}.svg`} 
+                    draggable
+                    onDragStart={(e) => onDragStart(e, coord)}
+                    className={`chess-piece piece-animate ${isSelected ? 'scale-110 -translate-y-1' : ''}`} 
+                    alt="" 
+                  />
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }

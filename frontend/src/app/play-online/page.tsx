@@ -1,98 +1,165 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Square } from 'chess.js';
+import PlayOnline from '@/components/game/PlayOnline';
 
-interface Piece { color: 'w' | 'b'; type: string; }
-interface GameState { board: Array<Array<Piece | null>>; history: string[]; status: string; turn: 'w' | 'b'; }
-
-interface PlayOnlineProps {
-  onGameStateChange: (status: string) => void;
-  onMoveUpdate: (history: string[]) => void;
-  serverUrl: string; // "ws://localhost:3000"
-}
-
-const PIECE_MAP: Record<string, string> = { p: "pawn", r: "rook", n: "horse", b: "bishop", q: "queen", k: "king" };
-
-export default function PlayOnline({ onGameStateChange, onMoveUpdate, serverUrl }: PlayOnlineProps) {
-  const [board, setBoard] = useState<Array<Array<Piece | null>>>([]);
-  const [turn, setTurn] = useState<'w' | 'b'>('w');
-  const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
-  const socket = useRef<WebSocket | null>(null);
-  
-  const moveSound = useRef<HTMLAudioElement | null>(null);
-  const captureSound = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    moveSound.current = new Audio("/sounds/move_sound.mp3");
-    captureSound.current = new Audio("/sounds/capture_sound.mp3");
-
-    // Conectar al WebSocket
-    socket.current = new WebSocket(serverUrl);
-
-    socket.current.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
-      if (msg.type === "state") {
-        const state: GameState = msg.payload;
-        setBoard(state.board);
-        setTurn(state.turn);
-        onGameStateChange(state.status);
-        onMoveUpdate(state.history);
-      }
-      if (msg.type === "move_sound") {
-        msg.captured ? captureSound.current?.play() : moveSound.current?.play();
-      }
-    };
-
-    return () => socket.current?.close();
-  }, [serverUrl]);
-
-  const sendMove = (from: Square, to: Square) => {
-    socket.current?.send(JSON.stringify({ 
-      type: "move", 
-      payload: { from, to, promotion: "q" } 
-    }));
-  };
-
-  const getPieceImg = (color: string, type: string) => `/pieces/${color}_${PIECE_MAP[type]}.svg`;
-
-  const handleSquareClick = (coord: Square, piece: Piece | null) => {
-    if (!selectedSquare) {
-      if (piece && piece.color === turn) setSelectedSquare(coord);
-    } else {
-      sendMove(selectedSquare, coord);
-      setSelectedSquare(null);
-    }
+/**
+ * PlayerBox adaptado para Online
+ */
+function PlayerBox({ name, elo, color, captured, isActive, seconds, isNoTimeMode }: any) {
+  const formatTime = (s: number) => {
+    if (isNoTimeMode) return "--:--";
+    const mins = Math.floor(s / 60);
+    const secs = s % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
-    <div className="grid grid-cols-8 grid-rows-8 w-full h-full border-4 border-[#333] bg-[#1a1a1a]">
-      {board.map((row, rowIndex) =>
-        row.map((piece, colIndex) => {
-          const coord = (String.fromCharCode(97 + colIndex) + (8 - rowIndex)) as Square;
-          const isDark = (rowIndex + colIndex) % 2 === 1;
-          const isSelected = selectedSquare === coord;
+    <div className={`p-6 rounded-[2.5rem] border-2 transition-all duration-500 ${
+      isActive 
+        ? 'bg-gold/10 border-gold shadow-[0_0_40px_rgba(212,175,55,0.15)] scale-[1.02]' 
+        : 'bg-black/40 border-white/5 opacity-80'
+    }`}>
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-3">
+          <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-gold animate-ping' : 'bg-zinc-800'}`}></div>
+          <div>
+            <h4 className="text-white font-black text-[11px] uppercase tracking-widest">{name}</h4>
+            <p className="text-gold/60 text-[9px] font-mono font-bold tracking-tighter">RANKING {elo}</p>
+          </div>
+        </div>
+        <div className={`px-4 py-1.5 rounded-full border border-white/10 text-white font-mono text-xs font-bold transition-all ${isActive && !isNoTimeMode ? 'bg-red-500/30 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'bg-black/50'}`}>
+          {formatTime(seconds)}
+        </div>
+      </div>
 
-          return (
-            <div
-              key={coord}
-              onClick={() => handleSquareClick(coord, piece)}
-              className={`relative flex items-center justify-center cursor-pointer
-                ${isDark ? 'bg-[#779556]' : 'bg-[#ebecd0]'}
-                ${isSelected ? 'ring-4 ring-inset ring-[#d4af37]/60' : ''}
-              `}
-            >
-              {piece && (
-                <img 
-                  src={getPieceImg(piece.color, piece.type)} 
-                  className="w-[90%] h-[90%] select-none drop-shadow-lg"
-                  alt=""
-                />
-              )}
-            </div>
-          );
-        })
-      )}
+      <div className="flex flex-wrap gap-2 p-4 rounded-xl border border-white/10 shadow-inner min-h-[80px] items-center" 
+           style={{ 
+             backgroundColor: '#d2b48c', 
+             backgroundImage: 'linear-gradient(to bottom right, #e5d3b3, #d2b48c)',
+             boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.2)' 
+           }}>
+        {captured.length > 0 ? (
+          captured.map((img: string, i: number) => (
+            <img key={i} src={img} className="w-10 h-10 object-contain drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)]" alt="piece" />
+          ))
+        ) : (
+          <span className="text-[9px] uppercase tracking-[0.3em] text-black/30 font-black ml-2 italic">Sin bajas</span>
+        )}
+      </div>
     </div>
+  );
+}
+
+export default function OnlinePremiumPage() {
+  const [history, setHistory] = useState<string[]>([]);
+  const [status, setStatus] = useState("CONECTANDO AL SERVIDOR...");
+  const [capturedW, setCapturedW] = useState<string[]>([]);
+  const [capturedB, setCapturedB] = useState<string[]>([]);
+  
+  const [timeW, setTimeW] = useState(600);
+  const [timeB, setTimeB] = useState(600);
+  const [isNoTimeMode, setIsNoTimeMode] = useState(false);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [history]);
+
+  // Lógica de reloj (Frontend-only prediction, el servidor manda el final)
+  useEffect(() => {
+    if (isNoTimeMode || status.includes("MATE") || status.includes("CONECTANDO")) return;
+    const timer = setInterval(() => {
+      if (status.includes("BLANCAS")) setTimeW(prev => Math.max(0, prev - 1));
+      else if (status.includes("NEGRAS")) setTimeB(prev => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [status, isNoTimeMode]);
+
+  const movePairs = history.reduce((acc: string[][], move, i) => {
+    if (i % 2 === 0) acc.push([move]);
+    else acc[acc.length - 1].push(move);
+    return acc;
+  }, []);
+
+  return (
+    <main className="min-h-screen bg-[#020202] text-zinc-400 p-4 xl:p-10 font-sans selection:bg-gold/30">
+      <div className="max-w-[1700px] mx-auto grid grid-cols-12 gap-10 items-start">
+        
+        {/* LADO IZQUIERDO: RIVAL */}
+        <div className="col-span-12 xl:col-span-3 space-y-8">
+          <PlayerBox 
+            name="Rival Online" elo={2100} color="NEGRAS" captured={capturedW} 
+            isActive={status.includes("NEGRAS")} seconds={timeB} isNoTimeMode={isNoTimeMode}
+          />
+          
+          <div className="flex flex-col gap-6">
+            <div className="chess-panel border-gold/20 bg-gradient-to-b from-gold/5 to-transparent py-12 relative overflow-hidden rounded-3xl border">
+              <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gold to-transparent opacity-50"></div>
+              <p className="text-center text-gold text-[9px] tracking-[0.8em] font-black uppercase mb-3">Live Network Match</p>
+              <h2 className="text-center text-4xl font-cinzel text-white italic tracking-tighter drop-shadow-lg leading-tight">
+                {status}
+              </h2>
+            </div>
+
+            {/* BOTÓN ESTADO TIEMPO (Solo visual en online o para proponer tablas/amistosa) */}
+            <div className={`
+                py-4 px-8 rounded-2xl border-2 text-center
+                font-black text-[11px] tracking-[0.25em] uppercase transition-all
+                ${isNoTimeMode ? 'bg-zinc-900 border-zinc-700 text-zinc-500' : 'bg-gold/10 border-gold/50 text-gold shadow-lg'}
+            `}>
+                {isNoTimeMode ? "⏳ MODO AMISTOSO" : "🏆 PARTIDA RANKED"}
+            </div>
+          </div>
+
+          <PlayerBox 
+            name="Tu Usuario" elo={1850} color="BLANCAS" captured={capturedB} 
+            isActive={status.includes("BLANCAS")} seconds={timeW} isNoTimeMode={isNoTimeMode}
+          />
+        </div>
+
+        {/* CENTRO: TABLERO ONLINE */}
+        <div className="col-span-12 xl:col-span-6 flex flex-col items-center">
+          <PlayOnline 
+            serverUrl="ws://localhost:3000"
+            onGameStateChange={setStatus}
+            onMoveUpdate={(h) => setHistory([...h])}
+          />
+        </div>
+
+        {/* DERECHA: HISTORIAL */}
+        <div className="col-span-12 xl:col-span-3 h-[min(85vw,750px)]">
+          <div className="history-container-premium bg-[#050505] h-full flex flex-col border border-white/5 rounded-3xl overflow-hidden">
+            <div className="p-6 border-b border-gold/20 bg-gold/5 shrink-0">
+              <span className="text-gold text-[11px] font-black tracking-[0.4em] uppercase">Online Battle Log</span>
+            </div>
+            <div ref={scrollRef} className="flex-grow overflow-y-auto custom-scrollbar p-6 space-y-2">
+              {movePairs.map((pair, i) => (
+                <div key={i} className="flex items-center p-3 rounded-xl border border-white/5 hover:bg-gold/5 transition-all group">
+                  <span className="move-number">{i + 1}</span>
+                  <div className="flex-grow grid grid-cols-2 gap-4">
+                    <span className="text-white font-mono text-sm font-bold group-hover:text-gold">{pair[0]}</span>
+                    <span className="text-zinc-500 font-mono text-sm">{pair[1] || "—"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="p-6 bg-red-500/5 border-t border-red-500/20">
+               <button className="w-full py-4 rounded-xl border border-red-500/50 text-red-500 font-black text-[11px] tracking-widest hover:bg-red-500 hover:text-white transition-all">
+                 ABANDONAR PARTIDA
+               </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d4af3733; border-radius: 10px; }
+      `}</style>
+    </main>
   );
 }
