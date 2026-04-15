@@ -18,24 +18,24 @@ function PlayerBox({ name, elo, captured, isActive, seconds, isNoTimeMode }: any
   };
 
   return (
-    <div className={`p-5 rounded-[2rem] border transition-all duration-500 ${
+    <div className={`p-5 rounded-[2rem] border transition-all duration-500 relative overflow-hidden ${
       isActive 
-        ? 'bg-gold/15 border-gold shadow-[0_0_35px_rgba(212,175,55,0.2)] scale-[1.02] z-10' 
-        : 'bg-zinc-900/90 border-white/10 opacity-70' 
+        ? 'bg-gold/20 border-gold shadow-[0_0_40px_rgba(212,175,55,0.25)] scale-[1.02] z-10' 
+        : 'bg-zinc-900/40 border-white/10 opacity-80 backdrop-blur-xl' 
     }`}>
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-4 relative z-10">
         <div className="flex items-center gap-3">
           <div className={`w-2.5 h-2.5 rounded-full ${isActive ? 'bg-gold animate-pulse shadow-[0_0_10px_#d4af37]' : 'bg-zinc-700'}`}></div>
           <h4 className="text-white font-black text-[11px] uppercase tracking-[0.1em] leading-none">{name}</h4>
         </div>
         <div className={`px-4 py-1.5 rounded-xl border font-mono text-xs font-bold transition-all ${
-          isActive && !isNoTimeMode ? 'bg-red-500/30 border-red-500/50 text-red-300' : 'bg-black/60 border-white/10 text-white/60'
+          isActive && !isNoTimeMode ? 'bg-red-500/40 border-red-500/50 text-red-200' : 'bg-black/60 border-white/10 text-white/60'
         }`}>
           {formatTime(seconds)}
         </div>
       </div>
 
-      <div className="p-3 rounded-2xl border border-black/30 shadow-inner min-h-[65px] flex items-center bg-gradient-to-br from-[#d2b48c] to-[#a68a64]">
+      <div className="p-3 rounded-2xl border border-black/30 shadow-inner min-h-[65px] flex items-center bg-gradient-to-br from-[#d2b48c] to-[#a68a64] relative z-10">
         <div className="flex flex-wrap gap-1 max-w-full">
           {captured.length > 0 ? (
             captured.map((img: string, i: number) => (
@@ -100,7 +100,6 @@ export default function LocalPremiumPage() {
     setCapturedB(cb);
   };
 
-  // --- LÓGICA DE AGRUPACIÓN CORREGIDA ---
   const rows = [];
   for (let i = 0; i < history.length; i += 2) {
     rows.push({
@@ -111,8 +110,28 @@ export default function LocalPremiumPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#020202] text-zinc-400 p-6 xl:p-10 font-sans selection:bg-gold/30">
-      <div className="max-w-[1700px] mx-auto grid grid-cols-12 gap-8 items-start">
+    <main className="min-h-screen bg-[#020202] text-zinc-400 p-6 xl:p-10 font-sans selection:bg-gold/30 relative overflow-hidden">
+      
+      {/* CAPA DE FONDO DE ALTO IMPACTO */}
+      <div className="fixed inset-0 z-0">
+        {/* Color Base y Noise */}
+        <div className="absolute inset-0 bg-[#050508]"></div>
+        <div className="absolute inset-0 opacity-[0.15] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+
+        {/* Gradientes Dinámicos */}
+        <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-600/20 blur-[150px] rounded-full animate-pulse"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-gold/15 blur-[150px] rounded-full"></div>
+        <div className="absolute top-[20%] right-[10%] w-[30%] h-[40%] bg-purple-900/20 blur-[120px] rounded-full"></div>
+        
+        {/* Malla Técnica Visible */}
+        <div className="absolute inset-0 opacity-[0.07] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:32px_32px]"></div>
+        <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] [background-size:128px_128px]"></div>
+        
+        {/* Viñeta */}
+        <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)]"></div>
+      </div>
+
+      <div className="relative z-10 max-w-[1700px] mx-auto grid grid-cols-12 gap-8 items-start">
         
         <div className="col-span-12 xl:col-span-3 flex flex-col gap-2">
           <PlayerBox 
@@ -120,7 +139,7 @@ export default function LocalPremiumPage() {
             isActive={gameStarted && status.includes("NEGRAS")} seconds={timeB} isNoTimeMode={isNoTimeMode}
           />
           
-          <div className="bg-zinc-900 border border-white/10 rounded-[2rem] p-6 shadow-2xl backdrop-blur-sm">
+          <div className="bg-zinc-950/60 border border-white/10 rounded-[2rem] p-6 shadow-2xl backdrop-blur-xl">
             <div className="mb-6">
               <p className="text-[10px] font-black tracking-[0.25em] text-white uppercase mb-3 px-1">Elegir Bando</p>
               <div className="grid grid-cols-2 gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/5">
@@ -206,9 +225,8 @@ export default function LocalPremiumPage() {
           />
         </div>
 
-        {/* COLUMNA HISTORIAL ACTUALIZADA */}
         <div className="col-span-12 xl:col-span-3 h-[min(85vw,785px)]">
-          <div className="bg-[#050505] h-full flex flex-col border-2 border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl relative">
+          <div className="bg-[#050505]/80 h-full flex flex-col border-2 border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl relative backdrop-blur-xl">
             <div className="absolute top-0 left-10 right-10 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
             <div className="p-6 border-b border-white/10 bg-white/[0.02] flex justify-between items-center">
               <span className="text-gold/90 text-[10px] font-black tracking-[0.4em] uppercase">Historial</span>
@@ -219,31 +237,17 @@ export default function LocalPremiumPage() {
               {rows.map((row) => (
                 <div key={row.moveNum} className="grid grid-cols-[30px_1fr_1fr] gap-3 mb-2 items-center p-2 rounded-xl hover:bg-white/[0.04] transition-all border-b border-white/[0.02]">
                   <span className="font-mono text-[10px] text-zinc-600 font-bold">{row.moveNum}.</span>
-                  
-                  {/* Celda Blancas */}
                   <div className="bg-white/5 rounded-lg py-1.5 px-3 border border-white/5 text-center">
-                    <span className="text-zinc-100 font-mono text-sm font-bold tracking-tight">
-                      {row.white}
-                    </span>
+                    <span className="text-zinc-100 font-mono text-sm font-bold tracking-tight">{row.white}</span>
                   </div>
-                  
-                  {/* Celda Negras */}
                   <div className={`rounded-lg py-1.5 px-3 text-center ${row.black ? 'bg-zinc-800/40 border border-white/5' : ''}`}>
-                    <span className="text-zinc-400 font-mono text-sm tracking-tight">
-                      {row.black || ""}
-                    </span>
+                    <span className="text-zinc-400 font-mono text-sm tracking-tight">{row.black || ""}</span>
                   </div>
                 </div>
               ))}
-              
-              {history.length === 0 && (
-                <div className="h-full flex items-center justify-center opacity-20 italic text-[10px] uppercase tracking-widest">
-                  Esperando movimientos...
-                </div>
-              )}
             </div>
 
-            <div className="p-6 border-t border-white/10 bg-black">
+            <div className="p-6 border-t border-white/10 bg-black/80">
                <button 
                 onClick={() => {
                   setResetKey(k => k + 1);
@@ -268,6 +272,7 @@ export default function LocalPremiumPage() {
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+        body { background-color: #020202; margin: 0; }
       `}</style>
     </main>
   );
