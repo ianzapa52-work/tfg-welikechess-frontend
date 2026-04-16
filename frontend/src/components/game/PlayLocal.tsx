@@ -20,6 +20,7 @@ export default function PlayLocal({ onGameStateChange, onMove, resetSignal, orie
   const [lastMove, setLastMove] = useState<{from: string, to: string} | null>(null);
   const [capW, setCapW] = useState<string[]>([]);
   const [capB, setCapB] = useState<string[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     setGame(new Chess());
@@ -39,7 +40,6 @@ export default function PlayLocal({ onGameStateChange, onMove, resetSignal, orie
         let newCapB = [...capB];
 
         if (result.captured) {
-          // Si el que mueve es blanco (w), captura una pieza negra (b)
           const pieceImg = `/pieces/${result.color === 'w' ? 'b' : 'w'}_${PIECE_MAP[result.captured]}.svg`;
           if (result.color === 'w') newCapB.push(pieceImg);
           else newCapW.push(pieceImg);
@@ -62,14 +62,6 @@ export default function PlayLocal({ onGameStateChange, onMove, resetSignal, orie
     } catch (e) { return false; }
   }, [game, capW, capB, onMove, onGameStateChange]);
 
-  const onDragStart = (e: React.DragEvent, square: Square) => {
-    const piece = game.get(square);
-    if (piece && piece.color === game.turn()) {
-      e.dataTransfer.setData("fromSquare", square);
-      setSelectedSquare(square);
-    } else e.preventDefault();
-  };
-
   const board = game.board();
   const displayBoard = orientation === 'w' 
     ? board 
@@ -77,7 +69,9 @@ export default function PlayLocal({ onGameStateChange, onMove, resetSignal, orie
 
   return (
     <div className="p-1 bg-zinc-950 rounded-[2rem] shadow-[0_60px_120px_rgba(0,0,0,0.95)] border border-white/10 backdrop-blur-sm">
-      <div className="grid grid-cols-8 grid-rows-8 w-[min(95vw,780px)] h-[min(95vw,780px)] bg-zinc-900 overflow-hidden rounded-xl border-[4px] border-black shadow-inner">
+      <div className={`grid grid-cols-8 grid-rows-8 w-[min(95vw,780px)] h-[min(95vw,780px)] bg-zinc-900 overflow-hidden rounded-xl border-[4px] border-black shadow-inner 
+        ${isDragging ? 'cursor-grabbing' : ''}`}>
+        
         {displayBoard.map((row, i) =>
           row.map((piece, j) => {
             const rowIdx = orientation === 'w' ? i : 7 - i;
@@ -89,6 +83,7 @@ export default function PlayLocal({ onGameStateChange, onMove, resetSignal, orie
             const isLastMove = lastMove?.from === coord || lastMove?.to === coord;
             const isCheck = game.isCheck() && piece?.type === 'k' && piece?.color === game.turn();
             const isLegal = selectedSquare && game.moves({ square: selectedSquare, verbose: true }).some(m => m.to === coord);
+            const isPieceMine = piece && piece.color === game.turn();
 
             return (
               <div
@@ -98,14 +93,17 @@ export default function PlayLocal({ onGameStateChange, onMove, resetSignal, orie
                   const fromSquare = e.dataTransfer.getData("fromSquare") as Square;
                   executeMove({ from: fromSquare, to: coord, promotion: 'q' });
                   setSelectedSquare(null);
+                  setIsDragging(false);
                 }}
                 onClick={() => {
                   if (selectedSquare) {
                     executeMove({ from: selectedSquare, to: coord, promotion: 'q' });
                     setSelectedSquare(null);
-                  } else if (piece && piece.color === game.turn()) setSelectedSquare(coord);
+                  } else if (isPieceMine) {
+                    setSelectedSquare(coord);
+                  }
                 }}
-                className={`relative flex items-center justify-center cursor-pointer transition-colors duration-200
+                className={`relative flex items-center justify-center transition-colors duration-200
                   ${isDark ? 'bg-[#5c7da5]' : 'bg-[#d9e4f1]'}
                   ${isSelected ? 'bg-gold/50' : ''}
                   ${isCheck ? 'bg-red-500/60 animate-pulse' : ''}
@@ -113,24 +111,27 @@ export default function PlayLocal({ onGameStateChange, onMove, resetSignal, orie
                 `}
               >
                 {/* Coordenadas */}
-                {j === 0 && (
-                  <span className={`absolute top-0.5 left-1 text-[11px] font-bold font-mono ${isDark ? 'text-[#d9e4f1] opacity-60' : 'text-[#5c7da5] opacity-70'} z-0`}>
-                    {8 - rowIdx}
-                  </span>
-                )}
-                {i === 7 && (
-                  <span className={`absolute bottom-0.5 right-1 text-[11px] font-bold font-mono uppercase ${isDark ? 'text-[#d9e4f1] opacity-60' : 'text-[#5c7da5] opacity-70'} z-0`}>
-                    {String.fromCharCode(97 + colIdx)}
-                  </span>
-                )}
+                {j === 0 && <span className={`absolute top-0.5 left-1 text-[11px] font-bold font-mono ${isDark ? 'text-[#d9e4f1] opacity-60' : 'text-[#5c7da5] opacity-70'} z-0`}>{8 - rowIdx}</span>}
+                {i === 7 && <span className={`absolute bottom-0.5 right-1 text-[11px] font-bold font-mono uppercase ${isDark ? 'text-[#d9e4f1] opacity-60' : 'text-[#5c7da5] opacity-70'} z-0`}>{String.fromCharCode(97 + colIdx)}</span>}
                 
                 {isLegal && <div className={`absolute z-30 rounded-full ${piece ? 'w-full h-full border-4 border-black/10' : 'w-5 h-5 bg-black/15'}`} />}
+                
                 {piece && (
                   <img 
                     src={`/pieces/${piece.color}_${PIECE_MAP[piece.type]}.svg`} 
-                    draggable
-                    onDragStart={(e) => onDragStart(e, coord)}
-                    className={`w-[92%] h-[92%] z-20 transition-transform drop-shadow-lg ${isSelected ? 'scale-105 -translate-y-1' : ''}`} 
+                    // Permitimos draggable siempre para el feedback visual del cursor
+                    draggable={true} 
+                    onDragStart={(e) => {
+                      // Solo permitimos el inicio real del arrastre si es nuestra pieza
+                      if(!isPieceMine) return e.preventDefault();
+                      e.dataTransfer.setData("fromSquare", coord);
+                      setSelectedSquare(coord);
+                      setIsDragging(true);
+                    }}
+                    onDragEnd={() => setIsDragging(false)}
+                    className={`w-[92%] h-[92%] z-20 transition-transform drop-shadow-lg 
+                      cursor-grab active:cursor-grabbing
+                      ${isSelected ? 'scale-105 -translate-y-1' : ''}`} 
                     alt="" 
                   />
                 )}

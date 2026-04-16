@@ -9,7 +9,7 @@ const TIME_MODES = [
   { label: "Rápidas", options: [{ n: "10+0", m: 600, i: 0 }, { n: "15+10", m: 900, i: 10 }] },
 ];
 
-function PlayerBox({ name, elo, captured, isActive, seconds, isNoTimeMode }: any) {
+function PlayerBox({ name, captured, isActive, seconds, isNoTimeMode }: any) {
   const formatTime = (s: number) => {
     if (isNoTimeMode) return "--:--";
     const mins = Math.floor(s / 60);
@@ -66,13 +66,12 @@ export default function LocalPremiumPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [history]);
 
+  // Lógica de cronómetros
   useEffect(() => {
-    if (isNoTimeMode || !gameStarted || status.includes("MATE")) return;
+    if (isNoTimeMode || !gameStarted || status.includes("MATE") || status.includes("TABLAS")) return;
     const timer = setInterval(() => {
       if (status.includes("BLANCAS")) setTimeW(prev => (prev > 0 ? prev - 1 : 0));
       else if (status.includes("NEGRAS")) setTimeB(prev => (prev > 0 ? prev - 1 : 0));
@@ -89,12 +88,12 @@ export default function LocalPremiumPage() {
   };
 
   const handleMove = (newHistory: string[], cw: string[], cb: string[]) => {
+    // Aplicar incremento si no es modo sin tiempo
     if (!isNoTimeMode && gameStarted) {
-      if (status.includes("BLANCAS")) setTimeB(prev => prev + currentMode.i);
-      else setTimeW(prev => prev + currentMode.i);
+      if (status.includes("BLANCAS")) setTimeW(prev => prev + currentMode.i);
+      else if (status.includes("NEGRAS")) setTimeB(prev => prev + currentMode.i);
     }
     if (!gameStarted) setGameStarted(true);
-    
     setHistory(newHistory); 
     setCapturedW(cw);
     setCapturedB(cb);
@@ -102,92 +101,80 @@ export default function LocalPremiumPage() {
 
   const rows = [];
   for (let i = 0; i < history.length; i += 2) {
-    rows.push({
-      moveNum: Math.floor(i / 2) + 1,
-      white: history[i],
-      black: history[i + 1] || null
-    });
+    rows.push({ moveNum: Math.floor(i / 2) + 1, white: history[i], black: history[i + 1] || null });
   }
 
   return (
     <main className="min-h-screen bg-[#020202] text-zinc-400 p-6 xl:p-10 font-sans selection:bg-gold/30 relative overflow-hidden">
       
-      {/* CAPA DE FONDO DE ALTO IMPACTO */}
+      {/* FONDO PREMIUM (Igual que en PlayIA) */}
       <div className="fixed inset-0 z-0">
-        {/* Color Base y Noise */}
         <div className="absolute inset-0 bg-[#050508]"></div>
         <div className="absolute inset-0 opacity-[0.15] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
-
-        {/* Gradientes Dinámicos */}
         <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-600/20 blur-[150px] rounded-full animate-pulse"></div>
         <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-gold/15 blur-[150px] rounded-full"></div>
-        <div className="absolute top-[20%] right-[10%] w-[30%] h-[40%] bg-purple-900/20 blur-[120px] rounded-full"></div>
-        
-        {/* Malla Técnica Visible */}
         <div className="absolute inset-0 opacity-[0.07] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:32px_32px]"></div>
-        <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] [background-size:128px_128px]"></div>
-        
-        {/* Viñeta */}
-        <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)]"></div>
       </div>
 
       <div className="relative z-10 max-w-[1700px] mx-auto grid grid-cols-12 gap-8 items-start">
         
         <div className="col-span-12 xl:col-span-3 flex flex-col gap-2">
+          {/* Oponente (Si el jugador es Blancas, aquí sale local 2 / negras) */}
           <PlayerBox 
-            name="Usuario local 2" elo={2800} captured={capturedW} 
-            isActive={gameStarted && status.includes("NEGRAS")} seconds={timeB} isNoTimeMode={isNoTimeMode}
+            name="Usuario Local 2" captured={capturedW} 
+            isActive={gameStarted && status.includes("NEGRAS")} 
+            seconds={timeB} isNoTimeMode={isNoTimeMode}
           />
           
           <div className="bg-zinc-950/60 border border-white/10 rounded-[2rem] p-6 shadow-2xl backdrop-blur-xl">
+            {/* ELEGIR BANDO */}
             <div className="mb-6">
               <p className="text-[10px] font-black tracking-[0.25em] text-white uppercase mb-3 px-1">Elegir Bando</p>
               <div className="grid grid-cols-2 gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/5">
                 <button 
                   onClick={() => setBoardOrientation('w')}
                   disabled={gameStarted}
-                  className={`py-2.5 rounded-xl text-[10px] font-black transition-all border-2 ${
-                    boardOrientation === 'w' 
-                      ? 'bg-zinc-100 text-black border-transparent shadow-lg' 
-                      : 'text-zinc-500 border-transparent hover:bg-white/5 disabled:opacity-30'
-                  }`}
+                  className={`py-2 rounded-xl text-[9px] font-black transition-all border-2 ${boardOrientation === 'w' ? 'bg-zinc-100 text-black border-transparent shadow-lg' : 'text-zinc-500 border-transparent hover:bg-white/5'}`}
                 >
                   BLANCAS
                 </button>
                 <button 
                   onClick={() => setBoardOrientation('b')}
                   disabled={gameStarted}
-                  className={`py-2.5 rounded-xl text-[10px] font-black transition-all border-2 ${
-                    boardOrientation === 'b' 
-                      ? 'bg-zinc-800 text-white shadow-lg border-white/10' 
-                      : 'text-zinc-500 border-transparent hover:bg-white/5 disabled:opacity-30'
-                  }`}
+                  className={`py-2 rounded-xl text-[9px] font-black transition-all border-2 ${boardOrientation === 'b' ? 'bg-zinc-800 text-white shadow-lg border-white/10' : 'text-zinc-500 border-transparent hover:bg-white/5'}`}
                 >
                   NEGRAS
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 mb-5 px-1">
-              <div className="w-1.5 h-4 bg-gold rounded-full shadow-[0_0_5px_#d4af37]"></div>
-              <p className="text-[10px] font-black tracking-[0.25em] text-white uppercase">Control de Tiempo</p>
+            {/* TOGGLE MODO SIN TIEMPO (Copiado de PlayIA) */}
+            <div className="mb-6">
+              <p className="text-[10px] font-black tracking-[0.25em] text-white uppercase mb-3 px-1">Configuración</p>
+              <button 
+                onClick={() => setIsNoTimeMode(!isNoTimeMode)}
+                disabled={gameStarted}
+                className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${isNoTimeMode ? 'bg-gold/10 border-gold text-gold shadow-[0_0_20px_rgba(212,175,55,0.1)]' : 'bg-black/40 border-white/5 text-zinc-500 hover:border-white/20'}`}
+              >
+                <span className="text-[10px] font-black uppercase tracking-widest">Modo Sin Tiempo</span>
+                <div className={`w-10 h-5 rounded-full relative transition-colors ${isNoTimeMode ? 'bg-gold' : 'bg-zinc-800'}`}>
+                  <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${isNoTimeMode ? 'left-6' : 'left-1'}`}></div>
+                </div>
+              </button>
             </div>
-            
-            <div className="grid grid-cols-1 gap-4">
+
+            {/* MODOS DE TIEMPO */}
+            <div className={`grid grid-cols-1 gap-3 transition-opacity duration-300 ${isNoTimeMode ? 'opacity-20 pointer-events-none' : 'opacity-100'}`}>
               {TIME_MODES.map((category) => (
                 <div key={category.label} className="flex items-center justify-between gap-3 bg-black/50 p-3 rounded-2xl border border-white/[0.06]">
-                  <span className="text-[9px] text-zinc-400 uppercase font-black tracking-tight w-14">{category.label}</span>
+                  <span className="text-[9px] text-zinc-400 uppercase font-black tracking-tight w-12">{category.label}</span>
                   <div className="flex gap-1.5">
                     {category.options.map((opt) => (
                       <button
                         key={opt.n}
                         disabled={gameStarted}
                         onClick={() => selectMode(opt)}
-                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border ${
-                          currentMode.n === opt.n && !isNoTimeMode
-                            ? 'bg-gold text-black border-gold shadow-[0_0_12px_rgba(212,175,55,0.3)]' 
-                            : 'bg-zinc-800 border-white/10 hover:border-white/30 disabled:opacity-30'
-                        }`}
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border ${currentMode.n === opt.n && !isNoTimeMode ? 'bg-gold text-black border-gold' : 'bg-zinc-800 border-white/10 hover:border-white/30'}`}
                       >
                         {opt.n}
                       </button>
@@ -196,84 +183,48 @@ export default function LocalPremiumPage() {
                 </div>
               ))}
             </div>
-
-            <button 
-              disabled={gameStarted}
-              onClick={() => setIsNoTimeMode(!isNoTimeMode)}
-              className={`w-full mt-5 py-4 rounded-2xl border font-black text-[9px] tracking-[0.3em] uppercase transition-all duration-300 ${
-                isNoTimeMode 
-                  ? 'bg-white/10 border-white/20 text-white shadow-inner' 
-                  : 'bg-black/60 border-white/10 text-zinc-500 hover:text-white hover:border-white/20'
-              }`}
-            >
-              {isNoTimeMode ? "⏳ RELOJ OFF" : "♾️ MODO INFINITO"}
-            </button>
           </div>
 
           <PlayerBox 
-            name="Usuario Local" elo={1850} captured={capturedB} 
-            isActive={gameStarted && status.includes("BLANCAS")} seconds={timeW} isNoTimeMode={isNoTimeMode}
+            name="Usuario Local 1" captured={capturedB} 
+            isActive={gameStarted && status.includes("BLANCAS")} 
+            seconds={timeW} isNoTimeMode={isNoTimeMode}
           />
         </div>
 
         <div className="col-span-12 xl:col-span-6 flex justify-center">
           <PlayLocal 
-            resetSignal={resetKey} 
-            onGameStateChange={setStatus} 
-            onMove={handleMove}
-            orientation={boardOrientation} 
+            resetSignal={resetKey} onGameStateChange={setStatus} 
+            onMove={handleMove} orientation={boardOrientation} 
           />
         </div>
 
         <div className="col-span-12 xl:col-span-3 h-[min(85vw,785px)]">
           <div className="bg-[#050505]/80 h-full flex flex-col border-2 border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl relative backdrop-blur-xl">
-            <div className="absolute top-0 left-10 right-10 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
             <div className="p-6 border-b border-white/10 bg-white/[0.02] flex justify-between items-center">
-              <span className="text-gold/90 text-[10px] font-black tracking-[0.4em] uppercase">Historial</span>
-              <div className="w-2 h-2 rounded-full bg-red-600 shadow-[0_0_10px_red] animate-pulse"></div>
+              <span className="text-gold/90 text-[10px] font-black tracking-[0.4em] uppercase">Historial de movimientos</span>
+              <div className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_10px_orange] animate-pulse"></div>
             </div>
             
             <div ref={scrollRef} className="flex-grow overflow-y-auto p-4 custom-scrollbar bg-black/30">
               {rows.map((row) => (
                 <div key={row.moveNum} className="grid grid-cols-[30px_1fr_1fr] gap-3 mb-2 items-center p-2 rounded-xl hover:bg-white/[0.04] transition-all border-b border-white/[0.02]">
                   <span className="font-mono text-[10px] text-zinc-600 font-bold">{row.moveNum}.</span>
-                  <div className="bg-white/5 rounded-lg py-1.5 px-3 border border-white/5 text-center">
-                    <span className="text-zinc-100 font-mono text-sm font-bold tracking-tight">{row.white}</span>
-                  </div>
-                  <div className={`rounded-lg py-1.5 px-3 text-center ${row.black ? 'bg-zinc-800/40 border border-white/5' : ''}`}>
-                    <span className="text-zinc-400 font-mono text-sm tracking-tight">{row.black || ""}</span>
-                  </div>
+                  <div className="bg-white/5 rounded-lg py-1.5 px-3 border border-white/5 text-center text-zinc-100 font-mono text-sm font-bold">{row.white}</div>
+                  <div className={`rounded-lg py-1.5 px-3 text-center text-zinc-400 font-mono text-sm ${row.black ? 'bg-zinc-800/40 border border-white/5' : ''}`}>{row.black || ""}</div>
                 </div>
               ))}
             </div>
 
             <div className="p-6 border-t border-white/10 bg-black/80">
-               <button 
-                onClick={() => {
-                  setResetKey(k => k + 1);
-                  setHistory([]);
-                  setCapturedW([]);
-                  setCapturedB([]);
-                  setTimeW(currentMode.m);
-                  setTimeB(currentMode.m);
-                  setGameStarted(false);
-                  setStatus("TURNO BLANCAS");
-                }} 
-                className="w-full bg-zinc-50 text-black py-4 rounded-2xl font-black text-[10px] tracking-[0.25em] uppercase hover:bg-gold hover:shadow-[0_0_25px_rgba(212,175,55,0.5)] transition-all duration-500"
-               >
-                 Reiniciar Batalla
+               <button onClick={() => { setResetKey(k => k + 1); setHistory([]); setCapturedW([]); setCapturedB([]); setTimeW(currentMode.m); setTimeB(currentMode.m); setGameStarted(false); setStatus("TURNO BLANCAS"); }} 
+               className="w-full bg-zinc-50 text-black py-4 rounded-2xl font-black text-[10px] tracking-[0.25em] uppercase hover:bg-gold transition-all duration-500">
+                 Reiniciar Partida
                </button>
             </div>
           </div>
         </div>
       </div>
-
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #d4af37; }
-        body { background-color: #020202; margin: 0; }
-      `}</style>
     </main>
   );
 }

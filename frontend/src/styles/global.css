@@ -259,3 +259,25 @@
 .move-number {
   @apply text-gold/40 font-black text-[10px] w-6 border-r border-gold/10 mr-3 italic;
 }
+
+@keyframes softGlowSuccess {
+  0%, 100% { 
+    box-shadow: 0 0 5px rgba(129, 182, 76, 0.4); 
+    background-color: #81b64c;
+  }
+  50% { 
+    box-shadow: 0 0 20px rgba(129, 182, 76, 0.8); 
+    background-color: #a3d16a; /* Se aclara un poco el verde */
+  }
+}
+
+@keyframes softGlowError {
+  0%, 100% { 
+    box-shadow: 0 0 4px rgba(224, 28, 28, 0.5);
+    background-color: #e01c1c;
+  }
+  50% { 
+    box-shadow: 0 0 15px rgba(224, 28, 28, 0.9);
+    background-color: #ef4444; /* Rojo más claro para el pulso */
+  }
+}

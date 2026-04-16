@@ -21,6 +21,7 @@
     "next": "^16.2.3",
     "postcss": "^8.5.9",
     "react": "^19.2.5",
+    "react-chessboard": "^5.10.0",
     "react-dom": "^19.2.5",
     "tailwindcss": "^4.1.18"
   },
