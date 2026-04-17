@@ -3,7 +3,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Eye, Swords, Check, X, UserPlus, MessageSquare, Users } from 'lucide-react';
 
-// --- INTERFACES ---
 interface Friend {
   id: string;
   name: string;
@@ -17,12 +16,11 @@ interface Friend {
   timeElapsed?: string;
 }
 
-// --- CONSTANTES ---
 const INITIAL_FRIENDS: Friend[] = [
   { id: "1", name: "MAGNUS_FAN", elo: 2850, avatar: "/avatars/w_king_avatar.png", online: true, statusText: "En partida vs IA", isWatching: true, currentGame: "Blitz 3+2 • vs Stockfish", viewers: 142, timeElapsed: "04:12" },
   { id: "2", name: "GAMBITO_DE_DAMA", elo: 1920, avatar: "/avatars/w_queen_avatar.png", online: true, statusText: "Disponible", isWatching: false },
   { id: "3", name: "CHESS_MASTER_99", elo: 2100, avatar: "/avatars/w_rook_avatar.png", online: true, statusText: "En partida Blitz", isWatching: true, currentGame: "Bullet 1+0 • vs Bot_Master", viewers: 28, timeElapsed: "01:45" },
-  { id: "4", name: "PEON_AVANZADO", elo: 1450, avatar: "/avatars/w_pawn_avatar.png", online: false, statusText: "Visto hace 2h", isWatching: false },
+  { id: "4", name: "PEON_AVANZADO", elo: 1450, avatar: "/avatars/w_pawn_avatar.png", online: true, statusText: "Disponible", isWatching: false },
   { id: "5", name: "HIKARU_FAN", elo: 2780, avatar: "/avatars/b_king_avatar.png", online: true, statusText: "Jugando", isWatching: true, currentGame: "Bullet 1+0 • Nakamura", viewers: 1205, timeElapsed: "00:30" },
   { id: "6", name: "GOTHAM_FAN", elo: 2350, avatar: "/avatars/b_bishop_avatar.png", online: true, statusText: "En directo", isWatching: true, currentGame: "Blitz 3+2 • vs Levy", viewers: 89, timeElapsed: "08:20" },
 ];
@@ -43,6 +41,7 @@ export default function FriendsForm() {
 
   useEffect(() => {
     localStorage.setItem('chess_friends', JSON.stringify(friends));
+    window.dispatchEvent(new Event('social-update'));
   }, [friends]);
 
   const filteredFriends = useMemo(() => {
@@ -56,9 +55,8 @@ export default function FriendsForm() {
   const handleOpenChat = (friend: Friend) => {
     window.dispatchEvent(new CustomEvent('open-chat', { 
       detail: { 
-        name: friend.name, 
-        status: friend.online ? 'online' : 'offline',
-        avatar: friend.avatar 
+        ...friend,
+        status: friend.online ? 'online' : 'offline'
       } 
     }));
   };
@@ -74,8 +72,6 @@ export default function FriendsForm() {
 
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-180px)] gap-8 w-full max-w-[1800px] mx-auto p-4 relative font-sans overflow-hidden">
-      
-      {/* PANEL IZQUIERDO */}
       <div className="hidden lg:flex flex-col w-80 gap-6 shrink-0 h-full">
         <div className="chess-panel-gold">
           <p className="chess-label justify-center mb-6">User_Core</p>
@@ -85,13 +81,11 @@ export default function FriendsForm() {
           </div>
           <h3 className="text-white font-serif font-bold text-xl tracking-widest uppercase truncate">{currentUser.name}</h3>
         </div>
-
         <div className="chess-panel space-y-6">
           <StatItem label="TOTAL AMIGOS" value={friends.length} />
           <div className="h-px bg-white/5 w-full" />
           <StatItem label="PARTIDAS VIVO" value={liveGames.length} />
         </div>
-
         <div className="chess-panel flex-grow overflow-hidden">
            <h4 className="chess-label italic mb-6">Log_Actividad</h4>
            <div className="overflow-y-auto h-[90%] space-y-5 pr-2 custom-scrollbar">
@@ -101,7 +95,6 @@ export default function FriendsForm() {
         </div>
       </div>
 
-      {/* PANEL CENTRAL */}
       <div className="flex-grow flex flex-col gap-8 min-w-0 h-full">
         <div className="h-[80%] flex flex-col chess-card overflow-hidden">
           <div className="px-10 py-8 border-b border-white/5 flex flex-wrap justify-between items-center shrink-0 gap-4">
@@ -126,8 +119,6 @@ export default function FriendsForm() {
             ))}
           </div>
         </div>
-
-        {/* EN DIRECTO */}
         <div className="h-[45%] flex flex-col bg-gold/5 border border-gold/20 rounded-[56px] overflow-hidden backdrop-blur-md shadow-2xl">
             <div className="px-10 py-6 border-b border-gold/10 flex items-center bg-black/20 shrink-0">
                 <div className="flex items-center gap-4">
@@ -157,7 +148,6 @@ export default function FriendsForm() {
         </div>
       </div>
 
-      {/* PANEL DERECHO */}
       <div className="hidden xl:flex flex-col w-96 gap-6 shrink-0 h-full overflow-hidden">
         <div className="chess-panel flex-grow overflow-hidden relative">
           <h4 className="chess-label italic mb-8 justify-center">Invitaciones</h4>
@@ -178,7 +168,6 @@ export default function FriendsForm() {
               </div>
             ))}
           </div>
-          
           <button 
             onClick={() => window.dispatchEvent(new CustomEvent('open-invite'))}
             className="btn-gold py-6 !rounded-[28px] gap-3"
@@ -190,8 +179,6 @@ export default function FriendsForm() {
     </div>
   );
 }
-
-// --- SUBCOMPONENTES ---
 
 function StatItem({ label, value }: any) {
   return (

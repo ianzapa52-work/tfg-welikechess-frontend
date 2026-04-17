@@ -11,8 +11,16 @@ export default function HomeFriendsSidebar() {
     const sync = () => {
       const saved = localStorage.getItem('chess_friends');
       if (saved) {
-        const sorted = JSON.parse(saved).sort((a: any, b: any) => (a.online === b.online ? b.elo - a.elo : a.online ? -1 : 1));
-        setFriends(sorted);
+        try {
+          const parsed = JSON.parse(saved);
+          const sorted = parsed.sort((a: any, b: any) => {
+            if (a.online !== b.online) return a.online ? -1 : 1;
+            return b.elo - a.elo;
+          });
+          setFriends(sorted);
+        } catch (e) {
+          console.error(e);
+        }
       }
     };
     sync();
