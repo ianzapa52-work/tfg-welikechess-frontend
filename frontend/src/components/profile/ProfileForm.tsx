@@ -1,7 +1,6 @@
 "use client";
-
 import React, { useState, useEffect } from 'react';
-import { Trophy, Flame, Camera, Activity, Star } from 'lucide-react';
+import { Camera, Activity } from 'lucide-react';
 
 export default function ProfileForm() {
   const [user, setUser] = useState<any>(null);
@@ -12,66 +11,52 @@ export default function ProfileForm() {
     if (!token) { window.location.assign("/auth"); return; }
 
     try {
-      const response = await fetch('http://localhost:8000/api/users/', {
+      const response = await fetch('http://localhost:8000/api/users/me/', {
         method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (response.ok) {
-        const data = await response.json();
-        let userData = data.results ? data.results[0] : (Array.isArray(data) ? data[0] : data);
-        if (userData) {
-          const displayName = userData.username || userData.name || "MAESTRO";
-          const localUser = localStorage.getItem("user");
-          const customAvatar = localUser ? JSON.parse(localUser).avatar : null;
+        const dbData = await response.json();
+        localStorage.setItem("user", JSON.stringify(dbData));
 
-          setUser({
-            ...userData,
-            name: displayName.toUpperCase(),
-            // Prioridad: LocalStorage (cambio reciente) > DB > Generado
-            avatar: customAvatar || userData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${displayName}`,
-            rating: userData.elo || 1200, wins: userData.wins || 0, losses: userData.losses || 0,
-            puzzlesSolved: userData.puzzles_solved || 0, streak: userData.streak || 0, ranking: userData.rank || 'N/A'
-          });
-        }
+        setUser({
+          ...dbData,
+          name: (dbData.username || "MAESTRO").toUpperCase(),
+          avatar: dbData.avatar, // Ruta directa de la DB (/avatars/...)
+          rating: dbData.elo_rapid || 1200, // Ajustado a tus campos de Django
+          wins: dbData.wins || 0,
+          losses: dbData.losses || 0,
+          ranking: dbData.rank || 'N/A'
+        });
       }
-    } catch (error) { console.error("Error crítico:", error); } finally { setLoading(false); }
+    } catch (error) {
+      console.error("Error cargando perfil:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchUserData();
-    // Escuchar cuando el avatar cambie en el modal para refrescar la foto aquí
     window.addEventListener('user-updated', fetchUserData);
     return () => window.removeEventListener('user-updated', fetchUserData);
   }, []);
 
-  const handleOpenCamera = () => {
-    // Disparamos el evento que captura tu ModalManager
-    window.dispatchEvent(new Event('open-avatar'));
-  };
-
-  if (loading) return (
-    <div className="flex h-screen items-center justify-center bg-black text-gold animate-pulse uppercase text-[10px] tracking-[0.5em] font-black">
-      Sincronizando_Core...
-    </div>
-  );
-
+  if (loading) return <div className="flex h-screen items-center justify-center bg-black text-gold animate-pulse uppercase tracking-[0.5em] font-black">Sincronizando_Core...</div>;
   if (!user) return null;
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-180px)] gap-8 w-full max-w-[1800px] mx-auto p-4 relative font-sans overflow-hidden">
-      
+    <div className="flex flex-col md:flex-row h-[calc(100vh-180px)] gap-8 w-full max-w-[1800px] mx-auto p-4 relative overflow-hidden">
       {/* PANEL IZQUIERDO */}
       <div className="hidden lg:flex flex-col w-80 gap-6 shrink-0 h-full">
         <div className="chess-panel-gold !p-8">
           <p className="text-gold text-[10px] tracking-[0.5em] font-black mb-6 uppercase opacity-70">Identity_Core</p>
           <div className="relative w-28 h-28 mx-auto mb-6 group">
              <img src={user.avatar} className="w-full h-full rounded-[32px] border-2 border-gold object-cover shadow-[0_0_20px_rgba(212,175,55,0.2)]" alt="Avatar" />
-             
-             {/* BOTÓN QUE ACTIVA EL MODAL MANAGER */}
              <button 
-                onClick={handleOpenCamera}
-                className="absolute -bottom-2 -right-2 bg-gold text-black p-2.5 rounded-xl hover:scale-110 active:scale-95 transition-all shadow-xl cursor-pointer z-10"
+                onClick={() => window.dispatchEvent(new Event('open-avatar'))}
+                className="absolute -bottom-2 -right-2 bg-gold text-black p-2.5 rounded-xl hover:scale-110 active:scale-95 transition-all shadow-xl cursor-pointer"
              >
                 <Camera size={18} strokeWidth={3} />
              </button>
@@ -80,22 +65,14 @@ export default function ProfileForm() {
           
           <div className="grid grid-cols-2 gap-3 text-center">
             <div className="bg-white/5 rounded-2xl p-2 border border-white/10">
+                <p className="text-gold text-[8px] font-black uppercase mb-1">Elo Rapid</p>
+                <p className="text-white font-cinzel font-bold text-sm">{user.rating}</p>
+            </div>
+            <div className="bg-white/5 rounded-2xl p-2 border border-white/10">
                 <p className="text-gold text-[8px] font-black uppercase mb-1">Rango</p>
                 <p className="text-white font-cinzel font-bold text-sm">#{user.ranking}</p>
             </div>
-            <div className="bg-white/5 rounded-2xl p-2 border border-white/10">
-                <p className="text-gold text-[8px] font-black uppercase mb-1">Elo</p>
-                <p className="text-white font-cinzel font-bold text-sm">{user.rating}</p>
-            </div>
           </div>
-        </div>
-        
-        <div className="chess-panel !p-8 flex-grow">
-           <h4 className="text-gold font-cinzel text-[10px] tracking-[0.5em] mb-6 uppercase font-black italic">Hitos_Recientes</h4>
-           <div className="space-y-5">
-              <div className="log-item"><p>Estado</p><span>Cuenta verificada</span></div>
-              <div className="log-item"><p>Perfil</p><span>Sincronizado</span></div>
-           </div>
         </div>
       </div>
 
@@ -105,7 +82,7 @@ export default function ProfileForm() {
           <div className="px-10 py-8 border-b border-white/5 flex justify-between items-center">
             <div className="flex items-center gap-4">
                <Activity className="text-gold" size={28} />
-               <h2 className="text-3xl font-black font-cinzel text-white tracking-[0.4em] uppercase text-center">Estadísticas</h2>
+               <h2 className="text-3xl font-black font-cinzel text-white tracking-[0.4em] uppercase">Estadísticas</h2>
             </div>
           </div>
 
@@ -120,18 +97,9 @@ export default function ProfileForm() {
                     <p className="text-4xl font-black font-cinzel">{user.wins || 0}</p>
                 </div>
                 <div className="bg-white/[0.03] border border-white/10 rounded-[32px] p-8">
-                    <p className="text-zinc-500 text-[9px] font-black uppercase tracking-[0.3em] mb-2">Mejor ELO</p>
-                    <p className="text-4xl text-white font-black font-cinzel">{user.rating || 1200}</p>
+                    <p className="text-zinc-500 text-[9px] font-black uppercase tracking-[0.3em] mb-2">Derrotas</p>
+                    <p className="text-4xl text-white font-black font-cinzel">{user.losses || 0}</p>
                 </div>
-            </div>
-
-            <div className="bg-black/40 border border-gold/20 rounded-[40px] p-12 text-center">
-                <h4 className="text-gold font-cinzel text-7xl font-black italic">
-                  {((user.wins || 0) + (user.losses || 0)) > 0 
-                    ? Math.round((user.wins / (user.wins + user.losses)) * 100) 
-                    : '0'}%
-                </h4>
-                <p className="text-zinc-500 tracking-[0.6em] text-[10px] font-black uppercase mt-6">Porcentaje de Victorias</p>
             </div>
           </div>
         </div>
