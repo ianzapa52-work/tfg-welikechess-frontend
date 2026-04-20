@@ -64,7 +64,7 @@ export default function ModalManager() {
         <EloWindow />
       </ModalFrame>
 
-      <ModalFrame isOpen={activeModal === 'avatar'} onClose={closeModal} size="max-w-5xl">
+      <ModalFrame isOpen={activeModal === 'avatar'} onClose={closeModal} size="max-w-7xl">
         <AvatarWindow />
       </ModalFrame>
 
