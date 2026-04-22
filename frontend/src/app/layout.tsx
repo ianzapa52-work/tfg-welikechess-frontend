@@ -1,19 +1,16 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Inter, Cinzel } from "next/font/google";
 import "@/styles/global.css";
 import ModalManager from "@/components/modals/ModalManager";
 import HeaderActions from "@/components/layout/HeaderActions";
 import ChatWindow from "@/components/ui/ChatWindow";
 import Link from "next/link";
+import IdleTimer from "@/components/utils/IdleTimer";
 
 const inter = Inter({ subsets: ["latin"] });
 const cinzel = Cinzel({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "WELIKECHESS",
-  description: "Plataforma de ajedrez definitiva",
-  icons: { icon: "/w_king.svg" },
-};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 
@@ -23,8 +20,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es" className="scroll-smooth">
       <body className={`${inter.className} bg-[#050505] text-white antialiased`}>
         
+        {/* Fondo decorativo */}
         <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top,#1a1a1a_0%,#000000_100%)] opacity-70 pointer-events-none"></div>
 
+        {/* HEADER */}
         <header className="fixed top-0 left-0 w-full h-20 md:h-24 bg-black/60 grid grid-cols-3 items-center px-4 md:px-10 z-[60] backdrop-blur-xl border-b border-white/5">
           
           <div className="flex justify-start">
@@ -59,12 +58,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
 
+        {/* CONTENIDO PRINCIPAL */}
         <main className="relative min-h-screen pt-20 md:pt-24">
           {children}
         </main>
 
+        {/* COMPONENTES GLOBALES */}
         <ModalManager />
         <ChatWindow />
+        
+        {/* SISTEMA DE INACTIVIDAD (5 MINUTOS) */}
+        <IdleTimer /> 
       </body>
     </html>
   );
