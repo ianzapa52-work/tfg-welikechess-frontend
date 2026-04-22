@@ -3,169 +3,136 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-interface Game {
-  id: string;
-  mode: string;
-  result: string;
-  opponent: string;
-  date: string;
-  moves: number;
-  timeControl: string;
-}
+// Tipos para las categorías de jugadas
+const CATEGORIES = [
+  { label: "Brillantes", val: 1, color: "bg-cyan-400", icon: "!!" },
+  { label: "Grandes", val: 3, color: "bg-blue-500", icon: "!" },
+  { label: "Mejores", val: 18, color: "bg-emerald-500", icon: "★" },
+  { label: "Excelentes", val: 12, color: "bg-green-400", icon: "✔" },
+  { label: "Inexactitudes", val: 2, color: "bg-yellow-500", icon: "?!" },
+  { label: "Errores", val: 1, color: "bg-red-500", icon: "?" },
+];
 
-export default function AnalysisForm({ gameId }: { gameId: string }) {
+export default function AnalysisReview({ gameId }: { gameId: string }) {
   const router = useRouter();
-  const [game, setGame] = useState<Game | null>(null);
-  const [evaluation, setEvaluation] = useState<number>(0); 
+  const [accuracy, setAccuracy] = useState({ player: 0, opponent: 0 });
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const savedHistory = localStorage.getItem('chess_history');
-    if (savedHistory) {
-      const history: Game[] = JSON.parse(savedHistory);
-      const foundGame = history.find(g => g.id === gameId);
-      setGame(foundGame || null);
-    }
-    
-    // Simulación de evaluación del motor (-5.0 a +5.0)
-    const fakeEval = (Math.random() * 4 - 2).toFixed(1);
-    setEvaluation(parseFloat(fakeEval));
-  }, [gameId]);
-
-  if (!game) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen font-sans text-white bg-[#020202]">
-        <div className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full animate-spin mb-4"></div>
-        <p className="animate-pulse tracking-[0.4em] uppercase text-[10px] text-zinc-500">Sincronizando motor...</p>
-      </div>
-    );
-  }
+    setAccuracy({ player: 91.5, opponent: 82.3 });
+    setIsVisible(true);
+  }, []);
 
   return (
-    <div className="w-full max-w-7xl mx-auto min-h-screen p-4 md:p-10 font-sans text-white relative">
+    <div className="min-h-screen bg-[#050505] text-white p-6 md:p-12 relative overflow-hidden font-sans selection:bg-white/20">
       
-      {/* FONDO: Resplandor plateado sutil */}
+      {/* BACKGROUND DECOR */}
       <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[#050508]"></div>
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-zinc-500/10 blur-[120px] rounded-full"></div>
+        <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-white/5 blur-[120px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] right-[-5%] w-[30%] h-[30%] bg-zinc-500/5 blur-[100px] rounded-full"></div>
       </div>
 
-      {/* HEADER Estilo Platino */}
-      <div className="relative z-10 flex justify-between items-end mb-12 border-b border-white/10 pb-8">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-2 h-2 bg-white rounded-full animate-pulse shadow-[0_0_10px_#fff]"></div>
-            <span className="text-[10px] tracking-[0.4em] uppercase font-black text-zinc-500">Motor de Análisis v16</span>
-          </div>
-          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white italic">
-            Partida <span className="text-zinc-500">#{gameId}</span>
-          </h2>
-          <p className="text-zinc-500 text-[10px] tracking-[0.3em] uppercase font-bold mt-2">
-            vs {game.opponent} • {game.date}
-          </p>
-        </div>
-        <button 
-          onClick={() => router.back()}
-          className="px-8 py-3 border-2 border-zinc-800 bg-zinc-950 text-white text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-500 font-black rounded-2xl shadow-xl"
-        >
-          Volver
-        </button>
-      </div>
-
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className={`max-w-7xl mx-auto relative z-10 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
         
-        {/* ÁREA DEL TABLERO Y BARRA */}
-        <div className="lg:col-span-8 flex gap-6 h-[min(85vw,680px)]">
-          
-          {/* Barra de Evaluación Técnica */}
-          <div className="w-6 md:w-10 bg-zinc-900 rounded-full overflow-hidden flex flex-col-reverse relative border border-white/10 shadow-2xl">
-            <div 
-              className="bg-gradient-to-t from-zinc-600 via-zinc-200 to-white transition-all duration-1000 ease-out" 
-              style={{ height: `${Math.min(Math.max(50 + (evaluation * 10), 5), 95)}%` }}
-            ></div>
-            <span className="absolute top-4 left-0 w-full text-[10px] text-center font-black text-white mix-blend-difference z-10 font-mono">
-              {evaluation > 0 ? `+${evaluation}` : evaluation}
-            </span>
-            <div className="absolute top-1/2 left-0 w-full h-[0.5px] bg-white/30 z-0"></div>
+        {/* HEADER */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 border-b border-white/10 pb-10 gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="px-3 py-1 bg-white text-black text-[9px] font-black uppercase tracking-widest rounded-full">Reporte Final</span>
+              <span className="text-zinc-600 text-[10px] font-bold tracking-widest uppercase">ID: {gameId}</span>
+            </div>
+            <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter leading-none">
+              Game <span className="text-zinc-700">Review</span>
+            </h1>
           </div>
+          <button 
+            onClick={() => router.back()} 
+            className="group flex items-center gap-4 px-8 py-4 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all duration-500"
+          >
+            <span>Volver al análisis</span>
+            <span className="group-hover:translate-x-1 transition-transform">→</span>
+          </button>
+        </header>
 
-          {/* TABLERO PLATEADO */}
-          <div className="flex-1 bg-zinc-950 p-2 rounded-[2.5rem] border border-white/5 shadow-[0_0_60px_rgba(0,0,0,0.5)]">
-            <div className="grid grid-cols-8 grid-rows-8 h-full w-full rounded-2xl overflow-hidden border-4 border-zinc-900 shadow-inner">
-              {[...Array(64)].map((_, index) => {
-                const i = Math.floor(index / 8);
-                const j = index % 8;
-                const isDark = (i + j) % 2 === 1;
-                
-                return (
-                  <div
-                    key={index}
-                    className={`relative flex items-center justify-center transition-colors duration-500
-                      ${isDark ? 'bg-[#3f3f46]' : 'bg-[#d4d4d8]'} 
-                    `}
-                  >
-                    {/* Brillo Metálico en claras */}
-                    {!isDark && (
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent"></div>
-                    )}
-
-                    {/* Coordenadas Técnicas */}
-                    {j === 0 && (
-                      <span className={`absolute top-1 left-1.5 text-[9px] font-black font-mono ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                        {8 - i}
-                      </span>
-                    )}
-                    {i === 7 && (
-                      <span className={`absolute bottom-1 right-1.5 text-[9px] font-black font-mono uppercase ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                        {String.fromCharCode(97 + j)}
-                      </span>
-                    )}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          
+          {/* PANEL IZQUIERDO: ACCURACY CARD */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="bg-zinc-950/50 border border-white/10 p-12 rounded-[3.5rem] shadow-2xl backdrop-blur-3xl relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
+               
+               <h2 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em] mb-12 text-center">Precisión de la Partida</h2>
+               
+               <div className="flex justify-around items-center mb-16">
+                  <div className="text-center group">
+                    <p className="text-[9px] font-black text-zinc-400 uppercase mb-4 tracking-widest group-hover:text-white transition-colors">Tú</p>
+                    <div className="relative">
+                      <p className="text-7xl font-black italic text-white leading-none">{accuracy.player}</p>
+                      <span className="absolute -top-2 -right-6 text-xl font-bold text-zinc-700">%</span>
+                    </div>
                   </div>
-                );
-              })}
+                  
+                  <div className="w-[1px] h-20 bg-white/10"></div>
+                  
+                  <div className="text-center">
+                    <p className="text-[9px] font-black text-zinc-600 uppercase mb-4 tracking-widest">Rival</p>
+                    <div className="relative">
+                      <p className="text-7xl font-black italic text-zinc-800 leading-none">{accuracy.opponent}</p>
+                      <span className="absolute -top-2 -right-6 text-xl font-bold text-zinc-800">%</span>
+                    </div>
+                  </div>
+               </div>
+               
+               {/* BARRA COMPARATIVA */}
+               <div className="w-full h-4 bg-zinc-900 rounded-full overflow-hidden flex border border-white/5 p-[2px]">
+                  <div className="h-full bg-white rounded-l-full transition-all duration-1000" style={{ width: `${accuracy.player}%` }}></div>
+                  <div className="h-full bg-zinc-800 rounded-r-full transition-all duration-1000" style={{ width: `${100 - accuracy.player}%` }}></div>
+               </div>
             </div>
-          </div>
-        </div>
 
-        {/* PANEL LATERAL */}
-        <div className="lg:col-span-4 space-y-6 flex flex-col">
-          
-          <div className="bg-zinc-950 border border-white/5 p-8 rounded-[2.5rem] shadow-2xl backdrop-blur-xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-            <h3 className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em] mb-6">Métricas de Precisión</h3>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-zinc-900 p-6 rounded-2xl border border-white/5 text-center">
-                <p className="text-[9px] text-zinc-500 uppercase mb-2 font-black">Tú (Blanco)</p>
-                <p className="text-4xl font-black text-white italic">82<span className="text-sm not-italic opacity-40">%</span></p>
-              </div>
-              <div className="bg-zinc-100 p-6 rounded-2xl text-center shadow-lg">
-                <p className="text-[9px] text-zinc-600 uppercase mb-2 font-black italic">Engine</p>
-                <p className="text-4xl font-black text-black italic">94<span className="text-sm not-italic opacity-40">%</span></p>
-              </div>
-            </div>
+            <button className="w-full py-8 bg-zinc-100 text-black rounded-[2.5rem] font-black uppercase tracking-[0.3em] text-[10px] hover:bg-white hover:scale-[0.98] transition-all duration-500 shadow-xl shadow-white/5">
+               Descargar PGN Analizado
+            </button>
           </div>
 
-          <div className="bg-zinc-950/40 border border-white/5 p-8 rounded-[2.5rem] flex-1 min-h-[300px] backdrop-blur-sm relative overflow-hidden">
-            <h3 className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em] mb-6">Líneas Principales</h3>
+          {/* PANEL DERECHO: DESGLOSE TÉCNICO */}
+          <div className="lg:col-span-7 space-y-4">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 mb-6 px-4">Clasificación de jugadas</h3>
             
-            <div className="space-y-4">
-              {[
-                { n: "18.", m: "Nf3", d: "Movimiento brillante", active: true },
-                { n: "19.", m: "Qh5", d: "Presión en flanco", active: false },
-                { n: "20.", m: "O-O", d: "Seguridad de rey", active: false }
-              ].map((item, i) => (
-                <div key={i} className={`flex items-center gap-5 text-[11px] p-4 rounded-2xl transition-all border-l-4 ${
-                  item.active 
-                    ? 'bg-white/10 border-white shadow-lg translate-x-1' 
-                    : 'bg-black/20 border-zinc-800 opacity-60'
-                }`}>
-                  <span className="text-zinc-600 font-mono font-bold w-6">{item.n}</span>
-                  <span className={`font-black w-12 uppercase text-sm ${item.active ? 'text-white' : 'text-zinc-400'}`}>{item.m}</span>
-                  <span className="text-[10px] text-zinc-600 font-medium italic">{item.d}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {CATEGORIES.map((cat, idx) => (
+                <div 
+                  key={cat.label} 
+                  className="bg-zinc-900/30 border border-white/[0.03] p-5 rounded-[2rem] flex items-center justify-between hover:bg-white/[0.05] hover:border-white/10 transition-all cursor-default group"
+                  style={{ transitionDelay: `${idx * 50}ms` }}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-xl ${cat.color} flex items-center justify-center text-black font-black text-lg shadow-lg`}>
+                      {cat.icon}
+                    </div>
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-wider">{cat.label}</p>
+                      <p className="text-[10px] text-zinc-600 font-bold uppercase">Jugador Blanco</p>
+                    </div>
+                  </div>
+                  <span className="text-2xl font-mono font-black text-zinc-400 group-hover:text-white transition-colors">{cat.val}</span>
                 </div>
               ))}
             </div>
+
+            {/* MEJOR MOMENTO */}
+            <div className="mt-8 p-8 bg-gradient-to-br from-cyan-500/10 to-transparent border border-cyan-500/20 rounded-[2.5rem] relative overflow-hidden">
+               <div className="relative z-10">
+                 <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest mb-2 block">Movimiento Brillante</span>
+                 <h4 className="text-2xl font-black italic mb-2">18... Nf3!!</h4>
+                 <p className="text-xs text-zinc-400 leading-relaxed max-w-md italic">
+                   "Una jugada que desafía la lógica posicional para forzar un mate en 12. Stockfish la califica como la única línea ganadora."
+                 </p>
+               </div>
+               <div className="absolute right-[-20px] bottom-[-20px] text-9xl font-black text-cyan-500/5 select-none">!!</div>
+            </div>
           </div>
+          
         </div>
       </div>
     </div>
