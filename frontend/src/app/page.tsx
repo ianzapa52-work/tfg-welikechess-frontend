@@ -15,7 +15,6 @@ const quotes = [
 ];
 
 export default function HomePage() {
-  // Lógica de servidor para la cita
   const today = new Date();
   const daysSinceEpoch = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
   const quote = quotes[daysSinceEpoch % quotes.length];
@@ -24,16 +23,13 @@ export default function HomePage() {
     <div className="flex flex-col bg-[#070707] text-zinc-300 font-sans h-[calc(100vh-80px)] md:h-[calc(100vh-96px)] overflow-hidden">
       <div className="flex-grow grid grid-cols-12 overflow-hidden">
         
-        {/* Sidebar Izquierdo: Amigos */}
         <aside className="col-span-2 hidden xl:flex border-r border-[#d4af37]/10 bg-[#0a0a0a] flex-col overflow-hidden">
           <HomeFriendsSidebar />
         </aside>
 
-        {/* Main Content */}
         <main className="col-span-12 xl:col-span-8 flex flex-col overflow-y-auto custom-scrollbar bg-[radial-gradient(circle_at_top,#1a1a1a_0%,#050505_100%)]">
           <section className="p-8 md:p-12 max-w-[1400px] mx-auto w-full pt-8 pb-16"> 
             
-            {/* Header / Titular */}
             <div className="mb-12 border-l-4 border-[#d4af37] pl-8 py-2 bg-gradient-to-r from-[#d4af37]/5 to-transparent rounded-r-xl">
               <p className="text-[11px] font-black uppercase text-[#d4af37]/70 tracking-[0.5em] mb-1">Nuestro Ajedrez</p>
               <h2 className="text-6xl font-light text-white italic tracking-tight leading-none font-['Cinzel']">
@@ -41,36 +37,12 @@ export default function HomePage() {
               </h2>
             </div>
             
-            {/* Grid de Modos de Juego */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              <GameCard 
-                href="/play-online" 
-                title="Jugar Online" 
-                subtitle="Arena Multiplayer" 
-                desc="Compite contra el mundo en tiempo real." 
-                stats="3,210 Jugadores activos"
-                img="/pieces/w_queen.svg"
-                online
-              />
-              <GameCard 
-                href="/play-ia" 
-                title="Desafiar IA" 
-                subtitle="Entrenamiento IA" 
-                desc="Stockfish v16 listo para ponerte a prueba." 
-                stats="Niveles 1-20 adaptativos"
-                img="/pieces/w_king.svg"
-              />
-              <GameCard 
-                href="/play-local" 
-                title="Duelo Local" 
-                subtitle="En Persona" 
-                desc="Tablero virtual perfecto para jugar cara a cara." 
-                stats="Incluye reloj de torneo"
-                img="/pieces/w_rook.svg"
-              />
+              <GameCard href="/play-online" title="Jugar Online" subtitle="Arena Multiplayer" desc="Compite contra el mundo en tiempo real." stats="3,210 Jugadores activos" img="/pieces/w_queen.svg" online />
+              <GameCard href="/play-ia" title="Desafiar IA" subtitle="Entrenamiento IA" desc="Stockfish v16 listo para ponerte a prueba." stats="Niveles 1-20 adaptativos" img="/pieces/w_king.svg" />
+              <GameCard href="/play-local" title="Duelo Local" subtitle="En Persona" desc="Tablero virtual perfecto para jugar cara a cara." stats="Incluye reloj de torneo" img="/pieces/w_rook.svg" />
             </div>
 
-            {/* Actividad y Puzzles */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
               <SectionBox title="Actividad Reciente">
                 <HomeRecentActivity />
@@ -93,7 +65,6 @@ export default function HomePage() {
           </section>
         </main>
 
-        {/* Sidebar Derecho: Stats y Cita */}
         <aside className="hidden xl:flex col-span-2 bg-[#0a0a0a] border-l border-[#d4af37]/10 flex-col overflow-hidden relative">
           <div className="absolute left-0 top-0 w-[1px] h-full bg-gradient-to-b from-transparent via-[#d4af37]/20 to-transparent"></div>
           <div className="px-2.5 py-6 flex flex-col h-full overflow-hidden pb-10">
@@ -102,18 +73,12 @@ export default function HomePage() {
               <HomeRankingSidebar />
             </div>
 
-            {/* Cita del día */}
             <div className="bg-gradient-to-br from-[#d4af37]/10 to-transparent rounded-2xl p-5 border border-[#d4af37]/10 relative overflow-hidden mb-8 min-h-[140px]">
               <p className="text-[10px] font-black uppercase text-[#d4af37] tracking-[0.3em] mb-3 opacity-70">Cita del maestro</p>
-              <p className="text-[13px] italic text-zinc-300 leading-relaxed font-serif">
-                 "{quote.text}"
-              </p>
-              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-4">
-                 — {quote.author}
-              </p>
+              <p className="text-[13px] italic text-zinc-300 leading-relaxed font-serif">"{quote.text}"</p>
+              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-4">— {quote.author}</p>
             </div>
 
-            {/* Sesión y Actividad */}
             <div className="flex flex-col gap-4">
                <div className="px-2">
                   <p className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.3em] mb-4">Tu Sesión Hoy</p>
@@ -122,7 +87,6 @@ export default function HomePage() {
                     <StatBox label="Win Rate" value="64%" accent />
                   </div>
                </div>
-
                <div className="px-2 mt-2">
                   <ActivityBars />
                   <p className="text-[9px] text-zinc-600 uppercase font-bold text-center mt-2 tracking-widest">Actividad de la Comunidad</p>
@@ -135,7 +99,6 @@ export default function HomePage() {
                  <LiveBadge />
               </div>
             </div>
-
           </div>
         </aside>
       </div>

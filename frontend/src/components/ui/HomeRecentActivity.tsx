@@ -1,65 +1,120 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function HomeRecentActivity() {
   const [recentGames, setRecentGames] = useState<any[]>([]);
-  const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [myUsername, setMyUsername] = useState<string | null>(null);
+  const router = useRouter();
 
-  const loadRecent = () => {
-    if (typeof window === 'undefined') return;
-    const saved = localStorage.getItem('chess_history');
-    if (saved) {
-      setRecentGames(JSON.parse(saved).slice(0, 3));
+  useEffect(() => {
+    const fetchRecent = async () => {
+      const token = localStorage.getItem("access");
+      const storedUser = localStorage.getItem("username");
+      setMyUsername(storedUser);
+      
+      try {
+        const response = await fetch("http://localhost:8000/api/games/my-history/", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const formatted = data.slice(0, 3).map((g: any) => {
+            const isLive = g.status === 'in_progress';
+            let resType = 'draw';
+            
+            if (isLive) {
+              resType = 'live';
+            } else if (g.winner_username === storedUser) {
+              resType = 'win';
+            } else if (g.winner_username !== null) {
+              resType = 'loss';
+            }
+
+            return {
+              id: g.id,
+              opponent: g.white_username === storedUser ? g.black_username : g.white_username,
+              resultType: resType,
+              mode: g.mode,
+              status: g.status,
+              resultText: g.result,
+              created_at: g.created_at
+            };
+          });
+          setRecentGames(formatted);
+        }
+      } catch (error) {
+        console.error("Error Home Recent Activity:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRecent();
+  }, []);
+
+  const handleAction = (game: any) => {
+    if (game.status === 'in_progress') {
+      router.push(`/play-online?gameId=${game.id}`);
+    } else {
+      router.push(`/analysis/${game.id}`);
     }
   };
 
-  useEffect(() => {
-    setMounted(true);
-    loadRecent();
-    window.addEventListener('history-updated', loadRecent);
-    return () => window.removeEventListener('history-updated', loadRecent);
-  }, []);
-
-  const handleAnalyze = (e: React.MouseEvent) => {
-    e.preventDefault();
-    window.dispatchEvent(new CustomEvent('open-history'));
-  };
-
-  if (!mounted) return null;
+  if (loading) return <div className="text-center py-4 animate-pulse text-gold text-[10px]">SINCRONIZANDO...</div>;
 
   return (
     <div className="space-y-3">
       {recentGames.length > 0 ? (
-        recentGames.map((game) => (
-          <div key={game.id} className="flex items-center justify-between py-3 border-b border-[#d4af37]/10 last:border-0 hover:bg-[#d4af37]/5 px-3 -mx-1 rounded-xl transition-all group/item">
-            <div className="flex items-center gap-4">
-              <div className={`text-[9px] font-black px-2 py-1 rounded border ${
-                game.result === 'win' ? 'text-green-500 border-green-500/20 bg-green-500/5' : 
-                game.result === 'loss' ? 'text-red-500 border-red-500/20 bg-red-500/5' : 
-                'text-zinc-500 border-zinc-500/20 bg-zinc-500/5'
-              } group-hover/item:scale-105 transition-transform`}>
-                {game.result === 'win' ? 'VICTORIA' : game.result === 'loss' ? 'DERROTA' : 'TABLAS'}
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white uppercase tracking-tight group-hover/item:text-[#d4af37] transition-colors">
-                  vs. {game.opponent}
-                </p>
-                <p className="text-[10px] text-zinc-500">
-                  {game.mode} {game.timeControl} • {game.eloChange || '0'} ELO
-                </p>
-              </div>
-            </div>
-            <button 
-              onClick={handleAnalyze}
-              className="px-4 py-1.5 bg-black border border-[#d4af37]/20 text-[10px] font-bold text-[#d4af37] rounded hover:bg-[#d4af37] hover:text-black transition-all transform active:scale-95 cursor-pointer"
+        recentGames.map((game) => {
+          const isLive = game.status === 'in_progress';
+          
+          return (
+            <div 
+              key={game.id} 
+              className={`flex items-center justify-between py-3 px-3 -mx-1 rounded-xl transition-all duration-700 group/item border ${
+                isLive 
+                ? 'border-[#ff1744]/30 bg-[#ff1744]/5 opacity-90' // Opacidad constante
+                : 'border-transparent hover:bg-white/5'
+              }`}
             >
-              ANALIZAR
-            </button>
-          </div>
-        ))
+              <div className="flex items-center gap-4">
+                <div className={`text-[9px] font-black px-2 py-1 rounded border transition-opacity duration-1000 ${
+                  isLive ? 'text-[#ff1744] border-[#ff1744]/40 bg-[#ff1744]/10 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite]' : // Pulso muy lento (3s)
+                  game.resultType === 'win' ? 'text-emerald-500 border-emerald-500/20 bg-emerald-500/5' : 
+                  game.resultType === 'loss' ? 'text-rose-500 border-rose-500/20 bg-rose-500/5' : 
+                  'text-zinc-500 border-zinc-500/20 bg-zinc-500/5'
+                }`}>
+                  {isLive ? 'EN CURSO' : 
+                   game.resultType === 'win' ? 'VICTORIA' : 
+                   game.resultType === 'loss' ? 'DERROTA' : 'TABLAS'}
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-white uppercase tracking-tight group-hover/item:text-[#d4af37] transition-colors">
+                    vs. {game.opponent}
+                  </p>
+                  <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
+                    {game.mode} • {isLive ? 'LIVE' : game.resultText}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => handleAction(game)}
+                className={`px-4 py-1.5 rounded text-[10px] font-black transition-all transform active:scale-95 cursor-pointer uppercase tracking-widest border ${
+                  isLive
+                  ? 'bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.1)] hover:bg-[#ff1744] hover:text-white hover:border-[#ff1744]'
+                  : 'bg-black border-[#d4af37]/20 text-[#d4af37] hover:bg-[#d4af37] hover:text-black'
+                }`}
+              >
+                {isLive ? 'VER PARTIDA' : 'ANALIZAR'}
+              </button>
+            </div>
+          );
+        })
       ) : (
-        <p className="text-center py-4 text-zinc-600 text-[10px] uppercase tracking-widest">No hay partidas recientes</p>
+        <p className="text-center py-4 text-zinc-600 text-[10px] uppercase tracking-widest">No hay actividad reciente</p>
       )}
     </div>
   );
