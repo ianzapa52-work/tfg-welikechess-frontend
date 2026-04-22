@@ -21,7 +21,6 @@ const searchAnimations = `
   .animate-pulse-subtle { animation: subtle-pulse 6s infinite ease-in-out; }
 `;
 
-// Componentes auxiliares
 function OpponentBox({ name, elo, isActive, seconds, visible }: any) {
   return (
     <div className={`p-5 rounded-[2rem] border transition-all duration-1000 backdrop-blur-xl ${
@@ -87,7 +86,6 @@ export default function OnlinePremiumPage() {
 
   const matchmakingSocket = useRef<WebSocket | null>(null);
 
-  // LÓGICA DE CONEXIÓN AL MATCHMAKING
   const startSearch = () => {
     const token = localStorage.getItem("access");
     if (!token) return alert("No hay token de sesión. Por favor, inicia sesión.");
@@ -95,48 +93,59 @@ export default function OnlinePremiumPage() {
     setIsSearching(true);
     setStatus("BUSCANDO RIVAL...");
 
-    // Conectamos al socket de matchmaking de Django
+    const [initStr, incStr] = currentMode.n.split('+');
+    const initial_time = parseInt(initStr) * 60;
+    const increment = parseInt(incStr);
+    
+    let backendCategory = "blitz";
+    if (initial_time < 180) backendCategory = "bullet";
+    else if (initial_time >= 600) backendCategory = "rapid";
+    else if (initial_time >= 1800) backendCategory = "classical";
+
+    // URL corregida segun tu routing: ws/matchmaking/
     const wsUrl = `ws://localhost:8000/ws/matchmaking/?token=${token}`;
     matchmakingSocket.current = new WebSocket(wsUrl);
 
     matchmakingSocket.current.onopen = () => {
-      console.log("📡 Conectado al Matchmaking. Buscando...");
+      console.log("📡 Conectado al Matchmaking.");
       matchmakingSocket.current?.send(JSON.stringify({
         action: "search_game",
-        mode: currentMode.n
+        mode: backendCategory,
+        initial_time: initial_time,
+        increment: increment
       }));
     };
 
     matchmakingSocket.current.onmessage = (e) => {
       const data = JSON.parse(e.data);
-      console.log("📩 Servidor dice:", data);
-
+      
+      if (data.type === "waiting") {
+        setStatus("EN COLA...");
+      }
+      
       if (data.type === "match_found") {
-        console.log("🎮 Partida lista ID:", data.game_id);
+        console.log("🎮 Partida encontrada:", data.game_id);
         setGameId(data.game_id);
         setGameJoined(true);
         setIsSearching(false);
-        // Cerramos el socket de matchmaking, ya no lo necesitamos
         matchmakingSocket.current?.close();
+      }
+
+      if (data.type === "error") {
+        alert(data.message);
+        setIsSearching(false);
       }
     };
 
     matchmakingSocket.current.onclose = () => {
-      console.log("🔌 Socket de Matchmaking cerrado.");
       if (!gameJoined) setIsSearching(false);
     };
 
-    matchmakingSocket.current.onerror = (err) => {
-      console.error("❌ Error en Matchmaking:", err);
-      setIsSearching(false);
-    };
+    matchmakingSocket.current.onerror = () => setIsSearching(false);
   };
 
-  // Limpiar al cerrar pestaña
   useEffect(() => {
-    return () => {
-      matchmakingSocket.current?.close();
-    };
+    return () => { matchmakingSocket.current?.close(); };
   }, []);
 
   const rows = [];
@@ -156,7 +165,6 @@ export default function OnlinePremiumPage() {
 
       <div className="relative z-10 max-w-[1700px] mx-auto grid grid-cols-12 gap-8 items-stretch">
         
-        {/* Columna Izquierda: Oponente y Configuración */}
         <div className="col-span-12 xl:col-span-3 flex flex-col justify-between py-2">
           <OpponentBox 
             name="Rival" 
@@ -208,12 +216,11 @@ export default function OnlinePremiumPage() {
           <MyPlayerBox name="Tu Perfil" elo="2185" isActive={gameJoined && (status.includes("TU TURNO") || status.includes("BLANCAS"))} seconds={timeW} />
         </div>
 
-        {/* Columna Central: El Tablero */}
         <div className="col-span-12 xl:col-span-6 flex items-center justify-center">
           <div className="w-full aspect-square max-w-[785px] relative rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl bg-zinc-950/40 backdrop-blur-xl">
             {gameJoined && gameId ? (
                  <PlayOnline
-                  serverUrl={`ws://localhost:8000/ws/games/${gameId}`} 
+                  serverUrl={`ws://localhost:8000/ws/games/${gameId}/`} 
                   onGameStateChange={setStatus} 
                   onMoveUpdate={setHistory} 
                 />
@@ -235,7 +242,6 @@ export default function OnlinePremiumPage() {
           </div>
         </div>
 
-        {/* Columna Derecha: Historial */}
         <div className="col-span-12 xl:col-span-3">
           <div className="bg-zinc-950/80 h-full flex flex-col border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-xl">
             <div className="p-6 border-b border-white/10 bg-white/[0.02] flex justify-between items-center">
@@ -257,7 +263,6 @@ export default function OnlinePremiumPage() {
             </div>
           </div>
         </div>
-
       </div>
     </main>
   );

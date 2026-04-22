@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Square } from 'chess.js';
+import { Square, Chess } from 'chess.js';
 
 interface Piece { color: 'w' | 'b'; type: string; }
 type BoardMatrix = Array<Array<Piece | null>>;
@@ -17,95 +17,108 @@ const PIECE_MAP: Record<string, string> = {
 };
 
 export default function PlayOnline({ onGameStateChange, onMoveUpdate, serverUrl }: PlayOnlineProps) {
-  const [board, setBoard] = useState<BoardMatrix>(Array(8).fill(null).map(() => Array(8).fill(null)));
+  // Usamos una referencia para el objeto Chess para evitar problemas de re-renderizado
+  // pero mantenemos un estado para forzar la actualización visual
+  const chessRef = useRef(new Chess());
+  const [board, setBoard] = useState<BoardMatrix>([]);
   const [turn, setTurn] = useState<'w' | 'b'>('w');
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
-  const [lastMove, setLastMove] = useState<{ from: string, to: string } | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
   const socket = useRef<WebSocket | null>(null);
-  const moveSound = useRef<HTMLAudioElement | null>(null);
-  const captureSound = useRef<HTMLAudioElement | null>(null);
   const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    moveSound.current = new Audio("/sounds/move_sound.mp3");
-    captureSound.current = new Audio("/sounds/capture_sound.mp3");
-  }, []);
+  const updateBoardFromChess = useCallback(() => {
+    const chess = chessRef.current;
+    const matrix: BoardMatrix = [];
+    const boardData = chess.board();
+    
+    for (let i = 0; i < 8; i++) {
+      matrix[i] = boardData[i].map(s => s ? { color: s.color, type: s.type } : null);
+    }
+    
+    setBoard(matrix);
+    setTurn(chess.turn());
+    onMoveUpdate(chess.history());
+  }, [onMoveUpdate]);
 
   const connect = useCallback(() => {
     const token = localStorage.getItem("access");
     if (!token) return console.error("No se encontró token");
 
-    // 1. Limpieza de URL
-    let cleanUrl = serverUrl.replace(":3000", ":8000");
-    if (cleanUrl.endsWith('/')) {
-        cleanUrl = cleanUrl.slice(0, -1);
-    }
-
-    const socketUrl = `${cleanUrl}/?token=${token}`;
-    
-    console.log("🔗 Intentando conexión a:", socketUrl);
-    socket.current = new WebSocket(socketUrl);
+    console.log("🔗 Conectando a partida:", serverUrl);
+    socket.current = new WebSocket(`${serverUrl}?token=${token}`);
 
     socket.current.onopen = () => {
-      setIsConnected(true);
-      console.log("✅ WebSocket Conectado y Abierto. Estado:", socket.current?.readyState);
+        setIsConnected(true);
+        updateBoardFromChess();
     };
 
     socket.current.onmessage = (event) => {
       const msg = JSON.parse(event.data);
-      if (msg.type === "state") {
-        setBoard(msg.payload.board);
-        setTurn(msg.payload.turn);
-        onGameStateChange(msg.payload.status);
-        onMoveUpdate(msg.payload.history);
-        if (msg.payload.lastMove) setLastMove(msg.payload.lastMove);
+      
+      if (msg.type === "game_move" && msg.move) {
+        try {
+            const chess = chessRef.current;
+            // CORRECCIÓN AQUÍ: Si el movimiento es "c2c4", lo parseamos como objeto
+            if (typeof msg.move === 'string' && msg.move.length >= 4) {
+                const from = msg.move.substring(0, 2) as Square;
+                const to = msg.move.substring(2, 4) as Square;
+                const promotion = msg.move.length === 5 ? msg.move[4] : 'q';
+                
+                chess.move({ from, to, promotion });
+            } else {
+                chess.move(msg.move);
+            }
+            updateBoardFromChess();
+        } catch (e) {
+            console.error("Movimiento inválido según chess.js:", msg.move);
+        }
+      }
+      
+      if (msg.type === "system_message") {
+        console.log("🖥️ Sistema:", msg.message);
       }
     };
 
     socket.current.onclose = (e) => {
       setIsConnected(false);
-      console.log("🔌 Conexión cerrada:", e.reason || "Cierre de socket");
-      // Solo intentamos reconectar si no ha sido un cierre manual por cleanup
       if (e.code !== 1000) {
-        reconnectTimeout.current = setTimeout(connect, 3000);
+          reconnectTimeout.current = setTimeout(connect, 3000);
       }
     };
-
-    socket.current.onerror = (err) => {
-      // Diagnóstico mejorado: Solo error real si el socket no está abierto
-      if (socket.current?.readyState !== WebSocket.OPEN) {
-        console.error("❌ Error WebSocket real detectado");
-      } else {
-        console.warn("⚠️ WebSocket lanzó un evento de error pero la conexión sigue OPEN (residuo de reconexión).");
-      }
-    };
-  }, [serverUrl, onGameStateChange, onMoveUpdate]);
+  }, [serverUrl, updateBoardFromChess]);
 
   useEffect(() => {
     connect();
     return () => {
-      console.log("🧹 Limpiando socket antes de reconectar...");
       if (socket.current) {
-        // Desactivamos los listeners antes de cerrar para evitar bucles de reconexión
-        socket.current.onclose = null; 
-        socket.current.onerror = null;
-        socket.current.onopen = null;
-        socket.current.onmessage = null;
-        socket.current.close(1000); // Cierre normal
+        socket.current.onclose = null;
+        socket.current.close(1000);
       }
       if (reconnectTimeout.current) clearTimeout(reconnectTimeout.current);
     };
   }, [connect]);
 
   const handleMove = (from: Square, to: Square) => {
-    if (!isConnected || turn === null || from === to) return;
-    socket.current?.send(JSON.stringify({
-        type: "move",
-        payload: { from: from.toLowerCase(), to: to.toLowerCase(), promotion: "q" }
-    }));
+    if (!isConnected || from === to) return;
+    
+    try {
+        const chess = chessRef.current;
+        // Validar localmente
+        const moveAttempt = chess.move({ from, to, promotion: 'q' });
+        
+        if (moveAttempt) {
+            // Enviamos el movimiento en formato LAN (c2c4) que tu backend retransmite
+            socket.current?.send(JSON.stringify({
+                move: from + to
+            }));
+            updateBoardFromChess();
+        }
+    } catch (e) {
+        console.log("Movimiento ilegal");
+    }
   };
 
   const handleSquareClick = (coord: Square, piece: Piece | null) => {
@@ -117,11 +130,13 @@ export default function PlayOnline({ onGameStateChange, onMoveUpdate, serverUrl 
     }
   };
 
+  if (board.length === 0) return <div className="text-gold uppercase text-[10px] tracking-widest font-black">Cargando tablero...</div>;
+
   return (
     <div className="p-1 bg-zinc-950 rounded-[2rem] shadow-2xl border border-white/10 relative h-full w-full flex items-center justify-center">
       {!isConnected && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 rounded-[2rem] backdrop-blur-md text-gold font-black tracking-widest animate-pulse">
-          CONECTANDO AL TABLERO...
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 rounded-[2rem] backdrop-blur-md text-gold font-black tracking-widest animate-pulse text-[10px] uppercase">
+          Reconectando al tablero...
         </div>
       )}
       
@@ -131,7 +146,6 @@ export default function PlayOnline({ onGameStateChange, onMoveUpdate, serverUrl 
             const coord = (String.fromCharCode(97 + colIndex) + (8 - rowIndex)) as Square;
             const isDark = (rowIndex + colIndex) % 2 === 1;
             const isSelected = selectedSquare === coord;
-            const isLastMove = lastMove?.from === coord || lastMove?.to === coord;
 
             return (
               <div
@@ -144,13 +158,12 @@ export default function PlayOnline({ onGameStateChange, onMoveUpdate, serverUrl 
                   setIsDragging(false);
                 }}
                 className={`relative flex items-center justify-center transition-colors duration-200
-                  ${isDark ? 'bg-[#a0522d]' : 'bg-[#e9ca9c]'} 
-                  ${isSelected ? 'bg-gold/50' : ''}
-                  ${isLastMove && !isSelected ? 'after:absolute after:inset-0 after:bg-gold/25' : ''}
+                  ${isDark ? 'bg-[#3b2a1a]' : 'bg-[#7a634e]'} 
+                  ${isSelected ? 'after:absolute after:inset-0 after:bg-gold/40' : ''}
                 `}
               >
-                {colIndex === 0 && <span className="absolute top-0.5 left-1 text-[8px] opacity-30">{8 - rowIndex}</span>}
-                {rowIndex === 7 && <span className="absolute bottom-0.5 right-1 text-[8px] opacity-30 uppercase">{String.fromCharCode(97 + colIndex)}</span>}
+                {colIndex === 0 && <span className="absolute top-0.5 left-1 text-[8px] font-black opacity-30 text-white">{8 - rowIndex}</span>}
+                {rowIndex === 7 && <span className="absolute bottom-0.5 right-1 text-[8px] font-black opacity-30 text-white uppercase">{String.fromCharCode(97 + colIndex)}</span>}
 
                 {piece && (
                   <img 
@@ -163,7 +176,7 @@ export default function PlayOnline({ onGameStateChange, onMoveUpdate, serverUrl 
                       setIsDragging(true);
                     }}
                     onDragEnd={() => setIsDragging(false)}
-                    className="w-[90%] h-[90%] z-20 cursor-grab active:cursor-grabbing" 
+                    className={`w-[90%] h-[90%] z-20 cursor-grab active:cursor-grabbing transition-transform ${isSelected ? 'scale-110' : ''}`} 
                     alt=""
                   />
                 )}
