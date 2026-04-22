@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -76,13 +75,13 @@ export default function HomeRecentActivity() {
               key={game.id} 
               className={`flex items-center justify-between py-3 px-3 -mx-1 rounded-xl transition-all duration-700 group/item border ${
                 isLive 
-                ? 'border-[#ff1744]/30 bg-[#ff1744]/5 opacity-90' // Opacidad constante
-                : 'border-transparent hover:bg-white/5'
+                ? 'border-[#ff1744]/30 bg-[#ff1744]/5 opacity-90' 
+                : 'border-transparent hover:bg-white/5 [.light_&]:hover:bg-black/5'
               }`}
             >
               <div className="flex items-center gap-4">
                 <div className={`text-[9px] font-black px-2 py-1 rounded border transition-opacity duration-1000 ${
-                  isLive ? 'text-[#ff1744] border-[#ff1744]/40 bg-[#ff1744]/10 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite]' : // Pulso muy lento (3s)
+                  isLive ? 'text-[#ff1744] border-[#ff1744]/40 bg-[#ff1744]/10 animate-[pulse_3s_infinite]' : 
                   game.resultType === 'win' ? 'text-emerald-500 border-emerald-500/20 bg-emerald-500/5' : 
                   game.resultType === 'loss' ? 'text-rose-500 border-rose-500/20 bg-rose-500/5' : 
                   'text-zinc-500 border-zinc-500/20 bg-zinc-500/5'
@@ -92,7 +91,7 @@ export default function HomeRecentActivity() {
                    game.resultType === 'loss' ? 'DERROTA' : 'TABLAS'}
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white uppercase tracking-tight group-hover/item:text-[#d4af37] transition-colors">
+                  <p className="text-xs font-bold text-white [.light_&]:text-zinc-800 uppercase tracking-tight group-hover/item:text-[#d4af37] transition-colors">
                     vs. {game.opponent}
                   </p>
                   <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
@@ -104,8 +103,8 @@ export default function HomeRecentActivity() {
                 onClick={() => handleAction(game)}
                 className={`px-4 py-1.5 rounded text-[10px] font-black transition-all transform active:scale-95 cursor-pointer uppercase tracking-widest border ${
                   isLive
-                  ? 'bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.1)] hover:bg-[#ff1744] hover:text-white hover:border-[#ff1744]'
-                  : 'bg-black border-[#d4af37]/20 text-[#d4af37] hover:bg-[#d4af37] hover:text-black'
+                  ? 'bg-white [.light_&]:bg-zinc-800 text-black [.light_&]:text-white border-white [.light_&]:border-zinc-800 shadow-[0_0_10px_rgba(255,255,255,0.1)] hover:bg-[#ff1744] hover:text-white hover:border-[#ff1744]'
+                  : 'bg-black [.light_&]:bg-white border-[#d4af37]/20 text-[#d4af37] hover:bg-[#d4af37] hover:text-black'
                 }`}
               >
                 {isLive ? 'VER PARTIDA' : 'ANALIZAR'}

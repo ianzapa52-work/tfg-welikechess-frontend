@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from 'react';
 
 export default function HomeFriendsSidebar() {
@@ -31,7 +30,7 @@ export default function HomeFriendsSidebar() {
   if (!mounted) return null;
 
   return (
-    <div className="flex flex-col h-full bg-black/20">
+    <div className="flex flex-col h-full bg-black/20 [.light_&]:bg-black/[0.03]">
       <div className="p-6 border-b border-gold/10 flex justify-between items-center">
         <h3 className="chess-label">Amigos</h3>
         <span className="text-[10px] text-gold font-black bg-gold/10 px-2 py-1 rounded-md">
@@ -45,15 +44,15 @@ export default function HomeFriendsSidebar() {
             <button 
               key={f.id} 
               onClick={() => window.dispatchEvent(new CustomEvent('open-chat', { detail: f }))}
-              className={`w-full flex items-center gap-4 p-3 rounded-2xl transition-all border border-transparent hover:bg-gold/5 hover:border-gold/10 group cursor-pointer ${!f.online && 'opacity-40 grayscale hover:opacity-100 hover:grayscale-0'}`}
+              className={`w-full flex items-center gap-4 p-3 rounded-2xl transition-all border border-transparent hover:bg-gold/5 [.light_&]:hover:bg-black/[0.05] hover:border-gold/10 group cursor-pointer ${!f.online && 'opacity-40 grayscale hover:opacity-100 hover:grayscale-0'}`}
             >
               <div className="relative shrink-0">
                 <img src={f.avatar} className="w-10 h-10 rounded-xl border border-white/10 group-hover:border-gold/30 object-cover" alt="" />
-                {f.online && <div className="status-dot !border-zinc-900 bg-green-500 absolute -top-1 -right-1 w-3 h-3 shadow-[0_0_5px_#22c55e]" />}
+                {f.online && <div className="status-dot !border-zinc-900 [.light_&]:!border-white bg-green-500 absolute -top-1 -right-1 w-3 h-3 shadow-[0_0_5px_#22c55e]" />}
               </div>
               <div className="flex flex-col items-start min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-white group-hover:text-gold truncate">{f.name}</span>
+                  <span className="text-xs font-bold text-white [.light_&]:text-zinc-800 group-hover:text-gold truncate">{f.name}</span>
                   <span className="text-[9px] text-gold/40 font-black">{f.elo}</span>
                 </div>
                 <span className="text-[9px] text-zinc-500 italic truncate tracking-tight">

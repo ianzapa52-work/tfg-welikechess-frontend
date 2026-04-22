@@ -13,6 +13,7 @@ export default function SettingsForm({ onClose }: SettingsFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
+  // Efecto para cargar preferencias y aplicar el modo visual
   useEffect(() => {
     const saved = localStorage.getItem("user_settings");
     if (saved) {
@@ -21,8 +22,26 @@ export default function SettingsForm({ onClose }: SettingsFormProps) {
       setStatus(parsed.status ?? 'online');
       setNotifications(parsed.notifications ?? true);
       setDarkMode(parsed.darkMode ?? true);
+      
+      // Aplicar clase al cargar
+      if (parsed.darkMode === false) {
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.remove('light');
+      }
     }
   }, []);
+
+  // Manejar el cambio de modo oscuro/claro en tiempo real
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    if (!newMode) {
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -82,7 +101,13 @@ export default function SettingsForm({ onClose }: SettingsFormProps) {
 
         <div className="space-y-6">
           <SectionHeader title="Hardware & Sistema" icon={<Shield size={14}/>} />
-          <ToggleItem label="Modo Oscuro" desc="Interfaz nocturna" active={darkMode} onToggle={() => setDarkMode(!darkMode)} icon={darkMode ? <Moon size={20}/> : <Sun size={20}/>} />
+          <ToggleItem 
+            label="Modo Oscuro" 
+            desc={darkMode ? "Interfaz nocturna" : "Interfaz clara"} 
+            active={darkMode} 
+            onToggle={toggleDarkMode} 
+            icon={darkMode ? <Moon size={20}/> : <Sun size={20}/>} 
+          />
           <div className="p-8 bg-black/60 border border-gold/20 rounded-[2rem] space-y-5">
             <div className="flex justify-between items-end">
               <div className="flex items-center gap-2 text-gold/60 font-bold uppercase text-xs tracking-widest"><Volume2 size={24} /> Volumen</div>
@@ -120,7 +145,7 @@ const StatusBtn = ({ label, active, color, onClick }: any) => (
 );
 
 const ToggleItem = ({ label, desc, active, onToggle, icon }: any) => (
-  <div className="flex items-center justify-between p-6 bg-white/[0.03] border border-white/5 rounded-[2rem] hover:bg-white/[0.05] transition-all">
+  <button onClick={onToggle} className="w-full flex items-center justify-between p-6 bg-white/[0.03] border border-white/5 rounded-[2rem] hover:bg-white/[0.05] transition-all text-left">
     <div className="flex items-center gap-4 text-zinc-400">
       {icon}
       <div>
@@ -128,8 +153,8 @@ const ToggleItem = ({ label, desc, active, onToggle, icon }: any) => (
         <p className="text-[8px] text-zinc-500 uppercase tracking-widest">{desc}</p>
       </div>
     </div>
-    <button onClick={onToggle} className={`w-10 h-5 rounded-full relative transition-all p-1 cursor-pointer ${active ? 'bg-gold' : 'bg-zinc-800'}`}>
+    <div className={`w-10 h-5 rounded-full relative transition-all p-1 ${active ? 'bg-gold' : 'bg-zinc-800'}`}>
       <div className={`w-3 h-3 bg-black rounded-full transition-transform ${active ? 'translate-x-5 bg-white' : 'translate-x-0'}`} />
-    </button>
-  </div>
+    </div>
+  </button>
 );

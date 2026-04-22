@@ -29,15 +29,13 @@ export default function HomeRankingSidebar() {
 
   return (
     <div className="space-y-6">
-      {/* Header con Selector de Modalidad */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-[10px] font-black uppercase text-[#d4af37] tracking-[0.3em]">Top Maestros</h3>
           <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full animate-pulse" />
         </div>
 
-        {/* Mini Tabs Selector - Bullet (izq), Blitz (centro), Rapid (der) */}
-        <div className="flex gap-1 bg-black/40 p-1 rounded-lg border border-white/5">
+        <div className="flex gap-1 bg-black/40 [.light_&]:bg-black/5 p-1 rounded-lg border border-white/5 [.light_&]:border-black/5">
           {(['bullet', 'blitz', 'rapid'] as Modality[]).map((m) => (
             <button
               key={m}
@@ -45,7 +43,7 @@ export default function HomeRankingSidebar() {
               className={`flex-1 py-1.5 text-[8px] font-black uppercase tracking-widest rounded-md transition-all cursor-pointer ${
                 modality === m 
                 ? 'bg-[#d4af37] text-black shadow-lg' 
-                : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                : 'text-zinc-500 hover:text-zinc-300 [.light_&]:hover:text-zinc-700 hover:bg-white/5 [.light_&]:hover:bg-black/5'
               }`}
             >
               {m}
@@ -61,13 +59,13 @@ export default function HomeRankingSidebar() {
           </div>
         ) : players.length > 0 ? (
           players.map((p, i) => (
-            <Link key={p.id || i} href="/ranking" className="flex items-center justify-between p-4 bg-white/[0.03] border border-white/5 rounded-2xl hover:border-[#d4af37]/40 transition-all group">
+            <Link key={p.id || i} href="/ranking" className="flex items-center justify-between p-4 bg-white/[0.03] [.light_&]:bg-white border border-white/5 [.light_&]:border-black/5 rounded-2xl hover:border-[#d4af37]/40 transition-all group shadow-sm">
               <div className="flex items-center gap-4">
                 <span className={`font-serif italic text-xs ${i === 0 ? 'text-[#d4af37]' : 'text-zinc-600'}`}>
                   {i + 1}
                 </span>
                 <div className="flex flex-col">
-                  <span className="text-[11px] font-bold text-zinc-300 group-hover:text-white uppercase tracking-tighter">
+                  <span className="text-[11px] font-bold text-zinc-300 [.light_&]:text-zinc-800 group-hover:text-white [.light_&]:group-hover:text-black uppercase tracking-tighter">
                     {p.username || p.name}
                   </span>
                   <span className="text-[8px] text-zinc-600 font-black tracking-widest">
@@ -75,7 +73,7 @@ export default function HomeRankingSidebar() {
                   </span>
                 </div>
               </div>
-              <span className="text-[11px] font-black text-[#d4af37] bg-black/60 px-3 py-1.5 rounded-lg shadow-inner border border-[#d4af37]/5">
+              <span className="text-[11px] font-black text-[#d4af37] bg-black/60 [.light_&]:bg-zinc-100 px-3 py-1.5 rounded-lg shadow-inner border border-[#d4af37]/5">
                 {p.elo}
               </span>
             </Link>
