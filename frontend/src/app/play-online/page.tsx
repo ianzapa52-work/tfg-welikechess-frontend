@@ -95,14 +95,14 @@ export default function OnlinePremiumPage() {
 
     const [initStr, incStr] = currentMode.n.split('+');
     const initial_time = parseInt(initStr) * 60;
-    const increment = parseInt(incStr);
+    const increment = parseInt(incStr) || 0;
     
     let backendCategory = "blitz";
     if (initial_time < 180) backendCategory = "bullet";
     else if (initial_time >= 600) backendCategory = "rapid";
     else if (initial_time >= 1800) backendCategory = "classical";
 
-    // URL corregida segun tu routing: ws/matchmaking/
+    // URL corregida para usar el token en query string como requiere tu backend
     const wsUrl = `ws://localhost:8000/ws/matchmaking/?token=${token}`;
     matchmakingSocket.current = new WebSocket(wsUrl);
 
@@ -134,6 +134,7 @@ export default function OnlinePremiumPage() {
       if (data.type === "error") {
         alert(data.message);
         setIsSearching(false);
+        matchmakingSocket.current?.close();
       }
     };
 
@@ -169,7 +170,7 @@ export default function OnlinePremiumPage() {
           <OpponentBox 
             name="Rival" 
             elo="????" 
-            isActive={gameJoined && status.includes("NEGRAS")} 
+            isActive={gameJoined && (status.includes("NEGRAS") || status.includes("TURNO NEGRAS"))} 
             seconds={timeB} 
             visible={gameJoined || isSearching} 
           />
@@ -213,7 +214,7 @@ export default function OnlinePremiumPage() {
             )}
           </div>
 
-          <MyPlayerBox name="Tu Perfil" elo="2185" isActive={gameJoined && (status.includes("TU TURNO") || status.includes("BLANCAS"))} seconds={timeW} />
+          <MyPlayerBox name="Tu Perfil" elo="2185" isActive={gameJoined && (status.includes("BLANCAS") || status.includes("TURNO BLANCAS"))} seconds={timeW} />
         </div>
 
         <div className="col-span-12 xl:col-span-6 flex items-center justify-center">

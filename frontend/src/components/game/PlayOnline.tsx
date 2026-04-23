@@ -17,12 +17,11 @@ const PIECE_MAP: Record<string, string> = {
 };
 
 export default function PlayOnline({ onGameStateChange, onMoveUpdate, serverUrl }: PlayOnlineProps) {
-  // Usamos una referencia para el objeto Chess para evitar problemas de re-renderizado
-  // pero mantenemos un estado para forzar la actualización visual
   const chessRef = useRef(new Chess());
   const [board, setBoard] = useState<BoardMatrix>([]);
   const [turn, setTurn] = useState<'w' | 'b'>('w');
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
+  const [lastMove, setLastMove] = useState<{from: string, to: string} | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -38,47 +37,50 @@ export default function PlayOnline({ onGameStateChange, onMoveUpdate, serverUrl 
       matrix[i] = boardData[i].map(s => s ? { color: s.color, type: s.type } : null);
     }
     
+    const history = chess.history({ verbose: true });
+    if (history.length > 0) {
+      const last = history[history.length - 1];
+      setLastMove({ from: last.from, to: last.to });
+    }
+
     setBoard(matrix);
     setTurn(chess.turn());
     onMoveUpdate(chess.history());
-  }, [onMoveUpdate]);
+    
+    if (chess.isGameOver()) {
+        onGameStateChange("PARTIDA FINALIZADA");
+    } else {
+        onGameStateChange(chess.turn() === 'w' ? "TURNO BLANCAS" : "TURNO NEGRAS");
+    }
+  }, [onMoveUpdate, onGameStateChange]);
 
   const connect = useCallback(() => {
     const token = localStorage.getItem("access");
     if (!token) return console.error("No se encontró token");
 
-    console.log("🔗 Conectando a partida:", serverUrl);
-    socket.current = new WebSocket(`${serverUrl}?token=${token}`);
+    const baseUrl = serverUrl.split('?')[0];
+    const finalBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+    socket.current = new WebSocket(`${finalBaseUrl}?token=${token}`);
 
     socket.current.onopen = () => {
         setIsConnected(true);
-        updateBoardFromChess();
+        console.log("🎮 Conectado al GameConsumer");
     };
 
     socket.current.onmessage = (event) => {
       const msg = JSON.parse(event.data);
-      
-      if (msg.type === "game_move" && msg.move) {
-        try {
-            const chess = chessRef.current;
-            // CORRECCIÓN AQUÍ: Si el movimiento es "c2c4", lo parseamos como objeto
-            if (typeof msg.move === 'string' && msg.move.length >= 4) {
-                const from = msg.move.substring(0, 2) as Square;
-                const to = msg.move.substring(2, 4) as Square;
-                const promotion = msg.move.length === 5 ? msg.move[4] : 'q';
-                
-                chess.move({ from, to, promotion });
-            } else {
-                chess.move(msg.move);
-            }
+      if (msg.type === "game_state" || msg.type === "game_update") {
+        if (msg.fen) {
+            chessRef.current.load(msg.fen);
             updateBoardFromChess();
-        } catch (e) {
-            console.error("Movimiento inválido según chess.js:", msg.move);
+        }
+        if (msg.status === "completed") {
+            onGameStateChange(`FINALIZADA: ${msg.result}`);
         }
       }
-      
-      if (msg.type === "system_message") {
-        console.log("🖥️ Sistema:", msg.message);
+      if (msg.type === "error") {
+        console.error("❌ Error de juego:", msg.message);
+        updateBoardFromChess();
       }
     };
 
@@ -103,18 +105,15 @@ export default function PlayOnline({ onGameStateChange, onMoveUpdate, serverUrl 
 
   const handleMove = (from: Square, to: Square) => {
     if (!isConnected || from === to) return;
-    
+    const chess = chessRef.current;
     try {
-        const chess = chessRef.current;
-        // Validar localmente
         const moveAttempt = chess.move({ from, to, promotion: 'q' });
-        
         if (moveAttempt) {
-            // Enviamos el movimiento en formato LAN (c2c4) que tu backend retransmite
             socket.current?.send(JSON.stringify({
+                action: "make_move",
                 move: from + to
             }));
-            updateBoardFromChess();
+            chess.undo();
         }
     } catch (e) {
         console.log("Movimiento ilegal");
@@ -136,7 +135,7 @@ export default function PlayOnline({ onGameStateChange, onMoveUpdate, serverUrl 
     <div className="p-1 bg-zinc-950 rounded-[2rem] shadow-2xl border border-white/10 relative h-full w-full flex items-center justify-center">
       {!isConnected && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 rounded-[2rem] backdrop-blur-md text-gold font-black tracking-widest animate-pulse text-[10px] uppercase">
-          Reconectando al tablero...
+          Reconectando al servidor...
         </div>
       )}
       
@@ -146,6 +145,9 @@ export default function PlayOnline({ onGameStateChange, onMoveUpdate, serverUrl 
             const coord = (String.fromCharCode(97 + colIndex) + (8 - rowIndex)) as Square;
             const isDark = (rowIndex + colIndex) % 2 === 1;
             const isSelected = selectedSquare === coord;
+            const isLastMove = lastMove?.from === coord || lastMove?.to === coord;
+            const isCheck = chessRef.current.isCheck() && piece?.type === 'k' && piece?.color === chessRef.current.turn();
+            const isLegal = selectedSquare && chessRef.current.moves({ square: selectedSquare, verbose: true }).some(m => m.to === coord);
 
             return (
               <div
@@ -155,15 +157,21 @@ export default function PlayOnline({ onGameStateChange, onMoveUpdate, serverUrl 
                 onDrop={(e) => {
                   const fromSquare = e.dataTransfer.getData("fromSquare") as Square;
                   handleMove(fromSquare, coord);
+                  setSelectedSquare(null);
                   setIsDragging(false);
                 }}
                 className={`relative flex items-center justify-center transition-colors duration-200
-                  ${isDark ? 'bg-[#3b2a1a]' : 'bg-[#7a634e]'} 
-                  ${isSelected ? 'after:absolute after:inset-0 after:bg-gold/40' : ''}
+                  ${isDark ? 'bg-[#b8860b]' : 'bg-[#f0e68c]'} 
+                  ${isSelected ? 'bg-white/40' : ''}
+                  ${isCheck ? 'bg-red-500/60 animate-pulse' : ''}
+                  ${isLastMove ? 'after:absolute after:inset-0 after:bg-black/20 after:z-10' : ''}
                 `}
               >
-                {colIndex === 0 && <span className="absolute top-0.5 left-1 text-[8px] font-black opacity-30 text-white">{8 - rowIndex}</span>}
-                {rowIndex === 7 && <span className="absolute bottom-0.5 right-1 text-[8px] font-black opacity-30 text-white uppercase">{String.fromCharCode(97 + colIndex)}</span>}
+                {/* Coordenadas con colores adaptados al dorado */}
+                {colIndex === 0 && <span className={`absolute top-0.5 left-1 text-[11px] font-bold font-mono ${isDark ? 'text-white/40' : 'text-black/30'} z-0`}>{8 - rowIndex}</span>}
+                {rowIndex === 7 && <span className={`absolute bottom-0.5 right-1 text-[11px] font-bold font-mono uppercase ${isDark ? 'text-white/40' : 'text-black/30'} z-0`}>{String.fromCharCode(97 + colIndex)}</span>}
+
+                {isLegal && <div className={`absolute z-30 rounded-full ${piece ? 'w-full h-full border-4 border-black/20' : 'w-5 h-5 bg-black/20'}`} />}
 
                 {piece && (
                   <img 
@@ -176,7 +184,7 @@ export default function PlayOnline({ onGameStateChange, onMoveUpdate, serverUrl 
                       setIsDragging(true);
                     }}
                     onDragEnd={() => setIsDragging(false)}
-                    className={`w-[90%] h-[90%] z-20 cursor-grab active:cursor-grabbing transition-transform ${isSelected ? 'scale-110' : ''}`} 
+                    className={`w-[92%] h-[92%] z-20 cursor-grab active:cursor-grabbing transition-transform drop-shadow-xl ${isSelected ? 'scale-105 -translate-y-1' : ''}`} 
                     alt=""
                   />
                 )}
