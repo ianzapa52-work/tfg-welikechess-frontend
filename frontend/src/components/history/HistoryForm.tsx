@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-// Definimos la interfaz basándonos en tu GameListSerializer de Django
 interface GameFromAPI {
   id: string;
   mode: string;
@@ -29,9 +28,19 @@ export default function HistoryForm({ onClose }: HistoryFormProps) {
   useEffect(() => {
     const fetchHistory = async () => {
       const token = localStorage.getItem("access");
-      // Intentamos obtener el username del localStorage o podrías sacarlo de un context
-      const storedUser = localStorage.getItem("username"); 
-      setMyUsername(storedUser);
+
+      // Obtener el username real desde la API
+      try {
+        const meRes = await fetch("http://localhost:8000/api/users/me/", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (meRes.ok) {
+          const meData = await meRes.json();
+          setMyUsername(meData.username);
+        }
+      } catch (e) {
+        console.error("Error obteniendo usuario:", e);
+      }
 
       try {
         const response = await fetch("http://localhost:8000/api/games/my-history/", {
@@ -60,7 +69,6 @@ export default function HistoryForm({ onClose }: HistoryFormProps) {
     router.push(`/analysis/${id}`);
   };
 
-  // Lógica para determinar si el usuario ganó, perdió o empató
   const getResultType = (game: GameFromAPI) => {
     if (game.result === "1/2-1/2") return "draw";
     if (game.winner_username === myUsername) return "win";
@@ -98,19 +106,19 @@ export default function HistoryForm({ onClose }: HistoryFormProps) {
         <div className="w-full h-px bg-white/10"></div>
 
         <div className="flex flex-wrap justify-center gap-2 py-6">
-            {(['all', 'win', 'loss', 'draw'] as const).map((f) => (
-                <button
-                    key={f}
-                    onClick={() => setFilter(f)}
-                    className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
-                        filter === f 
-                        ? 'bg-gold text-black border-gold shadow-[0_0_15px_rgba(212,175,55,0.3)]' 
-                        : 'text-zinc-500 border-white/5 hover:border-white/20 hover:text-white cursor-pointer'
-                    }`}
-                >
-                    {f === 'all' ? 'Todo' : f === 'win' ? 'Victorias' : f === 'loss' ? 'Derrotas' : 'Tablas'}
-                </button>
-            ))}
+          {(['all', 'win', 'loss', 'draw'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+                filter === f 
+                  ? 'bg-gold text-black border-gold shadow-[0_0_15px_rgba(212,175,55,0.3)]' 
+                  : 'text-zinc-500 border-white/5 hover:border-white/20 hover:text-white cursor-pointer'
+              }`}
+            >
+              {f === 'all' ? 'Todo' : f === 'win' ? 'Victorias' : f === 'loss' ? 'Derrotas' : 'Tablas'}
+            </button>
+          ))}
         </div>
         <div className="w-full h-px bg-white/10"></div>
       </div>
@@ -128,16 +136,16 @@ export default function HistoryForm({ onClose }: HistoryFormProps) {
             >
               <div className="flex items-center gap-6">
                 <div className="hidden md:flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-black/40 border border-white/5 font-black">
-                    <span className="text-gold text-[10px] uppercase">{game.mode}</span>
-                    <span className="text-zinc-500 text-[8px] uppercase">{game.status === 'in_progress' ? 'LIVE' : 'FIN'}</span>
+                  <span className="text-gold text-[10px] uppercase">{game.mode}</span>
+                  <span className="text-zinc-500 text-[8px] uppercase">{game.status === 'in_progress' ? 'LIVE' : 'FIN'}</span>
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className={`text-xl md:text-2xl font-black uppercase tracking-wider ${style.color}`}>
-                        {game.status === 'in_progress' ? 'EN CURSO' : style.label}
+                      {game.status === 'in_progress' ? 'EN CURSO' : style.label}
                     </span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white/5 text-zinc-400">
-                        {game.result}
+                      {game.result}
                     </span>
                   </div>
                   <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest">
@@ -157,16 +165,16 @@ export default function HistoryForm({ onClose }: HistoryFormProps) {
                   onClick={() => handleAnalyze(game.id)}
                   className="h-10 w-10 md:h-12 md:w-32 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-gold hover:text-black transition-all font-black text-[10px] uppercase tracking-widest cursor-pointer"
                 >
-                    <span className="hidden md:block">Ver Partida</span>
-                    <span className="md:hidden">→</span>
+                  <span className="hidden md:block">Ver Partida</span>
+                  <span className="md:hidden">→</span>
                 </button>
               </div>
             </div>
           );
         }) : (
-            <div className="text-center py-20 text-zinc-600 uppercase tracking-widest text-xs">
-                No hay registros en la base de datos
-            </div>
+          <div className="text-center py-20 text-zinc-600 uppercase tracking-widest text-xs">
+            No hay registros en la base de datos
+          </div>
         )}
       </div>
 
