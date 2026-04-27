@@ -202,7 +202,7 @@ export default function PlayIAPage() {
             <div className="p-6 border-t border-white/10 bg-black/80">
                <button onClick={() => { setResetKey(k => k + 1); setHistory([]); setCapturedW([]); setCapturedB([]); setTimeW(currentMode.m); setGameStarted(false); setStatus("TU TURNO"); }} 
                className="w-full bg-zinc-50 text-black py-4 rounded-2xl font-black text-[10px] tracking-[0.25em] uppercase hover:bg-gold transition-all duration-500 cursor-pointer">
-                 Nuevo Desafío
+                 Reiniciar partida
                </button>
             </div>
           </div>

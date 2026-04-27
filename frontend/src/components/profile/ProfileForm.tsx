@@ -102,40 +102,11 @@ function StatPill({ label, value, color, icon }: any) {
   );
 }
 
-function GameRow({ game, userId }: { game: any; userId: string }) {
-  const res = resultLabel(game, userId);
-  const iWhite = game.white_player?.id === userId;
-  const opponent = iWhite ? game.black_player : game.white_player;
-  const myColor = iWhite ? "♔" : "♚";
-  const mode = game.mode || "rapid";
-
-  return (
-    <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 items-center px-5 py-3.5 rounded-2xl border border-white/5 hover:border-white/10 bg-black/30 hover:bg-black/50 transition-all group">
-      <span className={`text-base ${modeColor[mode] || 'text-zinc-400'}`}>{modeIcon[mode]}</span>
-      <div>
-        <div className="flex items-center gap-2">
-          <span className="text-[8px] text-zinc-600">{myColor}</span>
-          <span className="text-white font-black text-[11px] uppercase tracking-wider">{opponent?.username || "—"}</span>
-        </div>
-        <span className="text-[8px] text-zinc-600 uppercase tracking-widest">{formatDate(game.finished_at || game.created_at)}</span>
-      </div>
-      <div className="text-center hidden sm:block">
-        <span className="text-[8px] text-zinc-600 uppercase tracking-widest font-black">{game.termination_reason?.replace("_", " ") || "—"}</span>
-      </div>
-      <div className={`flex items-center gap-1 ${res.color} font-black text-[10px] uppercase tracking-wider`}>
-        {res.icon}<span>{res.text}</span>
-      </div>
-      <div className="text-right w-10">{eloChange(game, userId)}</div>
-    </div>
-  );
-}
-
 export default function ProfileForm() {
   const [user, setUser] = useState<any>(null);
   const [recentGames, setRecentGames] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [presence, setPresence] = useState('online');
-  const [activeTab, setActiveTab] = useState<'overview' | 'games'>('overview');
 
   const fetchUserData = async () => {
     const token = localStorage.getItem("access");
@@ -278,87 +249,58 @@ export default function ProfileForm() {
 
       {/* ── PANEL DERECHO ── */}
       <div className="flex-grow flex flex-col gap-4 min-w-0 h-full overflow-hidden">
-        <div className="flex items-center gap-1 bg-black/40 border border-white/5 rounded-2xl p-1 w-fit">
-          {(['overview', 'games'] as const).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-yellow-400 text-black' : 'text-zinc-500 hover:text-white'}`}
-            >
-              {tab === 'overview' ? 'Estadísticas' : 'Historial'}
-            </button>
-          ))}
-        </div>
-
-        {activeTab === 'overview' && (
-          <div className="flex-grow overflow-y-auto custom-scrollbar space-y-6 pr-1">
-            <div>
-              <p className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-600 mb-3 px-1">Rating por Modalidad</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {(['bullet', 'blitz', 'rapid'] as const).map(mode => (
-                  <EloModeCard key={mode} mode={mode} elo={user[`elo_${mode}`] || 1200} />
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-600 mb-3 px-1">Rendimiento por Modalidad</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {(['bullet', 'blitz', 'rapid'] as const).map(mode => {
-                  const s = modeStats[mode];
-                  const t = s.w + s.l + s.d;
-                  const wr = t > 0 ? Math.round((s.w / t) * 100) : 0;
-                  return (
-                    <div key={mode} className="bg-black/50 border border-white/5 rounded-[1.5rem] p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className={modeColor[mode]}>{modeIcon[mode]}</span>
-                        <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{mode}</span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-1 text-center mb-2">
-                        <div><p className="text-emerald-400 font-black text-base">{s.w}</p><p className="text-[6px] text-zinc-700">V</p></div>
-                        <div><p className="text-amber-400 font-black text-base">{s.d}</p><p className="text-[6px] text-zinc-700">T</p></div>
-                        <div><p className="text-red-400 font-black text-base">{s.l}</p><p className="text-[6px] text-zinc-700">D</p></div>
-                      </div>
-                      <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-500" style={{ width: `${wr}%` }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
+        <div className="flex-grow overflow-y-auto custom-scrollbar space-y-6 pr-1">
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-600 mb-3 px-1">Rating por Modalidad</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-black/50 border border-white/5 rounded-[1.5rem] p-5">
-                <div className="flex items-center gap-2 mb-1"><Swords size={14} className="text-yellow-400"/><span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">Total Partidas</span></div>
-                <p className="text-3xl font-black text-white">{total}</p>
-              </div>
-              <div className="bg-black/50 border border-white/5 rounded-[1.5rem] p-5">
-                <div className="flex items-center gap-2 mb-1"><Activity size={14} className="text-emerald-400"/><span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">Win Rate</span></div>
-                <p className="text-3xl font-black text-white">{winRate}%</p>
-              </div>
-              <div className="bg-black/50 border border-white/5 rounded-[1.5rem] p-5">
-                <div className="flex items-center gap-2 mb-1"><Globe size={14} className="text-blue-400"/><span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">Ranking</span></div>
-                <p className="text-3xl font-black text-white">#{user.rank || "—"}</p>
-              </div>
+              {(['bullet', 'blitz', 'rapid'] as const).map(mode => (
+                <EloModeCard key={mode} mode={mode} elo={user[`elo_${mode}`] || 1200} />
+              ))}
             </div>
           </div>
-        )}
 
-        {activeTab === 'games' && (
-          <div className="flex-grow overflow-y-auto custom-scrollbar pr-1">
-            {recentGames.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-48 text-zinc-600">
-                <Swords size={32} className="mb-3 opacity-30" />
-                <p className="text-[10px] font-black uppercase tracking-widest">Sin partidas</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {recentGames.map((game, i) => <GameRow key={game.id || i} game={game} userId={userId} />)}
-              </div>
-            )}
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-600 mb-3 px-1">Rendimiento por Modalidad</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {(['bullet', 'blitz', 'rapid'] as const).map(mode => {
+                const s = modeStats[mode];
+                const t = s.w + s.l + s.d;
+                const wr = t > 0 ? Math.round((s.w / t) * 100) : 0;
+                return (
+                  <div key={mode} className="bg-black/50 border border-white/5 rounded-[1.5rem] p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className={modeColor[mode]}>{modeIcon[mode]}</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{mode}</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1 text-center mb-2">
+                      <div><p className="text-emerald-400 font-black text-base">{s.w}</p><p className="text-[6px] text-zinc-700">V</p></div>
+                      <div><p className="text-amber-400 font-black text-base">{s.d}</p><p className="text-[6px] text-zinc-700">T</p></div>
+                      <div><p className="text-red-400 font-black text-base">{s.l}</p><p className="text-[6px] text-zinc-700">D</p></div>
+                    </div>
+                    <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-500" style={{ width: `${wr}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="bg-black/50 border border-white/5 rounded-[1.5rem] p-5">
+              <div className="flex items-center gap-2 mb-1"><Swords size={14} className="text-yellow-400"/><span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">Total Partidas</span></div>
+              <p className="text-3xl font-black text-white">{total}</p>
+            </div>
+            <div className="bg-black/50 border border-white/5 rounded-[1.5rem] p-5">
+              <div className="flex items-center gap-2 mb-1"><Activity size={14} className="text-emerald-400"/><span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">Win Rate</span></div>
+              <p className="text-3xl font-black text-white">{winRate}%</p>
+            </div>
+            <div className="bg-black/50 border border-white/5 rounded-[1.5rem] p-5">
+              <div className="flex items-center gap-2 mb-1"><Globe size={14} className="text-blue-400"/><span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">Ranking</span></div>
+              <p className="text-3xl font-black text-white">#{user.rank || "—"}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
