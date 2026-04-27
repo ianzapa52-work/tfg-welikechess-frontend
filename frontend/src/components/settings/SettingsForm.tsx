@@ -13,7 +13,6 @@ export default function SettingsForm({ onClose }: SettingsFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
-  // Efecto para cargar preferencias y aplicar el modo visual
   useEffect(() => {
     const saved = localStorage.getItem("user_settings");
     if (saved) {
@@ -22,8 +21,6 @@ export default function SettingsForm({ onClose }: SettingsFormProps) {
       setStatus(parsed.status ?? 'online');
       setNotifications(parsed.notifications ?? true);
       setDarkMode(parsed.darkMode ?? true);
-      
-      // Aplicar clase al cargar
       if (parsed.darkMode === false) {
         document.documentElement.classList.add('light');
       } else {
@@ -32,7 +29,6 @@ export default function SettingsForm({ onClose }: SettingsFormProps) {
     }
   }, []);
 
-  // Manejar el cambio de modo oscuro/claro en tiempo real
   const toggleDarkMode = () => {
     const newMode = !darkMode;
     setDarkMode(newMode);
@@ -47,7 +43,13 @@ export default function SettingsForm({ onClose }: SettingsFormProps) {
     setIsSaving(true);
     const token = localStorage.getItem("access");
 
-    const settings = { volume, status, notifications, darkMode };
+    const settings = {
+      volume,
+      status,
+      notifications,
+      darkMode,
+      manualAway: status === 'away', // ← único cambio
+    };
     localStorage.setItem("user_settings", JSON.stringify(settings));
 
     try {
@@ -65,7 +67,6 @@ export default function SettingsForm({ onClose }: SettingsFormProps) {
       await new Promise(resolve => setTimeout(resolve, 800));
       setIsSaved(true);
 
-      // Sincronizar todos los componentes
       window.dispatchEvent(new Event('user-updated'));
 
       setTimeout(() => {
@@ -91,9 +92,9 @@ export default function SettingsForm({ onClose }: SettingsFormProps) {
           <SectionHeader title="Presencia & Social" icon={<UserCircle size={14}/>} />
           <div className="p-8 bg-white/[0.03] border border-white/5 rounded-[2rem] space-y-6">
             <div className="grid grid-cols-1 gap-2">
-              <StatusBtn label="En Línea" active={status === 'online'} color="bg-emerald-500" onClick={() => setStatus('online')} />
-              <StatusBtn label="Meditando" active={status === 'away'} color="bg-amber-500" onClick={() => setStatus('away')} />
-              <StatusBtn label="Incógnito" active={status === 'invisible'} color="bg-zinc-500" onClick={() => setStatus('invisible')} />
+              <StatusBtn label="En Línea"  active={status === 'online'}    color="bg-emerald-500" onClick={() => setStatus('online')} />
+              <StatusBtn label="Meditando" active={status === 'away'}      color="bg-amber-500"   onClick={() => setStatus('away')} />
+              <StatusBtn label="Incógnito" active={status === 'invisible'} color="bg-zinc-500"    onClick={() => setStatus('invisible')} />
             </div>
           </div>
           <ToggleItem label="Notificaciones" desc="Alertas de desafíos" active={notifications} onToggle={() => setNotifications(!notifications)} icon={<Bell size={20}/>} />
@@ -101,12 +102,12 @@ export default function SettingsForm({ onClose }: SettingsFormProps) {
 
         <div className="space-y-6">
           <SectionHeader title="Hardware & Sistema" icon={<Shield size={14}/>} />
-          <ToggleItem 
-            label="Modo Oscuro" 
-            desc={darkMode ? "Interfaz nocturna" : "Interfaz clara"} 
-            active={darkMode} 
-            onToggle={toggleDarkMode} 
-            icon={darkMode ? <Moon size={20}/> : <Sun size={20}/>} 
+          <ToggleItem
+            label="Modo Oscuro"
+            desc={darkMode ? "Interfaz nocturna" : "Interfaz clara"}
+            active={darkMode}
+            onToggle={toggleDarkMode}
+            icon={darkMode ? <Moon size={20}/> : <Sun size={20}/>}
           />
           <div className="p-8 bg-black/60 border border-gold/20 rounded-[2rem] space-y-5">
             <div className="flex justify-between items-end">

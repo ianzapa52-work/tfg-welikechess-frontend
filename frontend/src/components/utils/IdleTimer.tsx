@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect } from 'react';
 
 export default function IdleTimer() {
@@ -9,13 +8,9 @@ export default function IdleTimer() {
     const syncStatus = async (status: 'online' | 'away') => {
       const token = localStorage.getItem("access");
       const settings = JSON.parse(localStorage.getItem("user_settings") || "{}");
-
       if (settings.status === status) return;
-
       localStorage.setItem("user_settings", JSON.stringify({ ...settings, status }));
-      
       window.dispatchEvent(new Event('user-updated'));
-
       if (token) {
         try {
           await fetch('http://localhost:8000/api/users/me/', {
@@ -34,20 +29,17 @@ export default function IdleTimer() {
 
     const handleActivity = () => {
       const settings = JSON.parse(localStorage.getItem("user_settings") || "{}");
-      
       if (settings.status === 'invisible') return;
-
+      if (settings.manualAway) return; // ← único cambio
       if (settings.status === 'away') {
         syncStatus('online');
       }
-
       clearTimeout(idleTimer);
       idleTimer = setTimeout(() => syncStatus('away'), 300000);
     };
 
     const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
     activityEvents.forEach(event => window.addEventListener(event, handleActivity));
-
     handleActivity();
 
     return () => {
