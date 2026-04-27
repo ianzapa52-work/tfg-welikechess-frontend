@@ -337,8 +337,13 @@ export default function OnlinePremiumPage() {
       <style>{searchAnimations}</style>
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[#070502]" />
+        {/* Orbe top — centrado arriba */}
+        <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[90%] h-[80%] bg-gold/20 blur-[200px] rounded-full animate-pulse"></div>
+        {/* Orbe bottom — centrado abajo, desfasado */}
+        <div className="absolute bottom-[-30%] left-1/2 -translate-x-1/2 w-[90%] h-[80%] bg-gold/10 blur-[200px] rounded-full animate-pulse [animation-delay:2s]"></div>
+        {/* Rejilla — puntos más visibles */}
+        <div className="absolute inset-0 opacity-[0.18] [background-image:radial-gradient(#ffffff_1.5px,transparent_1.5px)] [background-size:32px_32px]"></div>
         <div className="absolute inset-0 opacity-[0.2] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-        <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-gold/20 blur-[140px] rounded-full animate-pulse" />
       </div>
 
       {drawOfferSender && (

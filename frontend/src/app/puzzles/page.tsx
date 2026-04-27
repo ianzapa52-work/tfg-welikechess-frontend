@@ -47,9 +47,12 @@ export default function PuzzlesPremiumPage() {
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[#050508]"></div>
         <div className="absolute inset-0 opacity-[0.15] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
-        <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-emerald-600/20 blur-[150px] rounded-full animate-pulse"></div>
-        <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-emerald-500/10 blur-[150px] rounded-full"></div>
-        <div className="absolute inset-0 opacity-[0.07] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:32px_32px]"></div>
+        {/* Orbe top — centrado arriba */}
+        <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[90%] h-[80%] bg-emerald-600/45 blur-[200px] rounded-full animate-pulse"></div>
+        {/* Orbe bottom — centrado abajo, desfasado */}
+        <div className="absolute bottom-[-30%] left-1/2 -translate-x-1/2 w-[90%] h-[80%] bg-emerald-500/30 blur-[200px] rounded-full animate-pulse [animation-delay:2s]"></div>
+        {/* Rejilla — puntos más visibles */}
+        <div className="absolute inset-0 opacity-[0.18] [background-image:radial-gradient(#ffffff_1.5px,transparent_1.5px)] [background-size:32px_32px]"></div>
       </div>
 
       <div className="relative z-10 max-w-[1700px] mx-auto grid grid-cols-12 gap-8 items-start">

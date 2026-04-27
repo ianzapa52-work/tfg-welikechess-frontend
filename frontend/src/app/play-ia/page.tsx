@@ -97,12 +97,14 @@ export default function PlayIAPage() {
     <main className="min-h-screen bg-[#020202] text-zinc-400 p-6 xl:p-10 font-sans selection:bg-gold/30 relative overflow-hidden">
       
       <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[#0a0605]"></div>
-        <div className="absolute inset-0 opacity-[0.18] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
-        <div className="absolute top-[-15%] left-[-5%] w-[80%] h-[80%] bg-orange-900/30 blur-[140px] rounded-full animate-pulse"></div>
-        <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-red-950/40 blur-[160px] rounded-full"></div>
-        <div className="absolute top-[30%] left-[20%] w-[40%] h-[40%] bg-orange-800/10 blur-[120px] rounded-full"></div>
-        <div className="absolute inset-0 opacity-[0.05] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:32px_32px]"></div>
+        <div className="absolute inset-0 bg-[#0a0000]"></div>
+        {/* Orbe superior rojo intenso focalizado */}
+        <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[90%] h-[80%] bg-red-600/30 blur-[200px] rounded-full animate-pulse"></div>
+        {/* Orbe inferior carmesí de apoyo */}
+        <div className="absolute bottom-[-30%] left-1/2 -translate-x-1/2 w-[90%] h-[80%] bg-red-900/40 blur-[200px] rounded-full animate-pulse [animation-delay:2s]"></div>
+        {/* Rejilla de puntos técnica */}
+        <div className="absolute inset-0 opacity-[0.18] [background-image:radial-gradient(#ffffff_1.5px,transparent_1.5px)] [background-size:32px_32px]"></div>
+        <div className="absolute inset-0 opacity-[0.3] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
       </div>
 
       <div className="relative z-10 max-w-[1700px] mx-auto grid grid-cols-12 gap-8 items-start">
@@ -184,7 +186,7 @@ export default function PlayIAPage() {
           <div className="bg-[#050505]/80 h-full flex flex-col border-2 border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl relative backdrop-blur-xl">
             <div className="p-6 border-b border-white/10 bg-white/[0.02] flex justify-between items-center">
               <span className="text-gold/90 text-[10px] font-black tracking-[0.4em] uppercase">Historial de movimientos</span>
-              <div className="w-2 h-2 rounded-full bg-red-600 shadow-[0_0_10px_red] animate-pulse"></div>
+              <div className="w-2 h-2 rounded-full bg-gold shadow-[0_0_10px_#d4af37] animate-pulse"></div>
             </div>
             
             <div ref={scrollRef} className="flex-grow overflow-y-auto p-4 custom-scrollbar bg-black/30">
