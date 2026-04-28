@@ -25,7 +25,6 @@ export default function PlayIA({ difficulty, onGameStateChange, onMove, resetSig
   const [isDragging, setIsDragging] = useState(false);
   const [isAIThinking, setIsAIThinking] = useState(false);
 
-  // ── Badge de desconexión: solo se muestra tras un delay para evitar flash al montar
   const [showDisconnected, setShowDisconnected] = useState(false);
 
   const [premove, setPremove] = useState<{ from: Square; to: Square } | null>(null);
@@ -41,8 +40,6 @@ export default function PlayIA({ difficulty, onGameStateChange, onMove, resetSig
 
   const { sendMove, connected, connecting, reconnect } = useAIGameSocket(difficulty);
 
-  // Solo mostrar el badge de desconexión si llevamos >600 ms sin conectar
-  // Esto elimina el flash al navegar a la página
   useEffect(() => {
     if (connected || connecting) {
       setShowDisconnected(false);
@@ -52,7 +49,6 @@ export default function PlayIA({ difficulty, onGameStateChange, onMove, resetSig
     return () => clearTimeout(t);
   }, [connected, connecting]);
 
-  // ── Reset
   useEffect(() => {
     const newGame = new Chess();
     setGame(newGame);
@@ -146,8 +142,17 @@ export default function PlayIA({ difficulty, onGameStateChange, onMove, resetSig
     setIsAIThinking(true);
     onGameStateChange('IA PENSANDO...');
 
+    const startTime = Date.now();
+    const MIN_THINKING_TIME = 1300;
+
     try {
       const response = await sendMove(uci);
+      
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = Math.max(0, MIN_THINKING_TIME - elapsedTime);
+
+      await new Promise(resolve => setTimeout(resolve, remainingTime));
+
       setIsAIThinking(false);
 
       if (response.gameOver) {
@@ -188,7 +193,7 @@ export default function PlayIA({ difficulty, onGameStateChange, onMove, resetSig
             if (piece && piece.color === orientation) {
               const legalTargets = afterAI.moves({ square: pm.from, verbose: true }).map(m => m.to);
               if (legalTargets.includes(pm.to)) {
-                setTimeout(() => handleMove(pm.from, pm.to), 0);
+                setTimeout(() => handleMove(pm.from, pm.to), 50); // Pequeño respiro para el premove
                 return;
               }
             }
@@ -204,8 +209,6 @@ export default function PlayIA({ difficulty, onGameStateChange, onMove, resetSig
   }, [orientation, applyMoveResult, clearPremove, checkGameOver, sendMove, onGameStateChange, onMove]);
 
   const handleSquareClick = useCallback((coord: Square, piece: ReturnType<Chess['board']>[0][0]) => {
-    if (isAIThinking) return;
-
     if (premoveRef.current && coord === premoveRef.current.from) {
       clearPremove();
       setSelectedSquare(null);
@@ -224,15 +227,13 @@ export default function PlayIA({ difficulty, onGameStateChange, onMove, resetSig
     } else if (piece && piece.color === orientation) {
       setSelectedSquare(coord);
     }
-  }, [selectedSquare, orientation, handleMove, clearPremove, isAIThinking]);
+  }, [selectedSquare, orientation, handleMove, clearPremove]);
 
   const board        = game.board();
   const displayBoard = orientation === 'w' ? board : [...board].reverse().map(row => [...row].reverse());
 
   return (
     <div className="relative flex flex-col items-center">
-
-      {/* Badge de desconexión — con delay para no aparecer al montar */}
       {showDisconnected && (
         <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-950/80 border border-red-700/50 backdrop-blur-sm whitespace-nowrap pointer-events-auto">
           <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
@@ -281,7 +282,6 @@ export default function PlayIA({ difficulty, onGameStateChange, onMove, resetSig
                     ${isCheck       ? '!bg-red-500/60 animate-pulse' : ''}
                     ${isLastMove && !isSelected && !isPremoveFrom && !isPremoveTo
                       ? 'after:absolute after:inset-0 after:bg-gold/25 after:z-10' : ''}
-                    ${isAIThinking  ? 'cursor-wait' : ''}
                   `}
                 >
                   {j === 0 && (
@@ -300,16 +300,16 @@ export default function PlayIA({ difficulty, onGameStateChange, onMove, resetSig
                   {piece && (
                     <img
                       src={`/pieces/${piece.color}_${PIECE_MAP[piece.type]}.svg`}
-                      draggable={!!isPieceMine && !isAIThinking}
+                      draggable={!!isPieceMine}
                       onDragStart={e => {
-                        if (!isPieceMine || isAIThinking) return e.preventDefault();
+                        if (!isPieceMine) return e.preventDefault();
                         e.dataTransfer.setData("fromSquare", coord);
                         setSelectedSquare(coord);
                         setIsDragging(true);
                       }}
                       onDragEnd={() => setIsDragging(false)}
                       className={`w-[92%] h-[92%] z-20 transition-transform drop-shadow-lg
-                        ${isAIThinking ? 'cursor-wait' : 'cursor-grab active:cursor-grabbing'}
+                        ${isPieceMine ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}
                         ${isSelected   ? 'scale-105 -translate-y-1' : ''}
                       `}
                       alt=""

@@ -286,7 +286,7 @@ export default function PlayIAPage() {
             {/* Nivel IA */}
             <div>
               <p className="text-[8px] font-black tracking-[0.35em] text-zinc-600 uppercase mb-2.5">Nivel IA</p>
-              <div className="grid grid-cols-2 gap-1.5 p-1 bg-black/60 rounded-2xl border border-white/5">
+              <div className="grid grid-cols-2 gap-1.5 p-1 bg-black/60 rounded-2xl border border-white/15">
                 {([
                   { lvl: 1,  label: 'Novato',      sub: '0 – 999',     color: 'emerald' },
                   { lvl: 5,  label: 'Aficionado B', sub: '1400 – 1599', color: 'blue'    },
@@ -317,7 +317,7 @@ export default function PlayIAPage() {
                         px-3 py-1.5 rounded-xl flex flex-col items-start
                         transition-all duration-200 border
                         ${gameStarted ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
-                        ${isActive ? colorMap[color] : 'border-transparent hover:bg-white/5'}
+                        ${isActive ? colorMap[color] : 'border-white/10 hover:bg-white/5 hover:border-white/25'}
                       `}
                     >
                       <p className={`text-xs font-black leading-tight mb-0.5 ${isActive ? 'text-inherit' : 'text-zinc-500'}`}>
@@ -337,7 +337,7 @@ export default function PlayIAPage() {
             {/* Modo de tiempo */}
             <div>
               <p className="text-[8px] font-black tracking-[0.35em] text-zinc-600 uppercase mb-2.5">Tu tiempo</p>
-              <div className="flex gap-1.5 p-1 bg-black/60 rounded-2xl border border-white/5">
+              <div className="flex gap-1.5 p-1 bg-black/60 rounded-2xl border border-white/15">
                 <button
                   disabled={gameStarted}
                   onClick={() => { setMode('free'); modeRef.current = 'free'; resetGame(); }}
@@ -346,8 +346,8 @@ export default function PlayIAPage() {
                     transition-colors duration-200 flex flex-col items-center gap-1
                     ${gameStarted ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
                     ${mode === 'free'
-                      ? 'bg-zinc-700/50 border border-white/10'
-                      : 'border border-transparent hover:bg-white/5'
+                      ? 'bg-zinc-700/50 border border-white/20'
+                      : 'border border-white/10 hover:bg-white/5 hover:border-white/20'
                     }
                   `}
                 >
@@ -362,8 +362,8 @@ export default function PlayIAPage() {
                     transition-colors duration-200 flex flex-col items-center gap-1
                     ${gameStarted ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
                     ${mode === 'countdown'
-                      ? 'bg-red-500/20 border-red-500/40'
-                      : 'border border-transparent hover:bg-white/5'
+                      ? 'bg-red-500/20 border-red-500/60'
+                      : 'border border-white/10 hover:bg-white/5 hover:border-white/20'
                     }
                   `}
                 >
@@ -382,8 +382,7 @@ export default function PlayIAPage() {
               }}
             >
               <div ref={cdPanelRef}>
-                <p className="text-[8px] font-black tracking-[0.35em] text-zinc-600 uppercase mb-2 pt-1">Límite</p>
-                <div className="grid grid-cols-3 gap-1.5">
+                <div className="grid grid-cols-3 gap-1">
                   {COUNTDOWN_OPTIONS.map((opt) => (
                     <button
                       key={opt.n}
@@ -394,12 +393,12 @@ export default function PlayIAPage() {
                         setTimeW(opt.m);
                       }}
                       className={`
-                        py-1.5 rounded-lg text-[9px] font-bold
+                        py-1 rounded-lg text-[9px] font-bold
                         transition-colors duration-200 border
                         ${gameStarted ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
                         ${selectedCD.n === opt.n
-                          ? 'bg-red-500/20 border-red-500/40 text-red-300'
-                          : 'bg-black/30 border-white/5 text-zinc-500 hover:border-white/10 hover:text-zinc-400'
+                          ? 'bg-red-500/20 border-red-500/60 text-red-300'
+                          : 'bg-black/30 border-white/20 text-zinc-500 hover:border-white/35 hover:text-zinc-400'
                         }
                       `}
                     >
