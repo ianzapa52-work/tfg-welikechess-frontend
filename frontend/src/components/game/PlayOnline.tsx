@@ -69,6 +69,10 @@ export default function PlayOnline({
   const [isConnected, setIsConnected] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
+  // ── Historial acumulado ──────────────────────────────────────────────────
+  const moveHistoryRef = useRef<string[]>([]);
+  const lastMoveColorRef = useRef<'w' | 'b' | null>(null);
+
   // ── Premove ──────────────────────────────────────────────────────────────
   const [premove, setPremove] = useState<{ from: Square; to: Square } | null>(null);
   const premoveRef = useRef<{ from: Square; to: Square } | null>(null);
@@ -78,13 +82,10 @@ export default function PlayOnline({
     premoveRef.current = null;
   }, []);
 
-  // ── Validar premove: solo acepta movimientos legales ─────────────────────
-  // Simulamos el tablero con el turno del jugador para comprobar legalidad
   const setPremoveIfLegal = useCallback((from: Square, to: Square) => {
     const chess = chessRef.current;
     const myColor = orientationRef.current;
 
-    // Modificamos el FEN para poner el turno en el color del jugador
     const fenParts = chess.fen().split(' ');
     fenParts[1] = myColor;
     const tempFen = fenParts.join(' ');
@@ -93,16 +94,14 @@ export default function PlayOnline({
     try {
       tempChess.load(tempFen);
     } catch {
-      return; // FEN inválido, descartamos
+      return;
     }
 
-    // Verificamos que la pieza en `from` pertenece al jugador
     const piece = tempChess.get(from);
     if (!piece || piece.color !== myColor) return;
 
-    // Comprobamos si `to` está entre los destinos legales
     const legalTargets = tempChess.moves({ square: from, verbose: true }).map(m => m.to);
-    if (!legalTargets.includes(to)) return; // movimiento ilegal, ignorar silenciosamente
+    if (!legalTargets.includes(to)) return;
 
     const pm = { from, to };
     setPremove(pm);
@@ -112,7 +111,6 @@ export default function PlayOnline({
   }, []);
 
   // ── Helper unificado para fin de partida ─────────────────────────────────
-  // Cubre: jaque mate, timeout, rendición, tablas — siempre aplica elo correctamente
   const handleGameEnd = useCallback((
     result: string,
     terminationReason: string,
@@ -165,16 +163,12 @@ export default function PlayOnline({
     setTurn(currentTurn);
 
     const { capW, capB } = getCapturedPieces(chess);
-    const historyVerbose = chess.history({ verbose: true });
-    const lastMoveColor = historyVerbose.length > 0
-      ? historyVerbose[historyVerbose.length - 1].color
-      : null;
 
     const serverTimes = (extraData.time_white !== undefined && extraData.time_black !== undefined)
       ? { w: extraData.time_white, b: extraData.time_black }
       : undefined;
 
-    onMoveUpdate(chess.history(), lastMoveColor, serverTimes);
+    onMoveUpdate(moveHistoryRef.current, lastMoveColorRef.current, serverTimes);
     onGameData({ ...extraData, capturedW: capW, capturedB: capB }, orientationRef.current);
 
     if (chess.isGameOver()) {
@@ -222,7 +216,7 @@ export default function PlayOnline({
   }, [clearPremove, socketRef]);
 
   useEffect(() => {
-    const token = localStorage.getItem("access");
+    const token = localStorage.getItem("access_token");
     if (!token) return;
     const ws = new WebSocket(`${serverUrl}?token=${token}`);
     socketRef.current = ws;
@@ -233,6 +227,9 @@ export default function PlayOnline({
       const msg = JSON.parse(event.data);
 
       if (msg.type === "game_state") {
+        moveHistoryRef.current = [];
+        lastMoveColorRef.current = null;
+
         if (msg.fen) chessRef.current.load(msg.fen);
         orientationRef.current = msg.color || 'w';
         setOrientation(msg.color || 'w');
@@ -242,18 +239,28 @@ export default function PlayOnline({
       }
 
       if (msg.type === "game_update") {
-        chessRef.current.load(msg.fen);
-        const history = chessRef.current.history({ verbose: true });
-        if (history.length > 0) {
-          const last = history[history.length - 1];
-          setLastMove({ from: last.from, to: last.to });
+        // Acumular SAN en el historial antes de cargar el nuevo FEN
+        if (msg.san) {
+          const moveIndex = moveHistoryRef.current.length;
+          lastMoveColorRef.current = moveIndex % 2 === 0 ? 'w' : 'b';
+          moveHistoryRef.current = [...moveHistoryRef.current, msg.san];
         }
+
+        chessRef.current.load(msg.fen);
+
+        // Inferir lastMove desde el UCI que llega en msg.move
+        if (msg.move && msg.move.length >= 4) {
+          setLastMove({
+            from: msg.move.slice(0, 2),
+            to: msg.move.slice(2, 4),
+          });
+        }
+
         setSelectedSquare(null);
         setLegalMoves([]);
         updateBoardFromChess(msg);
         executePremoveIfAny();
 
-        // ── Fin de partida desde game_update (incluye timeout) ───────────
         if (msg.status === "completed" && msg.result) {
           handleGameEnd(
             msg.result,
@@ -267,7 +274,6 @@ export default function PlayOnline({
       if (msg.type === "game_message" || msg.action) {
         const payload = msg.message || msg;
 
-        // ── Fin de partida desde game_message (rendición, tablas, timeout) ──
         if (payload.action === "game_ended") {
           handleGameEnd(
             payload.result,
@@ -308,7 +314,6 @@ export default function PlayOnline({
     const chess = chessRef.current;
     const myColor = orientationRef.current;
 
-    // ── Turno del rival → intentar registrar premove (solo si es legal) ──
     if (chess.turn() !== myColor) {
       setPremoveIfLegal(from, to);
       return;
