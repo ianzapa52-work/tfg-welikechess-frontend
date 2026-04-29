@@ -123,7 +123,6 @@ export default function LocalPremiumPage() {
   const [isNoTimeMode, setIsNoTimeMode] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [timedOutPlayer, setTimedOutPlayer] = useState<'w' | 'b' | null>(null);
-  const [isGameOver, setIsGameOver] = useState(false); // Añadido
 
   useEffect(() => {
     if (isNoTimeMode || !gameStarted || status.includes("MATE") || status.includes("TABLAS") || timedOutPlayer) return;
@@ -175,7 +174,6 @@ export default function LocalPremiumPage() {
     setTimeB(currentMode.m);
     setGameStarted(false);
     setTimedOutPlayer(null);
-    setIsGameOver(false);
     setStatus("TURNO BLANCAS");
   };
 
@@ -206,16 +204,30 @@ export default function LocalPremiumPage() {
               <p className="text-[10px] font-black tracking-[0.25em] text-white uppercase mb-3 px-1">Elegir Bando</p>
               <div className="grid grid-cols-2 gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/5">
                 <button
-                  onClick={() => setBoardOrientation('w')}
                   disabled={gameStarted}
-                  className={`py-2 rounded-xl text-[9px] font-black transition-colors duration-200 border-2 cursor-pointer ${boardOrientation === 'w' ? 'bg-zinc-100 text-black border-transparent shadow-lg' : 'text-zinc-500 border-transparent hover:bg-white/5'}`}
+                  onClick={() => setBoardOrientation('w')}
+                  className={`
+                    py-2 rounded-xl text-[9px] font-black transition-colors duration-200 border-2
+                    ${gameStarted ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                    ${boardOrientation === 'w' 
+                      ? 'bg-zinc-100 text-black border-transparent shadow-lg' 
+                      : 'text-zinc-500 border-transparent hover:bg-white/5'
+                    }
+                  `}
                 >
                   BLANCAS
                 </button>
                 <button
-                  onClick={() => setBoardOrientation('b')}
                   disabled={gameStarted}
-                  className={`py-2 rounded-xl text-[9px] font-black transition-colors duration-200 border-2 cursor-pointer ${boardOrientation === 'b' ? 'bg-zinc-800 text-white shadow-lg border-white/10' : 'text-zinc-500 border-transparent hover:bg-white/5'}`}
+                  onClick={() => setBoardOrientation('b')}
+                  className={`
+                    py-2 rounded-xl text-[9px] font-black transition-colors duration-200 border-2
+                    ${gameStarted ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                    ${boardOrientation === 'b' 
+                      ? 'bg-zinc-800 text-white shadow-lg border-white/10' 
+                      : 'text-zinc-500 border-transparent hover:bg-white/5'
+                    }
+                  `}
                 >
                   NEGRAS
                 </button>
@@ -225,9 +237,16 @@ export default function LocalPremiumPage() {
             <div className="mb-6">
               <p className="text-[10px] font-black tracking-[0.25em] text-white uppercase mb-3 px-1">Configuración</p>
               <button
-                onClick={() => setIsNoTimeMode(!isNoTimeMode)}
                 disabled={gameStarted}
-                className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-colors duration-200 cursor-pointer ${isNoTimeMode ? 'bg-gold/10 border-gold text-gold shadow-[0_0_20px_rgba(212,175,55,0.1)]' : 'bg-black/40 border-white/5 text-zinc-500 hover:border-white/20'}`}
+                onClick={() => setIsNoTimeMode(!isNoTimeMode)}
+                className={`
+                  w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-colors duration-200
+                  ${gameStarted ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                  ${isNoTimeMode 
+                    ? 'bg-gold/10 border-gold text-gold shadow-[0_0_20px_rgba(212,175,55,0.1)]' 
+                    : 'bg-black/40 border-white/5 text-zinc-500 hover:border-white/20'
+                  }
+                `}
               >
                 <span className="text-[10px] font-black uppercase tracking-widest">Modo Sin Tiempo</span>
                 <div className={`w-10 h-5 rounded-full relative transition-colors ${isNoTimeMode ? 'bg-gold' : 'bg-zinc-800'}`}>
@@ -244,9 +263,16 @@ export default function LocalPremiumPage() {
                     {category.options.map((opt) => (
                       <button
                         key={opt.n}
-                        disabled={gameStarted}
+                        disabled={gameStarted} // ✅ AÑADIDO
                         onClick={() => selectMode(opt)}
-                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors duration-200 border cursor-pointer ${currentMode.n === opt.n && !isNoTimeMode ? 'bg-gold text-black border-gold' : 'bg-zinc-800 border-white/10 hover:border-white/30'}`}
+                        className={`
+                          px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors duration-200 border
+                          ${gameStarted ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                          ${currentMode.n === opt.n && !isNoTimeMode 
+                            ? 'bg-gold text-black border-gold' 
+                            : 'bg-zinc-800 border-white/10 hover:border-white/30'
+                          }
+                        `}
                       >
                         {opt.n}
                       </button>

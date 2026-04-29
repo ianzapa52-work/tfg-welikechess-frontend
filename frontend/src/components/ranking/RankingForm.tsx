@@ -277,6 +277,9 @@ export default function RankingForm() {
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-base" style={{ background: `${color}15`, border: `1px solid ${color}30`, color }}>
                     {icon}
                   </div>
+                  <div className="flex-grow min-w-0">
+                    <p className="text-[10px] text-zinc-400 font-bold tracking-widest uppercase truncate group-hover:text-white transition-colors">{label}</p>
+                  </div>
                   <div className="text-right shrink-0">
                     <span className="text-sm font-black font-['Cinzel']" style={{ color }}>{displayElo}</span>
                   </div>

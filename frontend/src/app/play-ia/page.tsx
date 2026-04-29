@@ -19,14 +19,14 @@ function IABox({ captured }: { captured: string[] }) {
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-zinc-900 border border-white/10 flex items-center justify-center shadow-inner">
-            <span className="text-lg leading-none">♟</span>
+            <span className="text-xl leading-none">♟</span>
           </div>
           <div>
-            <p className="text-white font-black text-[11px] uppercase tracking-widest leading-none mb-1">Einstein IA</p>
-            <p className="text-[8px] text-zinc-500 font-bold tracking-tight">Stockfish · Sin reloj</p>
+            <p className="text-white font-black text-[13px] uppercase tracking-widest leading-none mb-1">Einstein IA</p>
+            <p className="text-[10px] text-zinc-500 font-bold tracking-tight">Stockfish · Sin reloj</p>
           </div>
         </div>
-        <div className="px-3 py-1.5 rounded-xl bg-black/60 border border-white/[0.06] font-mono text-sm font-black text-zinc-500 tracking-widest">
+        <div className="px-3 py-1.5 rounded-xl bg-black/60 border border-white/[0.06] font-mono text-base font-black text-zinc-500 tracking-widest">
           ∞
         </div>
       </div>
@@ -38,7 +38,7 @@ function IABox({ captured }: { captured: string[] }) {
               <img key={i} src={img} className="w-5 h-5 object-contain drop-shadow-md" alt="" />
             ))
           ) : (
-            <span className="text-[8px] uppercase tracking-[0.2em] text-black/40 font-black italic ml-1">Sin bajas</span>
+            <span className="text-[10px] uppercase tracking-[0.2em] text-black/40 font-black italic ml-1">Sin bajas</span>
           )}
         </div>
       </div>
@@ -76,22 +76,22 @@ function PlayerBox({
               : isActive ? 'bg-gold/20 border-gold/40'
               : 'bg-zinc-800/80 border-white/10'
           }`}>
-            <span className={`text-lg leading-none transition-all duration-500 ${
+            <span className={`text-xl leading-none transition-all duration-500 ${
               isTimedOut ? 'text-red-400' : isActive ? 'text-gold' : 'text-zinc-500'
             }`}>♙</span>
           </div>
           <div>
-            <p className={`font-black text-[11px] uppercase tracking-widest leading-none mb-0.5 transition-colors duration-500 ${
+            <p className={`font-black text-[13px] uppercase tracking-widest leading-none mb-0.5 transition-colors duration-500 ${
               isTimedOut ? 'text-red-400' : isActive ? 'text-white' : 'text-zinc-400'
             }`}>
               {isTimedOut ? '¡Tiempo!' : 'Tú'}
             </p>
-            <p className="text-[8px] text-zinc-600 font-bold tracking-tight">Jugador local</p>
+            <p className="text-[10px] text-zinc-600 font-bold tracking-tight">Jugador local</p>
           </div>
         </div>
 
         {showClock && (
-          <div className={`relative px-4 py-2 rounded-xl border-2 font-mono font-black text-lg tracking-tighter transition-all duration-300 ${
+          <div className={`relative px-4 py-2 rounded-xl border-2 font-mono font-black text-xl tracking-tighter transition-all duration-300 ${
             isTimedOut
               ? 'bg-red-500/20 border-red-500/60 text-red-300'
               : isVeryLow
@@ -115,7 +115,7 @@ function PlayerBox({
               <img key={i} src={img} className="w-5 h-5 object-contain drop-shadow-md" alt="" />
             ))
           ) : (
-            <span className="text-[8px] uppercase tracking-[0.2em] text-black/40 font-black italic ml-1">Sin bajas</span>
+            <span className="text-[10px] uppercase tracking-[0.2em] text-black/40 font-black italic ml-1">Sin bajas</span>
           )}
         </div>
       </div>
@@ -263,31 +263,41 @@ export default function PlayIAPage() {
 
       <div className="relative z-10 max-w-[1700px] mx-auto grid grid-cols-12 gap-6 xl:gap-8 items-start">
         <div className="col-span-12 xl:col-span-3 flex flex-col gap-3">
-          <IABox captured={capturedW} />
+          <div
+            style={{
+              maxHeight: gameStarted ? '200px' : '0px',
+              opacity: gameStarted ? 1 : 0,
+              marginBottom: gameStarted ? '0px' : '-12px',
+              overflow: 'hidden',
+              transition: 'max-height 500ms cubic-bezier(0.4, 0, 0.2, 1), opacity 400ms ease, margin-bottom 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
+            <IABox captured={capturedW} />
+          </div>
 
           <div className="bg-black/50 border border-white/[0.07] rounded-[2rem] p-5 shadow-2xl backdrop-blur-xl space-y-5">
             <div>
-              <p className="text-[8px] font-black tracking-[0.35em] text-zinc-600 uppercase mb-2.5">Nivel IA</p>
+              <p className="text-[10px] font-black tracking-[0.35em] text-zinc-600 uppercase mb-3">Nivel IA</p>
               <div className="grid grid-cols-2 gap-1.5 p-1 bg-black/60 rounded-2xl border border-white/15">
                 {([
-                  { lvl: 1,  label: 'Novato',      sub: '< 1400',     color: 'emerald' },
-                  { lvl: 5,  label: 'Aficionado B', sub: '1400', color: 'blue'    },
-                  { lvl: 7,  label: 'Aficionado A', sub: '1800', color: 'indigo'  },
-                  { lvl: 10, label: 'Experto',      sub: '2000', color: 'purple'  },
-                  { lvl: 13, label: 'FM',           sub: '2300', color: 'gold'    },
-                  { lvl: 15, label: 'IM',           sub: '2400', color: 'gold'    },
-                  { lvl: 18, label: 'GM',           sub: '2500',       color: 'rose'    },
-                  { lvl: 20, label: 'ORÁCULO',    sub: '3200',       color: 'red'     },
+                  { lvl: 1,  label: 'Novato',       sub: '< 1400', color: 'emerald' },
+                  { lvl: 5,  label: 'Aficionado B',  sub: '1400',   color: 'blue'    },
+                  { lvl: 7,  label: 'Aficionado A',  sub: '1800',   color: 'indigo'  },
+                  { lvl: 10, label: 'Experto',        sub: '2000',   color: 'purple'  },
+                  { lvl: 13, label: 'FM',             sub: '2300',   color: 'gold'    },
+                  { lvl: 15, label: 'IM',             sub: '2400',   color: 'gold'    },
+                  { lvl: 18, label: 'GM',             sub: '2500',   color: 'rose'    },
+                  { lvl: 20, label: 'ORÁCULO',        sub: '3200',   color: 'red'     },
                 ] as const).map(({ lvl, label, sub, color }) => {
                   const isActive = difficulty === lvl;
                   const colorMap: any = {
                     emerald: isActive ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'text-zinc-500',
-                    blue: isActive ? 'bg-blue-500/20 border-blue-500/40 text-blue-300' : 'text-zinc-500',
-                    indigo: isActive ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300' : 'text-zinc-500',
-                    purple: isActive ? 'bg-purple-500/20 border-purple-500/40 text-purple-300' : 'text-zinc-500',
-                    gold: isActive ? 'bg-gold/20 border-gold/40 text-gold' : 'text-zinc-500',
-                    rose: isActive ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' : 'text-zinc-500',
-                    red: isActive ? 'bg-red-600/30 border-red-500/50 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'text-zinc-500',
+                    blue:    isActive ? 'bg-blue-500/20 border-blue-500/40 text-blue-300'          : 'text-zinc-500',
+                    indigo:  isActive ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'    : 'text-zinc-500',
+                    purple:  isActive ? 'bg-purple-500/20 border-purple-500/40 text-purple-300'    : 'text-zinc-500',
+                    gold:    isActive ? 'bg-gold/20 border-gold/40 text-gold'                      : 'text-zinc-500',
+                    rose:    isActive ? 'bg-rose-500/20 border-rose-500/40 text-rose-300'          : 'text-zinc-500',
+                    red:     isActive ? 'bg-red-600/30 border-red-500/50 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'text-zinc-500',
                   };
 
                   return (
@@ -296,16 +306,16 @@ export default function PlayIAPage() {
                       disabled={gameStarted}
                       onClick={() => { setDifficulty(lvl); resetGame(); }}
                       className={`
-                        px-3 py-1.5 rounded-xl flex flex-col items-start
+                        px-3 py-2 rounded-xl flex flex-col items-start gap-0.5
                         transition-all duration-200 border
                         ${gameStarted ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
                         ${isActive ? colorMap[color] : 'border-white/10 hover:bg-white/5 hover:border-white/25'}
                       `}
                     >
-                      <p className={`text-xs font-black leading-tight mb-0.5 ${isActive ? 'text-inherit' : 'text-zinc-500'}`}>
+                      <p className={`text-sm font-black leading-tight ${isActive ? 'text-inherit' : 'text-zinc-500'}`}>
                         {label}
                       </p>
-                      <p className={`text-[9px] font-mono leading-none ${isActive ? 'opacity-70' : 'text-zinc-600'}`}>
+                      <p className={`text-[11px] font-mono leading-none ${isActive ? 'opacity-70' : 'text-zinc-600'}`}>
                         {sub}
                       </p>
                     </button>
@@ -317,13 +327,13 @@ export default function PlayIAPage() {
             <div className="h-px bg-white/[0.04]" />
 
             <div>
-              <p className="text-[8px] font-black tracking-[0.35em] text-zinc-600 uppercase mb-2.5">Tu tiempo</p>
+              <p className="text-[10px] font-black tracking-[0.35em] text-zinc-600 uppercase mb-3">Tu tiempo</p>
               <div className="flex gap-1.5 p-1 bg-black/60 rounded-2xl border border-white/15">
                 <button
                   disabled={gameStarted}
                   onClick={() => { setMode('free'); modeRef.current = 'free'; resetGame(); }}
                   className={`
-                    flex-1 py-3 rounded-xl
+                    flex-1 py-1.5 rounded-xl
                     transition-colors duration-200 flex flex-col items-center gap-1
                     ${gameStarted ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
                     ${mode === 'free'
@@ -332,14 +342,14 @@ export default function PlayIAPage() {
                     }
                   `}
                 >
-                  <span className={`text-xl font-black leading-none ${mode === 'free' ? 'text-white' : 'text-zinc-600'}`}>∞</span>
+                  <span className={`text-lg font-black leading-none ${mode === 'free' ? 'text-white' : 'text-zinc-600'}`}>∞</span>
                   <span className={`text-[9px] font-black tracking-wider ${mode === 'free' ? 'text-white/70' : 'text-zinc-600'}`}>Sin límite</span>
                 </button>
                 <button
                   disabled={gameStarted}
                   onClick={() => { setMode('countdown'); modeRef.current = 'countdown'; resetGame(); }}
                   className={`
-                    flex-1 py-3 rounded-xl
+                    flex-1 py-1.5 rounded-xl
                     transition-colors duration-200 flex flex-col items-center gap-1
                     ${gameStarted ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
                     ${mode === 'countdown'
@@ -348,7 +358,7 @@ export default function PlayIAPage() {
                     }
                   `}
                 >
-                  <span className={`text-xl font-black leading-none ${mode === 'countdown' ? 'text-red-300' : 'text-zinc-600'}`}>⏱</span>
+                  <span className={`text-lg font-black leading-none ${mode === 'countdown' ? 'text-red-300' : 'text-zinc-600'}`}>⏱</span>
                   <span className={`text-[9px] font-black tracking-wider ${mode === 'countdown' ? 'text-red-300/80' : 'text-zinc-600'}`}>Contrarreloj</span>
                 </button>
               </div>
@@ -362,7 +372,7 @@ export default function PlayIAPage() {
               }}
             >
               <div ref={cdPanelRef}>
-                <div className="grid grid-cols-3 gap-1">
+                <div className="grid grid-cols-3 gap-1.5">
                   {COUNTDOWN_OPTIONS.map((opt) => (
                     <button
                       key={opt.n}
@@ -373,7 +383,7 @@ export default function PlayIAPage() {
                         setTimeW(opt.m);
                       }}
                       className={`
-                        py-1 rounded-lg text-[9px] font-bold
+                        py-3 rounded-lg text-sm font-bold
                         transition-colors duration-200 border
                         ${gameStarted ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
                         ${selectedCD.n === opt.n
