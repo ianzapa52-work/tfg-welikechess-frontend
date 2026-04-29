@@ -1,68 +1,141 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useCallback } from 'react';
+
+interface Friend {
+  id: string;
+  username: string;
+  avatar: string | null;
+  elo_blitz: number;
+  elo_rapid: number;
+  elo_bullet: number;
+}
+
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+
+async function apiFetch<T>(path: string): Promise<T> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+  const res = await fetch(`${API}${path}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail ?? `Error ${res.status}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+const avatarSrc = (src: string | null) => src ?? '/avatars/b_king_avatar.png';
 
 export default function HomeFriendsSidebar() {
-  const [friends, setFriends] = useState<any[]>([]);
-  const [mounted, setMounted] = useState(false);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setMounted(true);
-    const sync = () => {
-      const saved = localStorage.getItem('chess_friends');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          const sorted = parsed.sort((a: any, b: any) => {
-            if (a.online !== b.online) return a.online ? -1 : 1;
-            return b.elo - a.elo;
-          });
-          setFriends(sorted);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    };
-    sync();
-    window.addEventListener('social-update', sync);
-    return () => window.removeEventListener('social-update', sync);
+  const fetchFriends = useCallback(async () => {
+    try {
+      // 1. Obtener mi perfil con la lista de usernames de amigos
+      const me = await apiFetch<{ friends: string[] }>('/api/users/me/');
+
+      // 2. Obtener el perfil de cada amigo en paralelo
+      const profiles = await Promise.allSettled(
+        me.friends.map(u =>
+          apiFetch<{
+            id: string;
+            username: string;
+            avatar: string | null;
+            elo_blitz: number;
+            elo_rapid: number;
+            elo_bullet: number;
+          }>(`/api/users/${u}/`)
+        )
+      );
+
+      const resolved: Friend[] = profiles
+        .filter(
+          (r): r is PromiseFulfilledResult<Friend> => r.status === 'fulfilled'
+        )
+        .map(({ value }) => value)
+        // Ordenar por elo_blitz descendente (misma lógica que FriendsForm)
+        .sort((a, b) => b.elo_blitz - a.elo_blitz);
+
+      setFriends(resolved);
+    } catch (e) {
+      console.error('HomeFriendsSidebar:', e);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  if (!mounted) return null;
+  useEffect(() => {
+    fetchFriends();
+    // Refrescar cada 10 s igual que FriendsForm
+    const interval = setInterval(fetchFriends, 10_000);
+    return () => clearInterval(interval);
+  }, [fetchFriends]);
+
+  // Permitir que FriendsForm dispare una sincronización inmediata
+  useEffect(() => {
+    const onUpdate = () => fetchFriends();
+    window.addEventListener('social-update', onUpdate);
+    return () => window.removeEventListener('social-update', onUpdate);
+  }, [fetchFriends]);
 
   return (
     <div className="flex flex-col h-full bg-black/20 [.light_&]:bg-black/[0.03]">
       <div className="p-6 border-b border-gold/10 flex justify-between items-center">
         <h3 className="chess-label">Amigos</h3>
         <span className="text-[10px] text-gold font-black bg-gold/10 px-2 py-1 rounded-md">
-          {friends.filter(f => f.online).length} ONLINE
+          {loading ? '···' : `${friends.length} AMIGOS`}
         </span>
       </div>
 
       <div className="flex-grow overflow-y-auto custom-scrollbar p-3 space-y-2">
-        {friends.length > 0 ? (
+        {loading ? (
+          <div className="py-10 text-center chess-label opacity-20 animate-pulse">
+            Cargando...
+          </div>
+        ) : friends.length > 0 ? (
           friends.map((f) => (
-            <button 
-              key={f.id} 
-              onClick={() => window.dispatchEvent(new CustomEvent('open-chat', { detail: f }))}
-              className={`w-full flex items-center gap-4 p-3 rounded-2xl transition-all border border-transparent hover:bg-gold/5 [.light_&]:hover:bg-black/[0.05] hover:border-gold/10 group cursor-pointer ${!f.online && 'opacity-40 grayscale hover:opacity-100 hover:grayscale-0'}`}
+            <button
+              key={f.id}
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent('open-chat', {
+                    detail: { ...f, status: 'offline' },
+                  })
+                )
+              }
+              className="w-full flex items-center gap-4 p-3 rounded-2xl transition-all border border-transparent hover:bg-gold/5 [.light_&]:hover:bg-black/[0.05] hover:border-gold/10 group cursor-pointer"
             >
               <div className="relative shrink-0">
-                <img src={f.avatar} className="w-10 h-10 rounded-xl border border-white/10 group-hover:border-gold/30 object-cover" alt="" />
-                {f.online && <div className="status-dot !border-zinc-900 [.light_&]:!border-white bg-green-500 absolute -top-1 -right-1 w-3 h-3 shadow-[0_0_5px_#22c55e]" />}
+                <img
+                  src={avatarSrc(f.avatar)}
+                  className="w-13 h-13 rounded-xl border border-white/10 group-hover:border-gold/30 object-cover"
+                  alt=""
+                />
               </div>
               <div className="flex flex-col items-start min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-white [.light_&]:text-zinc-800 group-hover:text-gold truncate">{f.name}</span>
-                  <span className="text-[9px] text-gold/40 font-black">{f.elo}</span>
+                  <span className="text-base font-bold uppercase tracking-widest text-white [.light_&]:text-zinc-800 group-hover:text-gold truncate font-['Cinzel']">
+                    {f.username}
+                  </span>
+                  <span className="text-[11px] text-gold/50 font-black font-['Cinzel']">
+                    {f.elo_blitz}
+                  </span>
                 </div>
-                <span className="text-[9px] text-zinc-500 italic truncate tracking-tight">
-                  {f.online ? (f.currentGame || "Chat libre") : "Offline"}
+                <span className="text-[11px] text-zinc-500 italic truncate tracking-tight">
+                  {f.elo_rapid} Rapid · {f.elo_bullet} Bullet
                 </span>
               </div>
             </button>
           ))
         ) : (
-          <div className="py-10 text-center chess-label opacity-20">Sin contactos</div>
+          <div className="py-10 text-center chess-label opacity-20">
+            Sin contactos
+          </div>
         )}
       </div>
     </div>
