@@ -41,7 +41,7 @@ export default function SettingsForm({ onClose }: SettingsFormProps) {
 
   const handleSave = async () => {
     setIsSaving(true);
-    const token = localStorage.getItem("access");
+    const token = localStorage.getItem("access_token");
 
     const settings = {
       volume,

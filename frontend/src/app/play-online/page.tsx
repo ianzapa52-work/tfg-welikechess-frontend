@@ -205,7 +205,7 @@ export default function OnlinePremiumPage() {
   }, [gameJoined]);
 
   const startSearch = () => {
-    const token = localStorage.getItem("access");
+    const token = localStorage.getItem("access_token");
     if (!token) return alert("No hay token de sesión.");
     setIsSearching(true);
     setStatus("BUSCANDO RIVAL...");

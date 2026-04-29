@@ -15,7 +15,7 @@ export default function HeaderActions({ variant }: HeaderActionsProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const checkAuth = () => {
-    const token = localStorage.getItem("access");
+    const token = localStorage.getItem("access_token");
     setIsLoggedIn(!!token);
   };
 
@@ -32,8 +32,8 @@ export default function HeaderActions({ variant }: HeaderActionsProps) {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
     setIsLoggedIn(false);
     window.location.assign("/");
   };

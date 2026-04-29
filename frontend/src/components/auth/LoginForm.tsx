@@ -52,8 +52,8 @@ export default function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: 
         throw new Error(errorMsg);
       }
       
-      localStorage.setItem("access", data.access);
-      localStorage.setItem("refresh", data.refresh);
+      localStorage.setItem("access_token", data.access);
+      localStorage.setItem("refresh_token", data.refresh);
       window.dispatchEvent(new Event('user-auth-change'));
       window.location.assign("/profile");
       

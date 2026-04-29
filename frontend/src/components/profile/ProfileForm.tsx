@@ -109,7 +109,7 @@ export default function ProfileForm() {
   const [presence, setPresence] = useState('online');
 
   const fetchUserData = async () => {
-    const token = localStorage.getItem("access");
+    const token = localStorage.getItem("access_token");
     if (!token) { window.location.assign("/auth"); return; }
     const settings = JSON.parse(localStorage.getItem("user_settings") || "{}");
     setPresence(settings.status || 'online');

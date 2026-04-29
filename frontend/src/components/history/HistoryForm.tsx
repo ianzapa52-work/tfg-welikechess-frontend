@@ -27,7 +27,7 @@ export default function HistoryForm({ onClose }: HistoryFormProps) {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      const token = localStorage.getItem("access");
+      const token = localStorage.getItem("access_token");
 
       // Obtener el username real desde la API
       try {

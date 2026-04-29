@@ -21,7 +21,7 @@ export default function HomeRecentActivity() {
 
   useEffect(() => {
     const fetchRecent = async () => {
-      const token = localStorage.getItem("access");
+      const token = localStorage.getItem("access_token");
       if (!token) {
         setLoading(false);
         return;

@@ -6,7 +6,7 @@ export default function IdleTimer() {
     let idleTimer: NodeJS.Timeout;
 
     const syncStatus = async (status: 'online' | 'away') => {
-      const token = localStorage.getItem("access");
+      const token = localStorage.getItem("access_token");
       const settings = JSON.parse(localStorage.getItem("user_settings") || "{}");
       if (settings.status === status) return;
       localStorage.setItem("user_settings", JSON.stringify({ ...settings, status }));

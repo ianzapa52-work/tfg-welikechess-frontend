@@ -13,7 +13,7 @@ export default function AvatarWindow() {
   useEffect(() => setMounted(true), []);
 
   const selectAvatar = async (imgName: string) => {
-    const token = localStorage.getItem("access");
+    const token = localStorage.getItem("access_token");
     const avatarPath = `/avatars/${imgName}`;
 
     try {
