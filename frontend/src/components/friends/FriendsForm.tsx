@@ -118,7 +118,6 @@ export default function FriendsForm() {
         apiFetch<PendingRequest[]>('/api/users/pending_friend_requests/'),
       ]);
 
-      // Solo actualiza si los datos cambiaron realmente
       setMe(prev => {
         if (JSON.stringify(prev) === JSON.stringify(meData)) return prev;
         return meData;
@@ -149,7 +148,6 @@ export default function FriendsForm() {
       });
 
     } catch (e: unknown) {
-      // En refresco silencioso, no sobreescribir la UI si ya hay datos
       if (isInitial) setError(e instanceof Error ? e.message : 'Error cargando datos');
     } finally {
       if (isInitial) setInitialLoading(false);
@@ -225,10 +223,10 @@ export default function FriendsForm() {
         <ConfirmDialog username={confirmDelete.username} onConfirm={() => removeFriend(confirmDelete)} onCancel={() => setConfirmDelete(null)} />
       )}
 
-      {/* ── LEFT PANEL ── */}
+      {/* LEFT PANEL */}
       <div className="hidden lg:flex flex-col w-80 gap-5 shrink-0 h-full">
 
-        {/* ══ PROFILE CARD ══ */}
+        {/* PROFILE CARD */}
         <div
           className="relative rounded-[36px] overflow-hidden shrink-0"
           style={{
@@ -240,31 +238,23 @@ export default function FriendsForm() {
           <div className="absolute top-0 left-0 w-px h-20" style={{ background: 'linear-gradient(180deg, #d4af37, transparent)' }} />
           <div className="absolute bottom-0 right-0 w-20 h-px" style={{ background: 'linear-gradient(270deg, #d4af37, transparent)' }} />
           <div className="absolute bottom-0 right-0 w-px h-20" style={{ background: 'linear-gradient(0deg, #d4af37, transparent)' }} />
-
           <div
             className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 pointer-events-none"
             style={{ background: 'radial-gradient(ellipse, rgba(212,175,55,0.07) 0%, transparent 70%)' }}
           />
-
           <div className="relative z-10 flex flex-col items-center px-6 pt-6 pb-6">
-
             <div className="flex items-center gap-3 mb-5 w-full justify-center">
               <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.25))' }} />
               <span className="text-[9px] text-gold/60 tracking-[0.55em] font-bold uppercase shrink-0">Mi Perfil</span>
               <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, rgba(212,175,55,0.25), transparent)' }} />
             </div>
-
             <div className="relative mb-5">
               <div
                 className="absolute -inset-[2px] rounded-[30px]"
                 style={{ background: 'linear-gradient(135deg, #d4af37 0%, #7a5c1e 45%, #d4af37 100%)' }}
               />
               <div className="relative rounded-[28px] overflow-hidden w-28 h-28">
-                <img
-                  src={avatarSrc(me?.avatar ?? null)}
-                  className="w-full h-full object-cover"
-                  alt="Me"
-                />
+                <img src={avatarSrc(me?.avatar ?? null)} className="w-full h-full object-cover" alt="Me" />
               </div>
               <div className="absolute -bottom-1.5 -right-1.5 z-10">
                 <div
@@ -275,7 +265,6 @@ export default function FriendsForm() {
                 </div>
               </div>
             </div>
-
             <h3 className="text-white font-serif font-bold text-xl tracking-[0.12em] uppercase truncate w-full text-center leading-tight mb-0.5">
               {me?.username ?? '· · ·'}
             </h3>
@@ -283,9 +272,7 @@ export default function FriendsForm() {
               <div className="w-1.5 h-1.5 rounded-full bg-green-400" style={{ boxShadow: '0 0 6px rgba(74,222,128,0.6)' }} />
               <span className="text-[9px] text-green-400/80 tracking-[0.4em] uppercase font-medium">En línea</span>
             </div>
-
             <div className="w-full h-px mb-5" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.18), transparent)' }} />
-
             <div className="w-full grid grid-cols-3 gap-2 mb-1">
               <MiniStat label="Amigos" value={friendDetails.length} icon={<Users size={12} />} />
               <MiniStat label="Blitz" value={me?.elo_blitz ?? '—'} icon={<Zap size={12} />} highlight />
@@ -294,7 +281,7 @@ export default function FriendsForm() {
           </div>
         </div>
 
-        {/* ── ELO BARS ── */}
+        {/* ELO BARS */}
         <div className="chess-panel space-y-4">
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp size={12} className="text-gold/60" />
@@ -305,7 +292,7 @@ export default function FriendsForm() {
           <EloBar label="Bullet" value={me?.elo_bullet ?? 0} max={3000} color="#4a3a1e" />
         </div>
 
-        {/* ── ACTIVITY LOG ── */}
+        {/* ACTIVITY LOG */}
         <div className="chess-panel flex-grow overflow-hidden">
           <div className="flex items-center justify-between mb-5">
             <h4 className="chess-label italic cursor-default">Actividad</h4>
@@ -322,7 +309,7 @@ export default function FriendsForm() {
         </div>
       </div>
 
-      {/* ── CENTER PANEL ── */}
+      {/* CENTER PANEL */}
       <div className="flex-grow flex flex-col gap-8 min-w-0 h-full">
         <div className="h-full flex flex-col chess-card overflow-hidden">
           <div className="px-10 py-7 border-b border-white/5 flex flex-wrap justify-between items-center shrink-0 gap-4">
@@ -380,7 +367,7 @@ export default function FriendsForm() {
         </div>
       </div>
 
-      {/* ── RIGHT PANEL ── */}
+      {/* RIGHT PANEL */}
       <div className="hidden xl:flex flex-col w-96 gap-6 shrink-0 h-full overflow-hidden">
         <InvitePanel onSend={sendFriendRequest} actionLoading={actionLoading} />
 
@@ -410,7 +397,6 @@ export default function FriendsForm() {
   );
 }
 
-// ── Mini stat chip ──
 function MiniStat({ label, value, icon, highlight }: { label: string; value: string | number; icon: React.ReactNode; highlight?: boolean }) {
   return (
     <div className={`flex flex-col items-center gap-1.5 rounded-2xl py-3 px-1 ${highlight ? 'bg-gold/8 border border-gold/15' : 'bg-white/[0.025] border border-white/5'}`}>
@@ -421,7 +407,6 @@ function MiniStat({ label, value, icon, highlight }: { label: string; value: str
   );
 }
 
-// ── ELO bar ──
 function EloBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
   const pct = Math.min(100, value > 0 ? Math.round((value / max) * 100) : 0);
   return (
@@ -437,7 +422,6 @@ function EloBar({ label, value, max, color }: { label: string; value: number; ma
   );
 }
 
-// ── Invite Panel ──
 function InvitePanel({ onSend, actionLoading }: { onSend: (u: string) => void; actionLoading: string | null }) {
   const [username, setUsername] = useState('');
   const [focused, setFocused] = useState(false);
@@ -473,7 +457,6 @@ function InvitePanel({ onSend, actionLoading }: { onSend: (u: string) => void; a
   );
 }
 
-// ── Request Card ──
 function RequestCard({ req, onAccept, onReject, actionLoading }: { req: PendingRequest; onAccept: () => void; onReject: () => void; actionLoading: string | null }) {
   const isLoading = actionLoading === req.sender_username;
   return (
@@ -499,7 +482,7 @@ function RequestCard({ req, onAccept, onReject, actionLoading }: { req: PendingR
   );
 }
 
-// ── Friend Row ──
+// Botones siempre visibles — sin opacity-0 ni translate-x
 function FriendRow({ friend, rank, onChat, onDelete, actionLoading }: { friend: Friend; rank: number; onChat: () => void; onDelete: () => void; actionLoading: string | null }) {
   const isDeleting = actionLoading === friend.username;
   return (
@@ -517,7 +500,8 @@ function FriendRow({ friend, rank, onChat, onDelete, actionLoading }: { friend: 
           <span className="text-xs text-zinc-600 italic">{friend.elo_rapid} Rapid · {friend.elo_bullet} Bullet</span>
         </div>
       </div>
-      <div className="flex gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0 duration-200">
+      {/* Botones siempre visibles */}
+      <div className="flex gap-2 shrink-0">
         <button title="Retar" className="p-3.5 bg-gold/10 text-gold border border-gold/30 rounded-xl hover:bg-gold hover:text-black transition-all active:scale-90 cursor-pointer">
           <Swords size={18} strokeWidth={2.5} />
         </button>
