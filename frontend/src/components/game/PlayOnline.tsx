@@ -12,6 +12,7 @@ interface PlayOnlineProps {
   onGameData: (data: any, color: 'w' | 'b') => void;
   onGameEnded: (data: { result: string; termination_reason: string; eloChange?: number }) => void;
   onDrawOffered: (senderUsername: string) => void;
+  onChatMessage: (username: string, message: string) => void;
   serverUrl: string;
   socketRef: React.MutableRefObject<WebSocket | null>;
 }
@@ -54,6 +55,7 @@ export default function PlayOnline({
   onGameData,
   onGameEnded,
   onDrawOffered,
+  onChatMessage,
   serverUrl,
   socketRef,
 }: PlayOnlineProps) {
@@ -69,11 +71,9 @@ export default function PlayOnline({
   const [isConnected, setIsConnected] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
-  // ── Historial acumulado ──────────────────────────────────────────────────
   const moveHistoryRef = useRef<string[]>([]);
   const lastMoveColorRef = useRef<'w' | 'b' | null>(null);
 
-  // ── Premove ──────────────────────────────────────────────────────────────
   const [premove, setPremove] = useState<{ from: Square; to: Square } | null>(null);
   const premoveRef = useRef<{ from: Square; to: Square } | null>(null);
 
@@ -110,7 +110,6 @@ export default function PlayOnline({
     setLegalMoves([]);
   }, []);
 
-  // ── Helper unificado para fin de partida ─────────────────────────────────
   const handleGameEnd = useCallback((
     result: string,
     terminationReason: string,
@@ -185,7 +184,6 @@ export default function PlayOnline({
     }
   }, [onMoveUpdate, onGameStateChange, onGameData]);
 
-  // ── Ejecutar premove tras recibir movimiento del rival ───────────────────
   const executePremoveIfAny = useCallback(() => {
     const pm = premoveRef.current;
     if (!pm) return;
@@ -239,7 +237,6 @@ export default function PlayOnline({
       }
 
       if (msg.type === "game_update") {
-        // Acumular SAN en el historial antes de cargar el nuevo FEN
         if (msg.san) {
           const moveIndex = moveHistoryRef.current.length;
           lastMoveColorRef.current = moveIndex % 2 === 0 ? 'w' : 'b';
@@ -248,7 +245,6 @@ export default function PlayOnline({
 
         chessRef.current.load(msg.fen);
 
-        // Inferir lastMove desde el UCI que llega en msg.move
         if (msg.move && msg.move.length >= 4) {
           setLastMove({
             from: msg.move.slice(0, 2),
@@ -288,6 +284,11 @@ export default function PlayOnline({
             onDrawOffered(payload.sender);
           }
         }
+      }
+
+      // ── Chat message del rival ───────────────────────────────────────────
+      if (msg.type === "chat_message") {
+        onChatMessage(msg.username, msg.message);
       }
 
       if (msg.type === "move_error" || msg.type === "error") {

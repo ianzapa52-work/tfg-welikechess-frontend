@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PlayOnline from '@/components/game/PlayOnline';
-import GameHistoryOnline from '@/components/ui/GameHistoryOnline'; // ← Import actualizado
+import GameHistoryOnline from '@/components/ui/GameHistoryOnline';
+import GameEndWindow from '@/components/ui/GameEndWindow';
 import { getTitleByElo } from '@/components/profile/ProfileForm';
 
 interface TimeOption { n: string; m: number; i: number; mode: string; }
@@ -37,8 +38,26 @@ const searchAnimations = `
     50% { transform: scale(1.04); opacity: 0.8; }
   }
   .animate-pulse-subtle { animation: subtle-pulse 6s infinite ease-in-out; }
+
+  @keyframes particle-fade {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 0.6; transform: scale(1); }
+  }
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes gentle-float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
 `;
 
+// ── CapturedBar ─────────────────────────────────────────────
 function CapturedBar({ captured }: { captured: string[] }) {
   return (
     <div className="p-3 mt-3 rounded-2xl border border-black/30 shadow-inner min-h-[50px] flex items-center bg-gradient-to-br from-[#d2b48c] to-[#a68a64] relative z-10">
@@ -55,6 +74,7 @@ function CapturedBar({ captured }: { captured: string[] }) {
   );
 }
 
+// ── OpponentBox ─────────────────────────────────────────────
 function OpponentBox({ name, elo, isActive, seconds, visible, captured }: any) {
   const formatTime = (s: number) => {
     const mins = Math.floor(s / 60);
@@ -97,6 +117,7 @@ function OpponentBox({ name, elo, isActive, seconds, visible, captured }: any) {
   );
 }
 
+// ── MyPlayerBox ─────────────────────────────────────────────
 function MyPlayerBox({ name, elo, isActive, seconds, captured, eloChange }: any) {
   const formatTime = (s: number) => {
     const mins = Math.floor(s / 60);
@@ -149,6 +170,7 @@ function MyPlayerBox({ name, elo, isActive, seconds, captured, eloChange }: any)
   );
 }
 
+// ── DrawOfferBanner ─────────────────────────────────────────
 function DrawOfferBanner({ sender, onAccept, onDecline }: { sender: string; onAccept: () => void; onDecline: () => void }) {
   return (
     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 px-6 py-4 bg-zinc-950 border border-gold/40 rounded-2xl shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom-4 duration-500">
@@ -165,6 +187,7 @@ function DrawOfferBanner({ sender, onAccept, onDecline }: { sender: string; onAc
   );
 }
 
+// ── MAIN COMPONENT ────────────────────────────────────────────────────────
 export default function OnlinePremiumPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [gameJoined, setGameJoined] = useState(false);
@@ -181,9 +204,11 @@ export default function OnlinePremiumPage() {
   const [myData, setMyData] = useState<any>(null);
   const [opponent, setOpponent] = useState({ name: "Rival", elo: "????" });
 
+  const [showGameEndWindow, setShowGameEndWindow] = useState(false);
   const [drawOfferSender, setDrawOfferSender] = useState<string | null>(null);
   const [hasOfferedDraw, setHasOfferedDraw] = useState(false);
   const [eloChange, setEloChange] = useState<number | null>(null);
+  const [incomingChat, setIncomingChat] = useState<{ username: string; message: string } | null>(null);
 
   const statusRef = useRef(status);
   const currentModeRef = useRef(currentMode);
@@ -204,6 +229,16 @@ export default function OnlinePremiumPage() {
     }, 1000);
     return () => clearInterval(timer);
   }, [gameJoined]);
+
+  useEffect(() => {
+    const isGameOver = status.includes("MATE") || status.includes("TABLAS") ||
+      status.includes("FINALIZADA") || status.includes("GANAN") || 
+      status.includes("VICTORIA") || status.includes("¡HAS GANADO");
+    
+    if (isGameOver && gameJoined) {
+      setShowGameEndWindow(true);
+    }
+  }, [status, gameJoined]);
 
   const startSearch = () => {
     const token = localStorage.getItem("access_token");
@@ -250,9 +285,22 @@ export default function OnlinePremiumPage() {
     setDrawOfferSender(null);
     setHasOfferedDraw(false);
     setEloChange(null);
+    setIncomingChat(null);
     setStatus("ESPERANDO JUGADOR");
     setTimeW(currentModeRef.current.m);
     setTimeB(currentModeRef.current.m);
+    setShowGameEndWindow(false);
+  };
+
+  // ── HANDLER PARA NUEVA PARTIDA ──
+  const handleNewGame = () => {
+    resetGame();
+  };
+
+  // ── HANDLER PARA ANÁLISIS (SIN FUNCIONALIDAD POR AHORA) ──
+  const handleOpenAnalysis = () => {
+    console.log("Análisis - Sin funcionalidad por ahora");
+    // El botón existe pero no hace nada
   };
 
   const handleResign = () => {
@@ -321,17 +369,23 @@ export default function OnlinePremiumPage() {
 
   const handleDrawOffered = useCallback((sender: string) => setDrawOfferSender(sender), []);
 
+  const handleChatMessage = useCallback((username: string, message: string) => {
+    setIncomingChat({ username, message });
+  }, []);
+
   const opponentColor: 'w' | 'b' = myColor === 'w' ? 'b' : 'w';
   const isGameOver = status.includes("MATE") || status.includes("TABLAS") ||
     status.includes("FINALIZADA") || status.includes("GANAN") || status.includes("VICTORIA") || status.includes("¡HAS GANADO");
 
   const myElo = myData ? getEloForMode(myData, currentMode.mode) : "????";
-  const myName = myData?.username || "Tu Perfil";
-  const gameOverStatus = isGameOver ? status : "";
+  const myName = myData?.username || "Tú";
+  const opponentName = opponent.name;
+  const opponentEloDisplay = opponent.elo;
 
   return (
     <main className="min-h-screen bg-[#020202] text-zinc-400 p-6 xl:p-10 font-sans selection:bg-gold/30 relative overflow-hidden">
       <style>{searchAnimations}</style>
+      
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[#070502]" />
         <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[90%] h-[80%] bg-gold/20 blur-[200px] rounded-full animate-pulse"></div>
@@ -340,11 +394,31 @@ export default function OnlinePremiumPage() {
         <div className="absolute inset-0 opacity-[0.2] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </div>
 
+      {/* ── BANNER DE TABLAS ── */}
       {drawOfferSender && (
         <DrawOfferBanner sender={drawOfferSender} onAccept={handleAcceptDraw} onDecline={handleDeclineDraw} />
       )}
 
+      {/* ── MODAL DE FINAL DE PARTIDA ── */}
+      {showGameEndWindow && (
+        <GameEndWindow
+          status={status}
+          myColor={myColor}
+          eloChange={eloChange}
+          myElo={myElo}
+          opponentElo={opponentEloDisplay}
+          myName={myName}
+          opponentName={opponentName}
+          moveCount={history.length}
+          timeMode={currentMode.n}
+          onNewGame={handleNewGame}
+          onAnalysis={handleOpenAnalysis} // ← Sin funcionalidad
+        />
+      )}
+
       <div className="relative z-10 max-w-[1700px] mx-auto grid grid-cols-12 gap-8 items-stretch">
+
+        {/* ── Left sidebar ── */}
         <div className="col-span-12 xl:col-span-3 flex flex-col justify-between py-2">
           <OpponentBox
             name={opponent.name}
@@ -386,7 +460,7 @@ export default function OnlinePremiumPage() {
                   className={`w-full mt-8 py-5 rounded-[1.5rem] font-black text-[11px] tracking-[0.3em] uppercase transition-all duration-500 relative overflow-hidden ${
                     isSearching
                       ? 'bg-zinc-800 text-red-400 border border-red-500/50 cursor-pointer hover:bg-red-950/40'
-                      : 'bg-white text-black hover:bg-gold hover:scale-[1.02]'
+                      : 'bg-white text-black hover:bg-gold hover:scale-[1.02] cursor-pointer'
                   }`}
                 >
                   <span className="relative z-10">{isSearching ? 'Cancelar Búsqueda' : 'Jugar Ahora'}</span>
@@ -394,46 +468,39 @@ export default function OnlinePremiumPage() {
               </div>
             ) : (
               <div className="text-center animate-in zoom-in duration-500 w-full px-4">
-                <div className="flex justify-center mb-6">
-                  <div className="flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[8px] font-black text-green-500 uppercase tracking-[0.2em]">Servidor Activo</span>
-                  </div>
-                </div>
-                <div className="relative group">
-                  <div className={`absolute inset-0 blur-2xl opacity-20 transition-colors duration-1000 ${status.includes("BLANCAS") ? 'bg-white' : 'bg-gold'}`} />
-                  <div className="relative bg-black/40 border border-white/5 rounded-[2rem] p-6 backdrop-blur-md">
-                    <div className="w-16 h-16 bg-gradient-to-b from-zinc-800 to-zinc-950 rounded-2xl flex items-center justify-center mb-4 mx-auto border border-white/10 shadow-xl">
-                      <span className={`text-3xl transition-transform duration-500 ${isGameOver ? 'scale-110' : 'animate-bounce'}`}>
-                        {isGameOver ? '🏆' : '⚔️'}
-                      </span>
-                    </div>
-                    <h2 className="text-zinc-500 font-black text-[10px] tracking-[0.4em] uppercase mb-1">
-                      {isGameOver ? 'Resultado Final' : 'Estado del Duelo'}
-                    </h2>
-                    <p className={`text-xl font-black tracking-tighter uppercase transition-all duration-500 ${
-                      status.includes("MATE") || status.includes("GANAN") || status.includes("VICTORIA") ? 'text-green-400 scale-110' : 'text-white'
-                    }`}>
-                      {status}
-                    </p>
-                  </div>
-                </div>
-
                 {!isGameOver && (
-                  <div className="flex gap-3 mt-6">
-                    <button onClick={handleOfferDraw} disabled={hasOfferedDraw} className={`flex-1 py-3 rounded-2xl font-black text-[9px] tracking-[0.2em] uppercase transition-all duration-300 border ${hasOfferedDraw ? 'bg-zinc-900 border-white/5 text-white/20 cursor-not-allowed' : 'bg-zinc-800 border-white/10 text-white/60 hover:bg-zinc-700 hover:border-white/20 cursor-pointer'}`}>
-                      {hasOfferedDraw ? '½ Ofrecidas' : '½ Tablas'}
-                    </button>
-                    <button onClick={handleResign} className="flex-1 py-3 bg-red-950/30 border border-red-500/20 text-red-400 rounded-2xl font-black text-[9px] tracking-[0.2em] uppercase hover:bg-red-950/50 hover:border-red-500/40 transition-all duration-300 cursor-pointer">
-                      Rendirse
-                    </button>
-                  </div>
+                  <>
+                    <div className="flex justify-center mb-6">
+                      <div className="flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        <span className="text-[8px] font-black text-green-500 uppercase tracking-[0.2em]">Servidor Activo</span>
+                      </div>
+                    </div>
+                    <div className="relative group">
+                      <div className={`absolute inset-0 blur-2xl opacity-20 transition-colors duration-1000 ${status.includes("BLANCAS") ? 'bg-white' : 'bg-gold'}`} />
+                      <div className="relative bg-black/40 border border-white/5 rounded-[2rem] p-6 backdrop-blur-md">
+                        <div className="w-16 h-16 bg-gradient-to-b from-zinc-800 to-zinc-950 rounded-2xl flex items-center justify-center mb-4 mx-auto border border-white/10 shadow-xl">
+                          <span className="text-3xl animate-bounce">⚔️</span>
+                        </div>
+                        <h2 className="text-zinc-500 font-black text-[10px] tracking-[0.4em] uppercase mb-1">Estado del Duelo</h2>
+                        <p className="text-xl font-black tracking-tighter uppercase text-white">{status}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3 mt-6">
+                      <button onClick={handleOfferDraw} disabled={hasOfferedDraw} className={`flex-1 py-3 rounded-2xl font-black text-[9px] tracking-[0.2em] uppercase transition-all duration-300 border ${hasOfferedDraw ? 'bg-zinc-900 border-white/5 text-white/20 cursor-not-allowed' : 'bg-zinc-800 border-white/10 text-white/60 hover:bg-zinc-700 hover:border-white/20 cursor-pointer'}`}>
+                        {hasOfferedDraw ? '½ Ofrecidas' : '½ Tablas'}
+                      </button>
+                      <button onClick={handleResign} className="flex-1 py-3 bg-red-950/30 border border-red-500/20 text-red-400 rounded-2xl font-black text-[9px] tracking-[0.2em] uppercase hover:bg-red-950/50 hover:border-red-500/40 transition-all duration-300 cursor-pointer">
+                        Rendirse
+                      </button>
+                    </div>
+                  </>
                 )}
-
                 {isGameOver && (
-                  <button onClick={resetGame} className="mt-8 w-full py-4 bg-gold text-black rounded-2xl font-black text-[11px] tracking-[0.3em] uppercase hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(212,175,55,0.3)] transition-all duration-500 cursor-pointer">
-                    Nueva Partida
-                  </button>
+                  <div className="h-64 flex flex-col items-center justify-center text-white/50">
+                    <div className="text-6xl mb-4 animate-pulse">🎉</div>
+                    <p className="text-sm uppercase tracking-wider font-black">Esperando tu decisión...</p>
+                  </div>
                 )}
               </div>
             )}
@@ -444,23 +511,27 @@ export default function OnlinePremiumPage() {
             elo={myElo}
             isActive={status === (myColor === 'w' ? "TURNO BLANCAS" : "TURNO NEGRAS")}
             seconds={myColor === 'w' ? timeW : timeB}
-            captured={myColor === 'w' ? capturedB : capturedW}
+            captured={myColor === 'w' ? capturedW : capturedB}
             eloChange={eloChange}
           />
         </div>
 
+        {/* ── Board column ── */}
         <div className="col-span-12 xl:col-span-6 flex items-center justify-center">
           <div className="w-full flex justify-center">
             {gameJoined && gameId ? (
-              <PlayOnline
-                serverUrl={`ws://localhost:8000/ws/games/${gameId}/`}
-                onGameStateChange={handleGameStateChange}
-                onMoveUpdate={handleMoveUpdate}
-                onGameData={handleGameData}
-                onGameEnded={handleGameEnded}
-                onDrawOffered={handleDrawOffered}
-                socketRef={gameSocketRef}
-              />
+              <div className="relative w-[min(95vw,780px)]">
+                <PlayOnline
+                  serverUrl={`ws://localhost:8000/ws/games/${gameId}/`}
+                  onGameStateChange={handleGameStateChange}
+                  onMoveUpdate={handleMoveUpdate}
+                  onGameData={handleGameData}
+                  onGameEnded={handleGameEnded}
+                  onDrawOffered={handleDrawOffered}
+                  onChatMessage={handleChatMessage}
+                  socketRef={gameSocketRef}
+                />
+              </div>
             ) : (
               <div className="w-[min(95vw,780px)] aspect-square bg-zinc-950/40 backdrop-blur-xl rounded-[3rem] border border-white/10 shadow-2xl flex flex-col items-center justify-center transition-all duration-1000">
                 <div className="relative w-94 h-94 flex items-center justify-center">
@@ -479,16 +550,19 @@ export default function OnlinePremiumPage() {
           </div>
         </div>
 
-        {/* GameHistoryOnline correctamente conectado */}
+        {/* ── Right sidebar ── */}
         <div className="col-span-12 xl:col-span-3 h-[min(85vw,785px)]">
           <GameHistoryOnline
             history={history}
-            status={gameOverStatus}
+            status={isGameOver ? status : ""}
             isGameOver={isGameOver && gameJoined}
             gameStarted={gameJoined}
             orientation={myColor}
             socketRef={gameSocketRef}
             onDrawOfferedFromChat={() => setHasOfferedDraw(true)}
+            incomingChat={incomingChat}
+            onIncomingChatConsumed={() => setIncomingChat(null)}
+            myUsername={myData?.username ?? null}
           />
         </div>
       </div>

@@ -10,6 +10,9 @@ interface GameHistoryOnlineProps {
   orientation?: 'w' | 'b';
   socketRef: React.MutableRefObject<WebSocket | null>;
   onDrawOfferedFromChat?: () => void;
+  incomingChat?: { username: string; message: string } | null;
+  onIncomingChatConsumed?: () => void;
+  myUsername?: string | null;
 }
 
 export default function GameHistoryOnline({ 
@@ -19,10 +22,14 @@ export default function GameHistoryOnline({
   gameStarted, 
   orientation = 'w',
   socketRef,
-  onDrawOfferedFromChat
+  onDrawOfferedFromChat,
+  incomingChat,
+  onIncomingChatConsumed,
+  myUsername,
 }: GameHistoryOnlineProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
+
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<string[]>([
     "Sistema: ¡Bienvenido al chat de la partida!",
@@ -30,18 +37,30 @@ export default function GameHistoryOnline({
   ]);
   const [newMessage, setNewMessage] = useState("");
   const [isProcessingCommand, setIsProcessingCommand] = useState(false);
-  
-  // ESTADOS PARA BLOQUEAR COMANDOS
+
   const [hasUsedResign, setHasUsedResign] = useState(false);
   const [hasUsedDraw, setHasUsedDraw] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  // BLOQUEAR AMBOS COMANDOS CUANDO LA PARTIDA TERMINA
+  // Bloquear comandos cuando la partida termina
   useEffect(() => {
     if (isGameOver) {
       setHasUsedResign(true);
       setHasUsedDraw(true);
     }
   }, [isGameOver]);
+
+  // ── Recibir mensajes del rival (ignorar rebote de los propios) ───────────
+  useEffect(() => {
+    if (!incomingChat) return;
+    if (myUsername && incomingChat.username === myUsername) {
+      onIncomingChatConsumed?.();
+      return;
+    }
+    setMessages(prev => [...prev, `${incomingChat.username}: ${incomingChat.message}`]);
+    if (!chatOpen) setUnreadCount(prev => prev + 1);
+    onIncomingChatConsumed?.();
+  }, [incomingChat, myUsername, onIncomingChatConsumed]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -55,6 +74,19 @@ export default function GameHistoryOnline({
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (!gameStarted) {
+      setMessages([
+        "Sistema: ¡Bienvenido al chat de la partida!",
+        "Sistema: Escribe /gg para rendirte o /draw para tablas",
+      ]);
+      setUnreadCount(0);
+      setChatOpen(false);
+      setHasUsedResign(false);
+      setHasUsedDraw(false);
+    }
+  }, [gameStarted]);
+
   const rows: { moveNum: number; white: string; black: string | null }[] = [];
   for (let i = 0; i < history.length; i += 2) {
     rows.push({ 
@@ -67,32 +99,24 @@ export default function GameHistoryOnline({
   const totalMoves = Math.ceil(history.length / 2);
 
   const handleResign = () => {
-    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN || isGameOver) {
-      return;
-    }
-    
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN || isGameOver) return;
     setHasUsedResign(true);
     socketRef.current.send(JSON.stringify({ action: "resign" }));
     setMessages(prev => [...prev, "Sistema: 🔴 Rendición enviada ✓"]);
   };
 
   const handleOfferDraw = () => {
-    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN || isGameOver) {
-      return;
-    }
-    
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN || isGameOver) return;
     setHasUsedDraw(true);
     socketRef.current.send(JSON.stringify({ action: "offer_draw" }));
     setMessages(prev => [...prev, "Sistema: ½ Oferta de tablas enviada ✓"]);
     onDrawOfferedFromChat?.();
   };
 
-  const processCommand = (command: string) => {
+  const processCommand = (command: string): boolean => {
     if (isProcessingCommand || isGameOver) return false;
-    
     const trimmed = command.trim().toLowerCase();
-    
-    // /gg → Solo 1 vez O partida terminada
+
     if (trimmed === '/gg') {
       if (hasUsedResign || isGameOver) {
         setMessages(prev => [...prev, "Sistema: ❌ /gg ya usado"]);
@@ -105,8 +129,7 @@ export default function GameHistoryOnline({
       setNewMessage("");
       return true;
     }
-    
-    // /draw → Solo 1 vez O partida terminada
+
     if (trimmed === '/draw') {
       if (hasUsedDraw || isGameOver) {
         setMessages(prev => [...prev, "Sistema: ❌ /draw ya usado"]);
@@ -119,18 +142,19 @@ export default function GameHistoryOnline({
       setNewMessage("");
       return true;
     }
-    
+
     return false;
   };
 
   const sendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     const message = newMessage.trim();
-    
     if (!message) return;
 
-    if (processCommand(message)) {
-      return;
+    if (processCommand(message)) return;
+
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({ action: "chat_message", message }));
     }
 
     setMessages(prev => [...prev, `Tú: ${message}`]);
@@ -144,14 +168,13 @@ export default function GameHistoryOnline({
     }
   };
 
-  // Detectar victoria
   const isVictory = status.includes("GANAN") || 
                    status.includes("VICTORIA") || 
                    status.includes("¡HAS GANADO") ||
-                   status.includes("MATE") && (
+                   (status.includes("MATE") && (
                      (orientation === 'w' && status.includes("BLANCAS")) ||
                      (orientation === 'b' && status.includes("NEGRAS"))
-                   );
+                   ));
 
   return (
     <div className="bg-black/50 h-full flex flex-col border border-white/[0.07] rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-xl">
@@ -162,9 +185,7 @@ export default function GameHistoryOnline({
             Movimientos
           </p>
           <p className={`text-sm font-bold mt-1 transition-colors duration-300 ${
-            gameStarted 
-              ? 'text-white/80' 
-              : 'text-zinc-600'
+            gameStarted ? 'text-white/80' : 'text-zinc-600'
           }`}>
             {totalMoves} {totalMoves === 1 ? 'jugada' : 'jugadas'}
           </p>
@@ -176,10 +197,11 @@ export default function GameHistoryOnline({
               : 'bg-zinc-800'
           }`} />
           <button
-            onClick={() => setChatOpen(!chatOpen)}
+            onClick={() => { setChatOpen(prev => { if (!prev) setUnreadCount(0); return !prev; }); }}
+            suppressHydrationWarning
             className="group relative w-12 h-12 rounded-2xl bg-white/10 border border-white/20 hover:bg-white/20 
                      flex items-center justify-center transition-all duration-300 hover:scale-110 
-                     hover:shadow-lg hover:shadow-white/20 cursor-pointer"
+                     hover:shadow-lg hover:shadow-white/20 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
             title={chatOpen ? "Ocultar chat" : "Mostrar chat"}
           >
             <span className={`text-lg transition-all duration-300 group-hover:scale-110 ${
@@ -187,10 +209,10 @@ export default function GameHistoryOnline({
             }`}>
               💬
             </span>
-            {messages.length > 2 && (
+            {unreadCount > 0 && (
               <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full text-[10px] font-bold 
                              flex items-center justify-center text-white shadow-lg animate-pulse border-2 border-black/50">
-                {Math.max(0, messages.length - 2)}
+                {unreadCount}
               </div>
             )}
           </button>
@@ -248,7 +270,7 @@ export default function GameHistoryOnline({
           )}
         </div>
 
-        {/* Chat DESPLEGABLE */}
+        {/* Chat desplegable */}
         <div className={`
           ${chatOpen ? 'h-[320px] opacity-100' : 'h-0 opacity-0'}
           overflow-hidden transition-all duration-500 ease-out border-t border-white/[0.08]
@@ -288,7 +310,7 @@ export default function GameHistoryOnline({
                               text-white placeholder-zinc-400 focus:outline-none focus:border-emerald-400/80 
                               focus:ring-2 focus:ring-emerald-400/30 transition-all duration-200 shadow-2xl
                               hover:border-zinc-500/80 hover:shadow-zinc-900/30 hover:shadow-2xl
-                              ${isProcessingCommand || isGameOver ? 'opacity-60 cursor-not-allowed' : ''}`}
+                              ${isProcessingCommand || isGameOver ? 'opacity-60 cursor-not-allowed border-zinc-700/50' : 'border-zinc-700/50'}`}
                     maxLength={120}
                     autoComplete="off"
                     disabled={isProcessingCommand || isGameOver}
@@ -316,7 +338,7 @@ export default function GameHistoryOnline({
         </div>
       </div>
 
-      {/* BANNER DE GAME OVER */}
+      {/* Banner de game over */}
       {isGameOver && (
         <div className={`px-6 py-4 border-t border-white/[0.12] flex-shrink-0 relative z-10 ${
           isVictory 
