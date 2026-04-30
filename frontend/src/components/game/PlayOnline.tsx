@@ -110,6 +110,7 @@ export default function PlayOnline({
     setLegalMoves([]);
   }, []);
 
+  // ✅ SIMPLIFICADO - Sin toasts
   const handleGameEnd = useCallback((
     result: string,
     terminationReason: string,
@@ -119,38 +120,19 @@ export default function PlayOnline({
     clearPremove();
     const myColor = orientationRef.current;
     const eloChange = myColor === 'w' ? (whiteEloChange ?? 0) : (blackEloChange ?? 0);
-    const eloAbs = Math.abs(eloChange);
-
-    const isWinner =
-      (result === "1-0" && myColor === 'w') ||
-      (result === "0-1" && myColor === 'b');
-    const isDraw = result === "1/2-1/2";
 
     onGameEnded({ result, termination_reason: terminationReason, eloChange });
 
-    if (isDraw) {
+    // ✅ SOLO cambia estado - SIN TOASTS
+    if (result === "1/2-1/2") {
       onGameStateChange("TABLAS");
-      window.dispatchEvent(new CustomEvent('game-draw', {
-        detail: { message: "Tablas" }
-      }));
-    } else if (isWinner) {
-      const msg = terminationReason === "timeout"
-        ? "¡Ganaste por tiempo!"
-        : "¡Has ganado la partida!";
+    } else if (
+      (result === "1-0" && myColor === 'w') ||
+      (result === "0-1" && myColor === 'b')
+    ) {
       onGameStateChange("JAQUE MATE - ¡HAS GANADO!");
-      window.dispatchEvent(new CustomEvent('game-victory', {
-        detail: { message: msg, elo: String(eloAbs) }
-      }));
     } else {
-      const msg = terminationReason === "timeout"
-        ? "Perdiste por tiempo"
-        : terminationReason === "resignation"
-          ? "El rival se rindió... espera, tú te rendiste"
-          : "Has perdido";
       onGameStateChange("PARTIDA FINALIZADA");
-      window.dispatchEvent(new CustomEvent('game-defeat', {
-        detail: { message: msg, elo: String(eloAbs) }
-      }));
     }
   }, [clearPremove, onGameEnded, onGameStateChange]);
 

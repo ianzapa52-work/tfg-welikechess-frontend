@@ -206,7 +206,7 @@ export default function OnlinePremiumPage() {
 
   const [showGameEndWindow, setShowGameEndWindow] = useState(false);
   const [drawOfferSender, setDrawOfferSender] = useState<string | null>(null);
-  const [hasOfferedDraw, setHasOfferedDraw] = useState(false);
+  const [hasOfferedDraw, setHasOfferedDraw] = useState(false); // ← ESTADO COMPARTIDO
   const [eloChange, setEloChange] = useState<number | null>(null);
   const [incomingChat, setIncomingChat] = useState<{ username: string; message: string } | null>(null);
 
@@ -283,7 +283,7 @@ export default function OnlinePremiumPage() {
     setCapturedB([]);
     setMyData(null);
     setDrawOfferSender(null);
-    setHasOfferedDraw(false);
+    setHasOfferedDraw(false); // ← RESET AL INICIAR NUEVA PARTIDA
     setEloChange(null);
     setIncomingChat(null);
     setStatus("ESPERANDO JUGADOR");
@@ -300,7 +300,6 @@ export default function OnlinePremiumPage() {
   // ── HANDLER PARA ANÁLISIS (SIN FUNCIONALIDAD POR AHORA) ──
   const handleOpenAnalysis = () => {
     console.log("Análisis - Sin funcionalidad por ahora");
-    // El botón existe pero no hace nada
   };
 
   const handleResign = () => {
@@ -308,6 +307,7 @@ export default function OnlinePremiumPage() {
     gameSocketRef.current.send(JSON.stringify({ action: "resign" }));
   };
 
+  // ← MODIFICADO: Ahora pasa el estado compartido al chat
   const handleOfferDraw = () => {
     if (!gameSocketRef.current || gameSocketRef.current.readyState !== WebSocket.OPEN) return;
     if (hasOfferedDraw) return;
@@ -321,7 +321,11 @@ export default function OnlinePremiumPage() {
     setDrawOfferSender(null);
   };
 
-  const handleDeclineDraw = () => setDrawOfferSender(null);
+  // ← MODIFICADO: Cuando se rechaza tablas, se mantiene hasOfferedDraw = true
+  const handleDeclineDraw = () => {
+    setDrawOfferSender(null);
+    // NO reseteamos hasOfferedDraw aquí - se mantiene bloqueado
+  };
 
   const handleMoveUpdate = useCallback((newHistory: string[], lastMoveColor: 'w' | 'b' | null, serverTimes?: {w: number, b: number}) => {
     setHistory(newHistory);
@@ -373,6 +377,11 @@ export default function OnlinePremiumPage() {
     setIncomingChat({ username, message });
   }, []);
 
+  // ← PASAR EL ESTADO COMPARTIDO AL CHAT
+  const handleDrawOfferedFromChat = useCallback(() => {
+    setHasOfferedDraw(true);
+  }, []);
+
   const opponentColor: 'w' | 'b' = myColor === 'w' ? 'b' : 'w';
   const isGameOver = status.includes("MATE") || status.includes("TABLAS") ||
     status.includes("FINALIZADA") || status.includes("GANAN") || status.includes("VICTORIA") || status.includes("¡HAS GANADO");
@@ -412,7 +421,7 @@ export default function OnlinePremiumPage() {
           moveCount={history.length}
           timeMode={currentMode.n}
           onNewGame={handleNewGame}
-          onAnalysis={handleOpenAnalysis} // ← Sin funcionalidad
+          onAnalysis={handleOpenAnalysis}
         />
       )}
 
@@ -487,7 +496,12 @@ export default function OnlinePremiumPage() {
                       </div>
                     </div>
                     <div className="flex gap-3 mt-6">
-                      <button onClick={handleOfferDraw} disabled={hasOfferedDraw} className={`flex-1 py-3 rounded-2xl font-black text-[9px] tracking-[0.2em] uppercase transition-all duration-300 border ${hasOfferedDraw ? 'bg-zinc-900 border-white/5 text-white/20 cursor-not-allowed' : 'bg-zinc-800 border-white/10 text-white/60 hover:bg-zinc-700 hover:border-white/20 cursor-pointer'}`}>
+                      <button 
+                        onClick={handleOfferDraw} 
+                        disabled={hasOfferedDraw} 
+                        className={`flex-1 py-3 rounded-2xl font-black text-[9px] tracking-[0.2em] uppercase transition-all duration-300 border ${hasOfferedDraw ? 'bg-zinc-900 border-white/5 text-white/20 cursor-not-allowed' : 'bg-zinc-800 border-white/10 text-white/60 hover:bg-zinc-700 hover:border-white/20 cursor-pointer'}`}
+                        title={hasOfferedDraw ? "Ya ofreciste tablas esta partida" : ""}
+                      >
                         {hasOfferedDraw ? '½ Ofrecidas' : '½ Tablas'}
                       </button>
                       <button onClick={handleResign} className="flex-1 py-3 bg-red-950/30 border border-red-500/20 text-red-400 rounded-2xl font-black text-[9px] tracking-[0.2em] uppercase hover:bg-red-950/50 hover:border-red-500/40 transition-all duration-300 cursor-pointer">
@@ -559,7 +573,8 @@ export default function OnlinePremiumPage() {
             gameStarted={gameJoined}
             orientation={myColor}
             socketRef={gameSocketRef}
-            onDrawOfferedFromChat={() => setHasOfferedDraw(true)}
+            hasOfferedDraw={hasOfferedDraw}
+            onDrawOfferedFromChat={handleDrawOfferedFromChat}
             incomingChat={incomingChat}
             onIncomingChatConsumed={() => setIncomingChat(null)}
             myUsername={myData?.username ?? null}

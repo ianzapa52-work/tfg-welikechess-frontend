@@ -7,7 +7,6 @@ import HeaderActions from "@/components/layout/HeaderActions";
 import ChatWindow from "@/components/ui/ChatWindow";
 import Link from "next/link";
 import IdleTimer from "@/components/utils/IdleTimer";
-import GlobalToasts from "@/components/ui/GlobalToasts";
 
 const inter = Inter({ subsets: ["latin"] });
 const cinzel = Cinzel({ subsets: ["latin"] });
@@ -66,7 +65,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ModalManager />
         <ChatWindow />
         <IdleTimer />
-        <GlobalToasts /> 
       </body>
     </html>
   );
