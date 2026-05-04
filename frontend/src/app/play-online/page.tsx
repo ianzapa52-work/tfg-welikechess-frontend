@@ -214,6 +214,7 @@ export default function OnlinePremiumPage() {
   const currentModeRef = useRef(currentMode);
   const matchmakingSocket = useRef<WebSocket | null>(null);
   const gameSocketRef = useRef<WebSocket | null>(null);
+  const clockIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => { statusRef.current = status; }, [status]);
   useEffect(() => { currentModeRef.current = currentMode; }, [currentMode]);

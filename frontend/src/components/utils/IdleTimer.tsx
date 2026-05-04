@@ -30,7 +30,7 @@ export default function IdleTimer() {
     const handleActivity = () => {
       const settings = JSON.parse(localStorage.getItem("user_settings") || "{}");
       if (settings.status === 'invisible') return;
-      if (settings.manualAway) return; // ← único cambio
+      if (settings.manualAway) return;
       if (settings.status === 'away') {
         syncStatus('online');
       }

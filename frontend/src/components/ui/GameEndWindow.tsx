@@ -58,7 +58,6 @@ function extractReason(status: string) {
 }
 
 function CelebrationParticles({ outcome }: { outcome: 'win' | 'loss' | 'draw' }) {
-  // ✅ Valores estáticos para SSR
   const particles = Array.from({ length: 20 }, (_, i) => i);
   const colors = {
     win: '#D4AF37',
@@ -73,7 +72,6 @@ function CelebrationParticles({ outcome }: { outcome: 'win' | 'loss' | 'draw' })
           key={`particle-${i}`}
           className="absolute w-2 h-2 md:w-3 md:h-3 rounded-full animate-celebrate"
           style={{
-            // ✅ Solo en cliente, valores estáticos en SSR
             left: `${(i * 17.39) % 100}%`,
             top: `${(i * 23.61) % 100}%`,
             backgroundColor: colors[outcome],
@@ -100,19 +98,17 @@ export default function GameEndModal({
   onAnalysis 
 }: GameEndModalProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [isMounted, setIsMounted] = useState(false); // ✅ Fix hydration
+  const [isMounted, setIsMounted] = useState(false);
   
   const { outcome, headline, sub } = parseResult(status, myColor, eloChange);
   const cfg = OVERLAY_CONFIGS[outcome];
 
-  // ✅ Solo en cliente, evita hydration mismatch
   useEffect(() => {
     setIsMounted(true);
     const timer = setTimeout(() => setIsVisible(true), 200);
     return () => clearTimeout(timer);
   }, []);
 
-  // ✅ Render condicional para SSR perfecto
   if (!isMounted) {
     return (
       <div 
