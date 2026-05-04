@@ -206,36 +206,87 @@ export default function OnlinePremiumPage() {
 
   const [showGameEndWindow, setShowGameEndWindow] = useState(false);
   const [drawOfferSender, setDrawOfferSender] = useState<string | null>(null);
-  const [hasOfferedDraw, setHasOfferedDraw] = useState(false); // ← ESTADO COMPARTIDO
+  const [hasOfferedDraw, setHasOfferedDraw] = useState(false);
   const [eloChange, setEloChange] = useState<number | null>(null);
   const [incomingChat, setIncomingChat] = useState<{ username: string; message: string } | null>(null);
 
   const statusRef = useRef(status);
   const currentModeRef = useRef(currentMode);
+  const myColorRef = useRef<'w' | 'b'>('w');
   const matchmakingSocket = useRef<WebSocket | null>(null);
   const gameSocketRef = useRef<WebSocket | null>(null);
-  const clockIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ── NUEVOS REFS PARA EL RELOJ ANCLADO AL SERVIDOR ──────────
+  // Guarda los tiempos exactos que mandó el servidor y el momento en que los recibimos
+  const serverTimeAnchorRef = useRef<{ w: number; b: number; receivedAt: number } | null>(null);
+  // Qué color está moviendo actualmente (para saber qué reloj descontar)
+  const activeTurnRef = useRef<'w' | 'b'>('w');
+  // Guard para evitar mandar claim_victory varias veces seguidas
+  const timeoutClaimedRef = useRef(false);
 
   useEffect(() => { statusRef.current = status; }, [status]);
   useEffect(() => { currentModeRef.current = currentMode; }, [currentMode]);
 
+  // ── CLAIM TIMEOUT ──────────────────────────────────────────
+  const handleClaimTimeout = useCallback(() => {
+    if (timeoutClaimedRef.current) return;
+    if (!gameSocketRef.current || gameSocketRef.current.readyState !== WebSocket.OPEN) return;
+    timeoutClaimedRef.current = true;
+    gameSocketRef.current.send(JSON.stringify({
+      action: "claim_victory",
+      claim_type: "timeout"
+    }));
+  }, []);
+
+  // ── RELOJ ANCLADO AL SERVIDOR ──────────────────────────────
+  // En vez de decrementar -1 cada segundo (que se desvía),
+  // calculamos cuánto tiempo real ha pasado desde que el servidor
+  // nos mandó los tiempos, y los mostramos interpolados.
+  // Cada vez que llega un game_update, el ancla se resetea con
+  // los tiempos frescos del servidor → siempre en sincronía.
   useEffect(() => {
     if (!gameJoined) return;
+
     const timer = setInterval(() => {
       const s = statusRef.current;
-      if (s.includes("FINALIZADA") || s.includes("MATE") || s.includes("TABLAS") ||
-          s.includes("COMPLETED") || s.includes("GANAN") || s.includes("¡HAS GANADO")) return;
-      if (s === "TURNO BLANCAS") setTimeW(prev => Math.max(0, prev - 1));
-      else if (s === "TURNO NEGRAS") setTimeB(prev => Math.max(0, prev - 1));
-    }, 1000);
+      const isOver =
+        s.includes("FINALIZADA") || s.includes("MATE") || s.includes("TABLAS") ||
+        s.includes("COMPLETED") || s.includes("GANAN") || s.includes("¡HAS GANADO");
+
+      if (isOver) return;
+
+      const anchor = serverTimeAnchorRef.current;
+      if (!anchor) return;
+
+      // Segundos transcurridos desde la última actualización del servidor
+      const elapsedSec = (Date.now() - anchor.receivedAt) / 1000;
+      const turn = activeTurnRef.current;
+
+      if (turn === 'w') {
+        const real = Math.max(0, anchor.w - elapsedSec);
+        setTimeW(real);
+        if (real === 0) {
+          setShowGameEndWindow(true);
+          if (myColorRef.current === 'b') handleClaimTimeout();
+        }
+      } else {
+        const real = Math.max(0, anchor.b - elapsedSec);
+        setTimeB(real);
+        if (real === 0) {
+          setShowGameEndWindow(true);
+          if (myColorRef.current === 'w') handleClaimTimeout();
+        }
+      }
+    }, 100); // Tick cada 100ms: visualmente más fluido y más preciso
+
     return () => clearInterval(timer);
-  }, [gameJoined]);
+  }, [gameJoined, handleClaimTimeout]);
 
   useEffect(() => {
     const isGameOver = status.includes("MATE") || status.includes("TABLAS") ||
-      status.includes("FINALIZADA") || status.includes("GANAN") || 
+      status.includes("FINALIZADA") || status.includes("GANAN") ||
       status.includes("VICTORIA") || status.includes("¡HAS GANADO");
-    
+
     if (isGameOver && gameJoined) {
       setShowGameEndWindow(true);
     }
@@ -284,21 +335,20 @@ export default function OnlinePremiumPage() {
     setCapturedB([]);
     setMyData(null);
     setDrawOfferSender(null);
-    setHasOfferedDraw(false); // ← RESET AL INICIAR NUEVA PARTIDA
+    setHasOfferedDraw(false);
     setEloChange(null);
     setIncomingChat(null);
     setStatus("ESPERANDO JUGADOR");
     setTimeW(currentModeRef.current.m);
     setTimeB(currentModeRef.current.m);
     setShowGameEndWindow(false);
+    // Limpiar el ancla y el guard de timeout al resetear
+    serverTimeAnchorRef.current = null;
+    timeoutClaimedRef.current = false;
   };
 
-  // ── HANDLER PARA NUEVA PARTIDA ──
-  const handleNewGame = () => {
-    resetGame();
-  };
+  const handleNewGame = () => resetGame();
 
-  // ── HANDLER PARA ANÁLISIS (SIN FUNCIONALIDAD POR AHORA) ──
   const handleOpenAnalysis = () => {
     console.log("Análisis - Sin funcionalidad por ahora");
   };
@@ -308,7 +358,6 @@ export default function OnlinePremiumPage() {
     gameSocketRef.current.send(JSON.stringify({ action: "resign" }));
   };
 
-  // ← MODIFICADO: Ahora pasa el estado compartido al chat
   const handleOfferDraw = () => {
     if (!gameSocketRef.current || gameSocketRef.current.readyState !== WebSocket.OPEN) return;
     if (hasOfferedDraw) return;
@@ -322,15 +371,35 @@ export default function OnlinePremiumPage() {
     setDrawOfferSender(null);
   };
 
-  // ← MODIFICADO: Cuando se rechaza tablas, se mantiene hasOfferedDraw = true
   const handleDeclineDraw = () => {
     setDrawOfferSender(null);
-    // NO reseteamos hasOfferedDraw aquí - se mantiene bloqueado
   };
 
-  const handleMoveUpdate = useCallback((newHistory: string[], lastMoveColor: 'w' | 'b' | null, serverTimes?: {w: number, b: number}) => {
+  const handleMoveUpdate = useCallback((
+    newHistory: string[],
+    lastMoveColor: 'w' | 'b' | null,
+    serverTimes?: { w: number; b: number }
+  ) => {
     setHistory(newHistory);
-    if (serverTimes) { setTimeW(serverTimes.w); setTimeB(serverTimes.b); return; }
+
+    if (serverTimes) {
+      // Anclar el reloj al tiempo exacto que mandó el servidor
+      // y registrar en qué momento lo recibimos (Date.now())
+      serverTimeAnchorRef.current = {
+        w: serverTimes.w,
+        b: serverTimes.b,
+        receivedAt: Date.now(),
+      };
+      // Mostrar de inmediato los valores del servidor (sin esperar al siguiente tick)
+      setTimeW(serverTimes.w);
+      setTimeB(serverTimes.b);
+      // Resetear el guard de timeout en cada movimiento
+      timeoutClaimedRef.current = false;
+      return;
+    }
+
+    // Fallback: si por algún motivo no vienen tiempos del servidor,
+    // aplicamos el incremento localmente como antes
     if (newHistory.length === 0 || lastMoveColor === null) return;
     const inc = currentModeRef.current.i;
     if (inc > 0) {
@@ -341,6 +410,7 @@ export default function OnlinePremiumPage() {
 
   const handleGameData = useCallback((data: any, color: 'w' | 'b') => {
     setMyColor(color);
+    myColorRef.current = color;
     if (data.capturedW) setCapturedW(data.capturedW);
     if (data.capturedB) setCapturedB(data.capturedB);
     const mode = currentModeRef.current.mode;
@@ -351,16 +421,34 @@ export default function OnlinePremiumPage() {
       if (data.black_player) setMyData(data.black_player);
       if (data.white_player) setOpponent({ name: data.white_player.username, elo: getEloForMode(data.white_player, mode) });
     }
+
+    // Al recibir el estado inicial de la partida, anclar el reloj
     if (data.time_white !== undefined && data.time_black !== undefined) {
-      setTimeW(data.time_white); setTimeB(data.time_black);
+      serverTimeAnchorRef.current = {
+        w: data.time_white,
+        b: data.time_black,
+        receivedAt: Date.now(),
+      };
+      setTimeW(data.time_white);
+      setTimeB(data.time_black);
     } else if (data.initial_time) {
-      setTimeW(data.initial_time); setTimeB(data.initial_time);
+      serverTimeAnchorRef.current = {
+        w: data.initial_time,
+        b: data.initial_time,
+        receivedAt: Date.now(),
+      };
+      setTimeW(data.initial_time);
+      setTimeB(data.initial_time);
     }
   }, []);
 
   const handleGameStateChange = useCallback((newStatus: string) => {
     setStatus(newStatus);
     statusRef.current = newStatus;
+
+    // Sincronizar qué reloj está corriendo según el turno actual
+    if (newStatus === "TURNO BLANCAS") activeTurnRef.current = 'w';
+    else if (newStatus === "TURNO NEGRAS") activeTurnRef.current = 'b';
   }, []);
 
   const handleGameEnded = useCallback((data: { result: string; termination_reason: string; eloChange?: number }) => {
@@ -370,6 +458,8 @@ export default function OnlinePremiumPage() {
     const reason = reasonLabels[data.termination_reason] || "";
     setStatus(`${label}${reason ? ` (${reason})` : ""}`);
     if (data.eloChange !== undefined) setEloChange(data.eloChange);
+    // Limpiar el ancla cuando la partida termina para parar el reloj
+    serverTimeAnchorRef.current = null;
   }, []);
 
   const handleDrawOffered = useCallback((sender: string) => setDrawOfferSender(sender), []);
@@ -378,7 +468,6 @@ export default function OnlinePremiumPage() {
     setIncomingChat({ username, message });
   }, []);
 
-  // ← PASAR EL ESTADO COMPARTIDO AL CHAT
   const handleDrawOfferedFromChat = useCallback(() => {
     setHasOfferedDraw(true);
   }, []);
@@ -395,7 +484,7 @@ export default function OnlinePremiumPage() {
   return (
     <main className="min-h-screen bg-[#020202] text-zinc-400 p-6 xl:p-10 font-sans selection:bg-gold/30 relative overflow-hidden">
       <style>{searchAnimations}</style>
-      
+
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[#070502]" />
         <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[90%] h-[80%] bg-gold/20 blur-[200px] rounded-full animate-pulse"></div>
@@ -497,9 +586,9 @@ export default function OnlinePremiumPage() {
                       </div>
                     </div>
                     <div className="flex gap-3 mt-6">
-                      <button 
-                        onClick={handleOfferDraw} 
-                        disabled={hasOfferedDraw} 
+                      <button
+                        onClick={handleOfferDraw}
+                        disabled={hasOfferedDraw}
                         className={`flex-1 py-3 rounded-2xl font-black text-[9px] tracking-[0.2em] uppercase transition-all duration-300 border ${hasOfferedDraw ? 'bg-zinc-900 border-white/5 text-white/20 cursor-not-allowed' : 'bg-zinc-800 border-white/10 text-white/60 hover:bg-zinc-700 hover:border-white/20 cursor-pointer'}`}
                         title={hasOfferedDraw ? "Ya ofreciste tablas esta partida" : ""}
                       >

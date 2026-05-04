@@ -123,7 +123,6 @@ export default function PlayOnline({
 
     onGameEnded({ result, termination_reason: terminationReason, eloChange });
 
-    // ✅ SOLO cambia estado - SIN TOASTS
     if (result === "1/2-1/2") {
       onGameStateChange("TABLAS");
     } else if (
@@ -252,7 +251,7 @@ export default function PlayOnline({
       if (msg.type === "game_message" || msg.action) {
         const payload = msg.message || msg;
 
-        if (payload.action === "game_ended") {
+        if (payload.action === "game_ended" || payload.action === "game_over") {
           handleGameEnd(
             payload.result,
             payload.termination_reason || "",
@@ -268,7 +267,6 @@ export default function PlayOnline({
         }
       }
 
-      // ── Chat message del rival ───────────────────────────────────────────
       if (msg.type === "chat_message") {
         onChatMessage(msg.username, msg.message);
       }
