@@ -11,7 +11,7 @@ interface GameFromAPI {
   created_at: string;
   white_username: string;
   black_username: string;
-  winner_username: string | null;
+  winner_username: string | null; // ahora viene del backend corregido
 }
 
 interface HistoryFormProps {
@@ -43,19 +43,19 @@ export default function HistoryForm({ onClose }: HistoryFormProps) {
       }
 
       try {
-        const response = await fetch("http://localhost:8000/api/games/my-history/", {
+        const response = await fetch("http://localhost:8000/api/games/my-games/", {
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json"
           }
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           setGames(data);
         }
       } catch (error) {
-        console.error("Error cargando historial real:", error);
+        console.error("Error cargando historial:", error);
       } finally {
         setLoading(false);
       }
@@ -69,23 +69,29 @@ export default function HistoryForm({ onClose }: HistoryFormProps) {
     router.push(`/analysis/${id}`);
   };
 
-  const getResultType = (game: GameFromAPI) => {
-    if (game.result === "1/2-1/2") return "draw";
+  const getResultType = (game: GameFromAPI): "win" | "loss" | "draw" => {
+    // Tablas: resultado explícito o sin ganador
+    if (game.result === "1/2-1/2" || game.winner_username === null) return "draw";
+
+    // FIX: comparar winner_username (string) con myUsername
+    // Antes el backend enviaba `winner` como ID entero en GameDetailSerializer,
+    // ahora winner_username viene correctamente del campo añadido al serializer
     if (game.winner_username === myUsername) return "win";
-    if (game.winner_username === null && game.result !== "*") return "draw";
+
     return "loss";
   };
 
   const filteredGames = games.filter(g => {
+    if (!myUsername) return false;
     const res = getResultType(g);
     if (filter === 'all') return true;
     return res === filter;
   });
 
   const resultStyles = {
-    win: { label: "Victoria", color: "text-emerald-400", border: "border-emerald-500/20", bg: "bg-emerald-500/5" },
-    loss: { label: "Derrota", color: "text-rose-500", border: "border-rose-500/20", bg: "bg-rose-500/5" },
-    draw: { label: "Tablas", color: "text-zinc-400", border: "border-zinc-500/20", bg: "bg-zinc-500/5" }
+    win:  { label: "Victoria", color: "text-emerald-400", border: "border-emerald-500/20", bg: "bg-emerald-500/5" },
+    loss: { label: "Derrota",  color: "text-rose-500",    border: "border-rose-500/20",    bg: "bg-rose-500/5"    },
+    draw: { label: "Tablas",   color: "text-zinc-400",    border: "border-zinc-500/20",    bg: "bg-zinc-500/5"    }
   };
 
   if (loading) {
@@ -99,7 +105,7 @@ export default function HistoryForm({ onClose }: HistoryFormProps) {
 
   return (
     <div className="relative w-full max-w-5xl mx-auto h-[85vh] flex flex-col overflow-hidden">
-      
+
       <div className="flex flex-col items-center shrink-0 pt-10 px-6">
         <h2 className="text-4xl md:text-5xl font-black text-white tracking-[0.2em] uppercase mb-2 text-center">Historial</h2>
         <div className="text-gold/60 text-[10px] tracking-[0.4em] uppercase font-bold mb-8">Registros de Batalla Real</div>
@@ -111,8 +117,8 @@ export default function HistoryForm({ onClose }: HistoryFormProps) {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
-                filter === f 
-                  ? 'bg-gold text-black border-gold shadow-[0_0_15px_rgba(212,175,55,0.3)]' 
+                filter === f
+                  ? 'bg-gold text-black border-gold shadow-[0_0_15px_rgba(212,175,55,0.3)]'
                   : 'text-zinc-500 border-white/5 hover:border-white/20 hover:text-white cursor-pointer'
               }`}
             >
@@ -130,7 +136,7 @@ export default function HistoryForm({ onClose }: HistoryFormProps) {
           const opponent = game.white_username === myUsername ? game.black_username : game.white_username;
 
           return (
-            <div 
+            <div
               key={game.id}
               className={`w-full group flex items-center justify-between p-4 md:p-6 border ${style.border} ${style.bg} rounded-2xl transition-all duration-300 hover:scale-[1.01] hover:border-gold/40`}
             >
@@ -159,9 +165,9 @@ export default function HistoryForm({ onClose }: HistoryFormProps) {
                   <p className="text-white font-bold tracking-widest text-xs uppercase mb-1">
                     {new Date(game.created_at).toLocaleDateString("es-ES", { day: '2-digit', month: 'short' })}
                   </p>
-                  <p className="text-[10px] text-zinc-500 font-bold uppercase">ID: {game.id.slice(0,8)}</p>
+                  <p className="text-[10px] text-zinc-500 font-bold uppercase">ID: {game.id.slice(0, 8)}</p>
                 </div>
-                <button 
+                <button
                   onClick={() => handleAnalyze(game.id)}
                   className="h-10 w-10 md:h-12 md:w-32 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-gold hover:text-black transition-all font-black text-[10px] uppercase tracking-widest cursor-pointer"
                 >

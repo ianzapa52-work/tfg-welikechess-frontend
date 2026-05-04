@@ -1,8 +1,19 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Trophy, Activity, Award, Search, Loader2, Zap, Timer, Coffee, Crown, TrendingUp, Flame, Star, Sparkles, Gem, Crown as CrownIcon } from 'lucide-react';
+import { Trophy, Activity, Award, Search, Loader2, Zap, Timer, Coffee, Crown, TrendingUp, Flame } from 'lucide-react';
 
+// Lo que devuelve el backend
+interface PlayerFromAPI {
+  id: string;
+  username: string;
+  elo_blitz: number;
+  elo_rapid: number;
+  elo_bullet: number;
+  avatar: string | null;
+}
+
+// Lo que usa el componente internamente
 interface Player {
   id: string;
   name: string;
@@ -47,19 +58,41 @@ const ELO_MILESTONES = [
   { elo: 0,    label: 'Novato',       icon: '◇', color: '#10b981' },
 ];
 
+function mapAPIPlayer(u: PlayerFromAPI, mode: Mode): Player {
+  const eloKey = `elo_${mode}` as keyof PlayerFromAPI;
+  return {
+    id: u.id,
+    name: u.username,
+    elo: u[eloKey] as number,
+    wins: 0,
+    avatar: u.avatar ?? "b_king_avatar.png",
+    tier: "",
+    online: false,
+  };
+}
+
 export default function RankingForm() {
   const [search, setSearch] = useState('');
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<Mode>('blitz');
 
-  const fetchGlobalRanking = async (selectedMode: Mode) => {
+  const fetchLeaderboard = async (selectedMode: Mode) => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/users/global_ranking/?type=${selectedMode}`);
+      const token = localStorage.getItem("access_token");
+      const response = await fetch(
+        `http://localhost:8000/api/users/leaderboard/?mode=${selectedMode}&limit=50`,
+        {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
       if (!response.ok) throw new Error('Error en servidor');
-      const data = await response.json();
-      setPlayers(data);
+      const data: PlayerFromAPI[] = await response.json();
+      setPlayers(data.map(u => mapAPIPlayer(u, selectedMode)));
     } catch (error) {
       console.error('Error cargando ranking:', error);
     } finally {
@@ -67,7 +100,7 @@ export default function RankingForm() {
     }
   };
 
-  useEffect(() => { fetchGlobalRanking(mode); }, [mode]);
+  useEffect(() => { fetchLeaderboard(mode); }, [mode]);
 
   const filteredPlayers = useMemo(() =>
     players.filter(p => p.name.toLowerCase().includes(search.toLowerCase())).sort((a, b) => b.elo - a.elo),
@@ -77,19 +110,11 @@ export default function RankingForm() {
   const topThree = useMemo(() => players.slice(0, 3), [players]);
   const leader = topThree[0];
 
-  // Estadísticas calculadas
-  const averageElo = useMemo(() => {
-    if (players.length === 0) return 0;
-    return Math.round(players.reduce((sum, p) => sum + p.elo, 0) / players.length);
-  }, [players]);
-
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-130px)] gap-6 w-full max-w-[1800px] mx-auto p-4 relative font-['Outfit'] text-[1.1rem]">
 
       {/* ── LEFT PANEL ── */}
       <div className="hidden lg:flex flex-col w-80 gap-3 shrink-0 overflow-hidden">
-
-        {/* Leader card */}
         <div
           className="relative rounded-[36px] overflow-hidden shrink-0"
           style={{
@@ -101,7 +126,6 @@ export default function RankingForm() {
           <div className="absolute top-0 left-0 w-px h-20" style={{ background: 'linear-gradient(180deg, #d4af37, transparent)' }} />
           <div className="absolute bottom-0 right-0 w-20 h-px" style={{ background: 'linear-gradient(270deg, #d4af37, transparent)' }} />
           <div className="absolute bottom-0 right-0 w-px h-20" style={{ background: 'linear-gradient(0deg, #d4af37, transparent)' }} />
-
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 pointer-events-none"
             style={{ background: 'radial-gradient(ellipse, rgba(212,175,55,0.08) 0%, transparent 70%)' }} />
 
@@ -119,7 +143,6 @@ export default function RankingForm() {
               >
                 <Crown size={15} className="text-black" strokeWidth={2.5} />
               </div>
-
               <div className="absolute -inset-[2px] rounded-[30px]"
                 style={{ background: 'linear-gradient(135deg, #d4af37 0%, #7a5c1e 45%, #d4af37 100%)' }} />
               <div className="relative rounded-[28px] overflow-hidden w-28 h-28">
@@ -131,13 +154,6 @@ export default function RankingForm() {
                   </div>
                 )}
               </div>
-
-              {leader?.online && (
-                <div className="absolute -bottom-1.5 -right-1.5 z-10">
-                  <div className="w-6 h-6 rounded-full border-[2.5px] border-[#0d0d0d]"
-                    style={{ background: '#22c55e', boxShadow: '0 0 10px rgba(34,197,94,0.55)' }} />
-                </div>
-              )}
             </div>
 
             <h3 className="text-white font-['Cinzel'] font-bold text-xl tracking-[0.12em] uppercase truncate w-full text-center leading-tight mb-1">
@@ -162,16 +178,13 @@ export default function RankingForm() {
             <div className="w-full h-px mb-5" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.18), transparent)' }} />
 
             <div className="w-full grid grid-cols-2 gap-2">
-              <LeaderStat label="Victorias" value={leader?.wins ?? '—'} icon={<Trophy size={14} />} />
+              <LeaderStat label="ELO" value={leader?.elo ?? '—'} icon={<Flame size={14} />} />
               <LeaderStat label="Categoría" value={leader ? getTier(leader.elo).label : '—'} icon={<Award size={14} />} highlight />
             </div>
           </div>
         </div>
 
-        {/* ── PANEL COMPLETO SIMPLIFICADO ── */}
         <div className="chess-panel border border-white/5 rounded-3xl flex-1 min-h-0 flex flex-col overflow-hidden bg-gradient-to-br from-black/10 via-transparent to-purple-900/5">
-
-          {/* MODO ACTIVO - INTEGRADO */}
           <div className="p-6 border-b border-white/5 shrink-0 relative">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-2 h-2 bg-gold/60 rounded-full" />
@@ -184,43 +197,21 @@ export default function RankingForm() {
               </span>
             </div>
 
-            {/* TOTAL DE JUGADORES - JUSTO DEBAJO DEL MODO */}
             <div className="flex flex-col items-center justify-center mt-6 mb-2 mx-6 space-y-1">
               <div className="text-center">
                 <span className="text-gold/60 text-xs font-light tracking-widest uppercase">Total</span>
                 <div className="text-3xl font-black bg-gradient-to-r from-gold via-gold/90 to-amber-400 bg-clip-text text-transparent drop-shadow-lg mt-0.5">
-                  50
+                  {players.length}
                 </div>
                 <span className="text-gold/50 text-xs font-light tracking-wide">jugadores</span>
               </div>
-              <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-gold/40 to-transparent rounded-full blur-sm mt-1" />
             </div>
           </div>
-
-          {/* SEPARADOR DORADO */}
-          <div className="w-full h-px my-6 mx-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent relative self-start">
-            <div className="absolute inset-0 h-px bg-gradient-to-r from-gold/50 via-gold/20 to-gold/50 rounded-full blur-sm opacity-70" />
-          </div>
-
-          {/* LÍNEA DORADA DECORATIVA - FIJA AL FINAL */}
-          <div className="absolute inset-x-0 bottom-6 flex items-center justify-center pointer-events-none">
-            <div className="w-48 h-1 bg-gradient-to-r from-transparent via-gold/50 to-transparent rounded-full relative overflow-hidden mx-auto"
-              style={{ 
-                boxShadow: '0 0 20px rgba(212,175,55,0.25)',
-                filter: 'blur(0.3px)'
-              }}>
-              <div className="absolute inset-0 bg-gradient-to-r from-gold/70 via-gold/30 to-gold/70 rounded-full animate-pulse" style={{ animationDuration: '3s' }} />
-            </div>
-          </div>
-
         </div>
-
       </div>
 
       {/* ── CENTER PANEL ── */}
       <div className="flex-grow flex flex-col bg-white/[0.02] border border-white/8 rounded-[48px] overflow-hidden backdrop-blur-xl shadow-2xl relative">
-
-        {/* Header */}
         <div className="px-8 pt-8 pb-6 border-b border-white/5 shrink-0">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
             <div>
@@ -239,15 +230,13 @@ export default function RankingForm() {
             </div>
           </div>
 
-          {/* Mode tabs */}
           <div className="flex gap-2 bg-black/30 p-1.5 rounded-2xl border border-white/5 self-start mt-5 w-fit">
             <ModeTab active={mode === 'bullet'} onClick={() => setMode('bullet')} label="Bullet" icon={<Zap size={15} />} />
-            <ModeTab active={mode === 'blitz'} onClick={() => setMode('blitz')} label="Blitz" icon={<Timer size={15} />} />
-            <ModeTab active={mode === 'rapid'} onClick={() => setMode('rapid')} label="Rapid" icon={<Coffee size={15} />} />
+            <ModeTab active={mode === 'blitz'}  onClick={() => setMode('blitz')}  label="Blitz"  icon={<Timer size={15} />} />
+            <ModeTab active={mode === 'rapid'}  onClick={() => setMode('rapid')}  label="Rapid"  icon={<Coffee size={15} />} />
           </div>
         </div>
 
-        {/* List */}
         <div className="flex-grow overflow-y-auto custom-scrollbar px-4 md:px-8 py-4 relative">
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-20">
@@ -271,8 +260,6 @@ export default function RankingForm() {
 
       {/* ── RIGHT PANEL ── */}
       <div className="hidden xl:flex flex-col w-96 gap-5 shrink-0 overflow-hidden">
-
-        {/* Podium */}
         <div
           className="relative rounded-[36px] overflow-hidden shrink-0"
           style={{
@@ -287,7 +274,6 @@ export default function RankingForm() {
               <span className="text-sm text-zinc-500 tracking-[0.5em] font-black uppercase">Círculo Élite</span>
               <div className="flex-1 h-px bg-white/5" />
             </div>
-
             <div className="space-y-7">
               {topThree.map((p, i) => (
                 <PodiumRow key={p.id} player={p} position={i + 1} color={MEDAL_COLORS[i]} medal={MEDAL_LABELS[i]} />
@@ -301,7 +287,6 @@ export default function RankingForm() {
           </div>
         </div>
 
-        {/* ELO Milestones */}
         <div className="chess-panel flex-grow overflow-hidden flex flex-col min-h-0">
           <div className="flex items-center gap-2 mb-5 shrink-0">
             <TrendingUp size={14} className="text-gold/60" />
@@ -320,6 +305,7 @@ export default function RankingForm() {
                   </div>
                   <div className="flex-grow min-w-0">
                     <p className="text-sm text-zinc-400 font-bold tracking-widest uppercase truncate group-hover:text-white transition-colors">{label}</p>
+                    <p className="text-xs text-zinc-700">{playersAbove} jugadores</p>
                   </div>
                   <div className="text-right shrink-0">
                     <span className="text-base font-black font-['Cinzel']" style={{ color }}>{displayElo}</span>
@@ -329,13 +315,11 @@ export default function RankingForm() {
             })}
           </div>
         </div>
-
       </div>
     </div>
   );
 }
 
-// ... resto de componentes (sin cambios)
 function PodiumRow({ player, position, color, medal }: { player: Player; position: number; color: string; medal: string }) {
   const tier = getTier(player.elo);
   return (
@@ -394,12 +378,10 @@ function PlayerRow({ player, rank }: { player: Player; rank: number }) {
 
   return (
     <div className="group flex items-center gap-6 px-6 py-5 mb-2 hover:bg-white/[0.025] rounded-[28px] transition-all duration-300 border border-transparent hover:border-white/5 relative cursor-pointer">
-
       <div
         className="absolute left-0 top-4 bottom-4 w-[2px] rounded-r-full scale-y-0 group-hover:scale-y-100 transition-transform duration-500"
         style={{ background: medalColor ?? tier.color, boxShadow: `0 0 10px ${medalColor ?? tier.color}` }}
       />
-
       <div className="w-10 shrink-0 flex items-center justify-center">
         {isTop3 && medalColor ? (
           <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: `${medalColor}18`, border: `1px solid ${medalColor}40` }}>
@@ -419,10 +401,6 @@ function PlayerRow({ player, rank }: { player: Player; rank: number }) {
           style={{ border: isTop3 && medalColor ? `2px solid ${medalColor}50` : '1px solid rgba(255,255,255,0.06)' }}
           alt=""
         />
-        {player.online && (
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-black animate-pulse"
-            style={{ boxShadow: '0 0 8px rgba(34,197,94,0.6)' }} />
-        )}
       </div>
 
       <div className="flex-grow min-w-0">
@@ -437,9 +415,6 @@ function PlayerRow({ player, rank }: { player: Player; rank: number }) {
             <span>{tier.icon}</span>
             <span>{tier.label}</span>
           </span>
-          <span className="hidden md:inline text-sm text-zinc-600 font-bold tracking-widest uppercase">
-            {player.wins} victorias
-          </span>
         </div>
       </div>
 
@@ -448,7 +423,7 @@ function PlayerRow({ player, rank }: { player: Player; rank: number }) {
           {player.elo}
         </div>
         <div className="text-sm text-zinc-700 tracking-widest uppercase font-bold mt-0.5">ELO</div>
-      </div>      
+      </div>
     </div>
   );
 }

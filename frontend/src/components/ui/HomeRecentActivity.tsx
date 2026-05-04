@@ -36,7 +36,7 @@ export default function HomeRecentActivity() {
           setMyUsername(meData.username);
         }
 
-        const response = await fetch("http://localhost:8000/api/games/my-history/", {
+        const response = await fetch("http://localhost:8000/api/games/my-games/", {
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json"
